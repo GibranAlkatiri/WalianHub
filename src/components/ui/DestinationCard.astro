@@ -21,7 +21,7 @@ const { nama, kategori, ringkasan, gambar, href } = Astro.props;
   <SmartImage src={gambar} alt={nama} class="aspect-[3/2] rounded-xl" />
   <div class="flex flex-1 flex-col px-2 pt-4 pb-2 lg:px-3">
     <Badge class="self-start">{kategori}</Badge>
-    <h3 class="mt-3 text-xl leading-snug font-bold text-ink">{nama}</h3>
+    <h3 class="mt-3 text-lg leading-snug font-bold text-ink sm:text-xl">{nama}</h3>
     <p class="mt-2 line-clamp-2 text-base text-ink-muted">{ringkasan}</p>
     <div class="mt-auto pt-5">
       <Button href={href} size="sm">Lihat Detail<span class="sr-only"> {nama}</span></Button>

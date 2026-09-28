@@ -13,7 +13,7 @@ const destinasi = (await getCollection('destinasi', ({ data }) => data.unggulan)
   .slice(0, 3);
 ---
 
-<section id="wisata" class="bg-sage-100 py-16 lg:py-24">
+<section id="wisata" class="bg-sage-100 py-12 sm:py-16 lg:py-24">
   <Container>
     <SectionHeading
       align="center"
@@ -50,7 +50,7 @@ const destinasi = (await getCollection('destinasi', ({ data }) => data.unggulan)
       </div>
     </div>
 
-    <div class="mt-10 text-center">
+    <div class="mt-8 text-center sm:mt-10">
       <Button href="/wisata" variant="outline">Lihat Semua Wisata & Potensi</Button>
     </div>
   </Container>

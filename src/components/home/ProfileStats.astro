@@ -15,8 +15,8 @@ const { profil } = Astro.props;
 const { penduduk } = profil;
 ---
 
-<section id="profil" class="bg-sage-100 py-16 lg:py-24">
-  <Container class="grid items-center gap-10 lg:grid-cols-[2fr_3fr] lg:gap-16">
+<section id="profil" class="bg-sage-100 py-12 sm:py-16 lg:py-24">
+  <Container class="grid items-center gap-8 sm:gap-10 lg:grid-cols-[2fr_3fr] lg:gap-16">
     <div>
       <SectionHeading overline="Sekilas profil" title="Mengenal Kelurahan Walian" />
       <p class="mt-4 text-ink-muted">{profil.ringkasan}</p>
@@ -26,7 +26,7 @@ const { penduduk } = profil;
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-4 lg:gap-6">
+    <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
       <StatCard ikon="users" label="Jumlah penduduk" angka={formatAngka(penduduk.jumlahJiwa)} satuan="jiwa" />
       <StatCard ikon="house" label="Kepala keluarga" angka={formatAngka(penduduk.kepalaKeluarga)} />
       <StatCard ikon="map" label="Lingkungan" angka={profil.lingkungan.length ? String(profil.lingkungan.length) : null} />

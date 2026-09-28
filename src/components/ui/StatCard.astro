@@ -13,18 +13,18 @@ interface Props {
 const { angka, label, ikon, satuan } = Astro.props;
 ---
 
-<div class="rounded-2xl bg-white p-5 shadow-card lg:p-6">
-  <span class="grid size-11 place-items-center rounded-full bg-sage-100 text-forest-600">
+<div class="rounded-2xl bg-white p-4 shadow-card sm:p-5 lg:p-6">
+  <span class="grid size-10 place-items-center rounded-full bg-sage-100 text-forest-600 sm:size-11">
     <Icon name={ikon} class="size-5" />
   </span>
   {
     angka ? (
-      <p class="mt-4 text-3xl font-bold text-ink lg:text-4xl">
+      <p class="mt-3 text-2xl font-bold text-ink sm:mt-4 sm:text-3xl lg:text-4xl">
         {angka}
-        {satuan && <span class="text-lg font-semibold text-ink-muted"> {satuan}</span>}
+        {satuan && <span class="text-base font-semibold text-ink-muted sm:text-lg"> {satuan}</span>}
       </p>
     ) : (
-      <p class="mt-4 text-xl font-semibold text-ink-subtle">Data menyusul</p>
+      <p class="mt-3 text-lg font-semibold text-ink-subtle sm:mt-4 sm:text-xl">Data menyusul</p>
     )
   }
   <p class="mt-1 text-base text-ink-muted">{label}</p>
