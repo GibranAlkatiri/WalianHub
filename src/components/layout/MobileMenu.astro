@@ -1,0 +1,63 @@
+---
+// Hamburger menu untuk layar di bawah 1280px.
+import Icon from '../ui/Icon.astro';
+import Button from '../ui/Button.astro';
+import { url } from '../../lib/url';
+
+interface Props {
+  menu: { label: string; href: string }[];
+  tautanKontak: string;
+}
+
+const { menu, tautanKontak } = Astro.props;
+---
+
+<button
+  type="button"
+  aria-controls="menu-hp"
+  aria-expanded="false"
+  aria-label="Buka menu"
+  data-menu-tombol
+  class="grid size-10 place-items-center rounded-full text-ink transition-colors hover:bg-sage-100 sm:size-11 xl:hidden"
+>
+  <Icon name="menu" class="size-6" data-ikon-buka />
+  <Icon name="x" class="hidden size-6" data-ikon-tutup />
+</button>
+
+<div id="menu-hp" hidden data-menu-panel class="absolute inset-x-0 top-full mt-2 rounded-2xl bg-white p-3 shadow-float xl:hidden">
+  <nav aria-label="Menu utama">
+    <ul class="flex flex-col">
+      {
+        menu.map((item) => (
+          <li>
+            <a href={url(item.href)} class="flex h-12 items-center rounded-xl px-4 text-base font-semibold text-ink hover:bg-sage-100">
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+  <Button href={tautanKontak} class="mt-2 w-full">Hubungi Kami</Button>
+</div>
+
+<script>
+  const tombol = document.querySelector<HTMLButtonElement>('[data-menu-tombol]');
+  const panel = document.querySelector<HTMLElement>('[data-menu-panel]');
+
+  function aturMenu(buka: boolean) {
+    if (!tombol || !panel) return;
+    panel.hidden = !buka;
+    tombol.setAttribute('aria-expanded', String(buka));
+    tombol.setAttribute('aria-label', buka ? 'Tutup menu' : 'Buka menu');
+    tombol.querySelector('[data-ikon-buka]')?.classList.toggle('hidden', buka);
+    tombol.querySelector('[data-ikon-tutup]')?.classList.toggle('hidden', !buka);
+  }
+
+  tombol?.addEventListener('click', () => aturMenu(panel?.hidden ?? false));
+  // Menu tertutup otomatis setelah salah satu tautan dipilih, atau saat tombol Escape ditekan.
+  panel?.querySelectorAll('a').forEach((tautan) => tautan.addEventListener('click', () => aturMenu(false)));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') aturMenu(false);
+  });
+</script>

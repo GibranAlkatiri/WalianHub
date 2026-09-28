@@ -1,0 +1,67 @@
+---
+// Gambar dengan gambar default.
+// - src kosong          → tampil gambar default dan label "Foto belum tersedia".
+// - gambar gagal dimuat → otomatis diganti gambar default, lalu label ikut muncul.
+import { url } from '../../lib/url';
+
+interface Props {
+  src?: string;
+  /** Nama isi foto, contoh "Kantor Kelurahan Walian". Dipakai untuk alt text. */
+  alt: string;
+  /** Kelas untuk bingkai gambar, misalnya rasio dan sudut: "aspect-[3/2] rounded-xl". */
+  class?: string;
+  /** Posisi label "Foto belum tersedia". Bawaan: pojok kiri bawah. */
+  labelClass?: string;
+  /**
+   * false jika label ditampilkan sendiri oleh komponen induk (misalnya di hero, agar label
+   * berada di atas lapisan gelap). Induknya perlu atribut data-foto-wadah dan label data-label-foto.
+   */
+  showLabel?: boolean;
+  /** true jika gambar memenuhi seluruh elemen induknya, misalnya latar hero. */
+  fill?: boolean;
+  /** true untuk gambar paling atas halaman (hero), supaya dimuat lebih dulu. */
+  priority?: boolean;
+}
+
+const {
+  src,
+  alt,
+  class: kelas,
+  labelClass = 'bottom-3 left-3',
+  showLabel = true,
+  fill = false,
+  priority = false,
+} = Astro.props;
+
+const gambarDefault = url('/images/default.svg');
+const kosong = !src?.trim();
+const altDefault = `Foto ${alt} belum tersedia`;
+---
+
+<div
+  data-foto-wadah={showLabel ? '' : undefined}
+  class:list={[fill ? 'absolute inset-0' : 'relative', 'overflow-hidden bg-sage-100', kelas]}
+>
+  <img
+    src={kosong ? gambarDefault : url(src!)}
+    alt={kosong ? altDefault : alt}
+    loading={priority ? 'eager' : 'lazy'}
+    fetchpriority={priority ? 'high' : undefined}
+    decoding="async"
+    class="size-full object-cover"
+    data-default={gambarDefault}
+    data-alt-default={altDefault}
+    onerror="this.onerror=null;this.src=this.dataset.default;this.alt=this.dataset.altDefault;var w=this.closest('[data-foto-wadah]');var l=w&&w.querySelector('[data-label-foto]');if(l)l.hidden=false;"
+  />
+  {
+    showLabel && (
+      <span
+        data-label-foto
+        hidden={!kosong}
+        class:list={['absolute rounded-full bg-ink/80 px-3 py-1 text-sm font-semibold text-white', labelClass]}
+      >
+        Foto belum tersedia
+      </span>
+    )
+  }
+</div>

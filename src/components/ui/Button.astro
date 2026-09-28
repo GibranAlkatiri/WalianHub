@@ -1,0 +1,49 @@
+---
+// Tombol berbentuk pil.
+// variant: "primary" (hijau), "outline" (garis hijau), "light" (garis putih, untuk di atas gambar gelap).
+// size: "md" (tinggi 48px) atau "sm" (tinggi 44px, untuk di dalam card).
+// Catatan: untuk menyembunyikan tombol di ukuran layar tertentu, bungkus tombol dengan elemen lain.
+// Jangan menambah kelas yang bertabrakan dengan kelas bawaan, misalnya "hidden" atau "h-10".
+import Icon from './Icon.astro';
+import { url } from '../../lib/url';
+
+interface Props {
+  href: string;
+  variant?: 'primary' | 'outline' | 'light';
+  size?: 'md' | 'sm';
+  /** Nama ikon di kiri tulisan. */
+  icon?: string;
+  /** Nama ikon di kanan tulisan. */
+  iconRight?: string;
+  class?: string;
+}
+
+const { href, variant = 'primary', size = 'md', icon, iconRight, class: kelas } = Astro.props;
+const tautanLuar = /^https?:\/\//.test(href);
+
+const gaya = {
+  primary: 'bg-forest-600 text-white hover:bg-forest-700',
+  outline: 'border-2 border-forest-600 text-forest-600 hover:bg-sage-100',
+  light: 'border-2 border-white text-white hover:bg-white/15 focus-visible:outline-sun-400',
+};
+const ukuran = {
+  md: 'h-12 px-6',
+  sm: 'h-11 px-5',
+};
+---
+
+<a
+  href={url(href)}
+  target={tautanLuar ? '_blank' : undefined}
+  rel={tautanLuar ? 'noopener' : undefined}
+  class:list={[
+    'inline-flex items-center justify-center gap-2 rounded-full text-base font-semibold whitespace-nowrap transition-colors',
+    gaya[variant],
+    ukuran[size],
+    kelas,
+  ]}
+>
+  {icon && <Icon name={icon} class="size-5" />}
+  <slot />
+  {iconRight && <Icon name={iconRight} class="size-5" />}
+</a>

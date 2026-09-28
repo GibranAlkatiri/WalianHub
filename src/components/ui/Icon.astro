@@ -1,0 +1,32 @@
+---
+// Menampilkan ikon dari src/icons/ berdasarkan nama file tanpa .svg, contoh: <Icon name="map-pin" />.
+// Ikon Lucide memakai garis (stroke), logo merek dari Simple Icons memakai isian (fill).
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends HTMLAttributes<'svg'> {
+  name: string;
+  /** Isi hanya jika ikon berdiri sendiri tanpa tulisan, agar dibacakan oleh screen reader. */
+  label?: string;
+}
+
+const semuaIkon = import.meta.glob<{ default: any }>('../../icons/*.svg', { eager: true });
+const logoMerek = new Set(['whatsapp', 'facebook', 'instagram', 'youtube', 'tiktok']);
+
+const { name, label, class: kelas = 'size-5', ...lainnya } = Astro.props;
+const Svg = semuaIkon[`../../icons/${name}.svg`]?.default;
+
+if (!Svg) console.warn(`[Icon] Ikon "${name}" tidak ada di src/icons/.`);
+
+// Hanya atribut yang benar-benar dipakai yang dikirim. Atribut bernilai kosong (undefined)
+// akan menghapus atribut asli di file SVG, misalnya fill="none" pada ikon Lucide.
+const atribut: Record<string, string> = {};
+if (logoMerek.has(name)) atribut.fill = 'currentColor';
+if (label) {
+  atribut.role = 'img';
+  atribut['aria-label'] = label;
+} else {
+  atribut['aria-hidden'] = 'true';
+}
+---
+
+{Svg && <Svg class={kelas} {...atribut} {...lainnya} />}

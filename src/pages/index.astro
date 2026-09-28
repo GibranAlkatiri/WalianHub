@@ -1,0 +1,33 @@
+---
+// Beranda (landing page): delapan section, dari hero sampai kontak dan peta.
+// Semua isinya diambil dari src/content/.
+import { getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/home/Hero.astro';
+import QuickAccess from '../components/home/QuickAccess.astro';
+import Welcome from '../components/home/Welcome.astro';
+import ProfileStats from '../components/home/ProfileStats.astro';
+import Services from '../components/home/Services.astro';
+import FeaturedDestinations from '../components/home/FeaturedDestinations.astro';
+import LatestNews from '../components/home/LatestNews.astro';
+import Contact from '../components/home/Contact.astro';
+
+const situs = (await getEntry('situs', 'situs'))!.data;
+const beranda = (await getEntry('beranda', 'beranda'))!.data;
+const profil = (await getEntry('profil', 'profil'))!.data;
+
+// Link preview hanya bisa memakai foto JPG/PNG/WebP. Selama hero memakai gambar default (SVG),
+// BaseLayout otomatis memakai default-og.png.
+const gambarPreview = /\.(jpe?g|png|webp)$/i.test(beranda.hero.gambar ?? '') ? beranda.hero.gambar : undefined;
+---
+
+<BaseLayout overlayHeader image={gambarPreview}>
+  <Hero hero={beranda.hero} />
+  <QuickAccess items={beranda.aksesCepat} whatsapp={situs.whatsapp} />
+  <Welcome sambutan={beranda.sambutan} />
+  <ProfileStats profil={profil} />
+  <Services />
+  <FeaturedDestinations />
+  <LatestNews />
+  <Contact situs={situs} />
+</BaseLayout>

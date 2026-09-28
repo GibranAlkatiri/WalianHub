@@ -1,0 +1,75 @@
+---
+// Kerangka HTML setiap halaman: <head> (SEO dan link preview), header, dan footer.
+import '@fontsource-variable/plus-jakarta-sans';
+import '../styles/global.css';
+import { getEntry } from 'astro:content';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import { url } from '../lib/url';
+import { SIAP_DIINDEKS } from '../lib/konfigurasi';
+
+interface Props {
+  /** Judul halaman. Kosongkan untuk Beranda. */
+  title?: string;
+  /** Deskripsi untuk Google dan link preview. */
+  description?: string;
+  /** Gambar link preview (JPG/PNG). Kosong berarti memakai default-og.png. */
+  image?: string;
+  /** true jika header melayang di atas hero (Beranda). */
+  overlayHeader?: boolean;
+}
+
+const situs = (await getEntry('situs', 'situs'))!.data;
+
+const {
+  title,
+  description = `Website resmi ${situs.namaKelurahan}, Kecamatan ${situs.kecamatan}, Kota ${situs.kota}: informasi layanan, profil wilayah, dan wisata.`,
+  image,
+  overlayHeader = false,
+} = Astro.props;
+
+const judulLengkap = title
+  ? `${title} · ${situs.namaKelurahan}`
+  : `${situs.namaKelurahan} · Kecamatan ${situs.kecamatan}, Kota ${situs.kota}`;
+const alamatHalaman = new URL(Astro.url.pathname, Astro.site);
+const gambarPreview = new URL(url(image || '/images/default-og.png'), Astro.site);
+---
+
+<!doctype html>
+<html lang="id" style={SIAP_DIINDEKS ? undefined : 'scroll-padding-top: 8.5rem'}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{judulLengkap}</title>
+    <meta name="description" content={description} />
+    {!SIAP_DIINDEKS && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="canonical" href={alamatHalaman} />
+    <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
+    <meta name="theme-color" content="#45742F" />
+
+    {/* Link preview (Open Graph) untuk WhatsApp dan Facebook */}
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:site_name" content={situs.namaKelurahan} />
+    <meta property="og:title" content={judulLengkap} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={alamatHalaman} />
+    <meta property="og:image" content={gambarPreview} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body class="min-h-dvh">
+    <a
+      href="#konten"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-full focus:bg-forest-600 focus:px-5 focus:py-3 focus:font-semibold focus:text-white"
+    >
+      Langsung ke konten
+    </a>
+    <Header namaKelurahan={situs.namaKelurahan} kota={situs.kota} />
+    <main id="konten" class:list={[!overlayHeader && (SIAP_DIINDEKS ? 'pt-28 lg:pt-32' : 'pt-36 lg:pt-40')]}>
+      <slot />
+    </main>
+    <Footer situs={situs} />
+  </body>
+</html>

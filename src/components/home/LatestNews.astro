@@ -1,0 +1,43 @@
+---
+// Section 7 Beranda: tiga berita terbaru yang bukan draf. Anchor #berita.
+import { getCollection } from 'astro:content';
+import Container from '../ui/Container.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+import NewsCard from '../ui/NewsCard.astro';
+import Button from '../ui/Button.astro';
+
+const berita = (await getCollection('berita', ({ data }) => !data.draf))
+  .sort((a, b) => b.data.tanggal.getTime() - a.data.tanggal.getTime())
+  .slice(0, 3);
+---
+
+<section id="berita" class="py-16 lg:py-24">
+  <Container>
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+      <SectionHeading
+        overline="Berita"
+        title="Berita dan pengumuman terbaru"
+        description="Kegiatan dan pengumuman terbaru dari Kelurahan Walian."
+      />
+      <div class="shrink-0">
+        <Button href="/berita" variant="outline">Semua Berita</Button>
+      </div>
+    </div>
+
+    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+      {
+        berita.map((item) => (
+          <NewsCard
+            judul={item.data.judul}
+            tanggal={item.data.tanggal}
+            kategori={item.data.kategori}
+            ringkasan={item.data.ringkasan}
+            gambar={item.data.gambar}
+            penting={item.data.penting}
+            href={`/berita/${item.id}`}
+          />
+        ))
+      }
+    </div>
+  </Container>
+</section>

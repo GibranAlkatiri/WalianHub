@@ -1,0 +1,36 @@
+---
+// Section 4 Beranda: sekilas profil. Anchor #profil dipakai menu di Langkah 1.
+import type { CollectionEntry } from 'astro:content';
+import Container from '../ui/Container.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+import StatCard from '../ui/StatCard.astro';
+import Button from '../ui/Button.astro';
+import { formatAngka } from '../../lib/format';
+
+interface Props {
+  profil: CollectionEntry<'profil'>['data'];
+}
+
+const { profil } = Astro.props;
+const { penduduk } = profil;
+---
+
+<section id="profil" class="bg-sage-100 py-16 lg:py-24">
+  <Container class="grid items-center gap-10 lg:grid-cols-[2fr_3fr] lg:gap-16">
+    <div>
+      <SectionHeading overline="Sekilas profil" title="Mengenal Kelurahan Walian" />
+      <p class="mt-4 text-ink-muted">{profil.ringkasan}</p>
+      <p class="mt-3 text-sm text-ink-subtle">Sumber data: {penduduk.sumber}, {penduduk.tahun}</p>
+      <div class="mt-8">
+        <Button href="/profil" variant="outline">Lihat Profil Lengkap</Button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 lg:gap-6">
+      <StatCard ikon="users" label="Jumlah penduduk" angka={formatAngka(penduduk.jumlahJiwa)} satuan="jiwa" />
+      <StatCard ikon="house" label="Kepala keluarga" angka={formatAngka(penduduk.kepalaKeluarga)} />
+      <StatCard ikon="map" label="Lingkungan" angka={profil.lingkungan.length ? String(profil.lingkungan.length) : null} />
+      <StatCard ikon="land-plot" label="Luas wilayah" angka={formatAngka(profil.luasKm2)} satuan="km²" />
+    </div>
+  </Container>
+</section>

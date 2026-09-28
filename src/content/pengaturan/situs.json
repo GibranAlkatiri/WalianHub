@@ -1,0 +1,17 @@
+{
+  "namaKelurahan": "Kelurahan Walian",
+  "kecamatan": "Tomohon Selatan",
+  "kota": "Tomohon",
+  "provinsi": "Sulawesi Utara",
+  "alamat": "[Alamat kantor Kelurahan Walian], Kecamatan Tomohon Selatan, Kota Tomohon 95439",
+  "koordinat": { "lat": 1.29401, "lng": 124.84452 },
+  "telepon": "[Nomor telepon kantor]",
+  "email": "[Email resmi kelurahan]",
+  "jamLayanan": [{ "hari": "[Hari layanan]", "jam": "[Jam layanan]" }],
+  "mediaSosial": [],
+  "tautanPenting": [
+    { "label": "Pemerintah Kota Tomohon", "url": "https://tomohon.go.id" },
+    { "label": "LAPOR! (layanan pengaduan)", "url": "https://www.lapor.go.id" }
+  ],
+  "kredit": "KKT Angkatan 149 Universitas Sam Ratulangi"
+}

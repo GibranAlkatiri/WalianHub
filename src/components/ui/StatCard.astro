@@ -1,0 +1,31 @@
+---
+// Stat card: satu angka penting beserta labelnya.
+// Angka yang belum ada (null) tampil sebagai "Data menyusul".
+import Icon from './Icon.astro';
+
+interface Props {
+  angka: string | null;
+  label: string;
+  ikon: string;
+  satuan?: string;
+}
+
+const { angka, label, ikon, satuan } = Astro.props;
+---
+
+<div class="rounded-2xl bg-white p-5 shadow-card lg:p-6">
+  <span class="grid size-11 place-items-center rounded-full bg-sage-100 text-forest-600">
+    <Icon name={ikon} class="size-5" />
+  </span>
+  {
+    angka ? (
+      <p class="mt-4 text-3xl font-bold text-ink lg:text-4xl">
+        {angka}
+        {satuan && <span class="text-lg font-semibold text-ink-muted"> {satuan}</span>}
+      </p>
+    ) : (
+      <p class="mt-4 text-xl font-semibold text-ink-subtle">Data menyusul</p>
+    )
+  }
+  <p class="mt-1 text-base text-ink-muted">{label}</p>
+</div>

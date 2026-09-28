@@ -1,0 +1,16 @@
+# Hasil build
+dist/
+.astro/
+
+# Paket
+node_modules/
+
+# Log
+npm-debug.log*
+
+# Pengaturan lokal
+.env
+.env.*
+.DS_Store
+.vscode/
+.idea/

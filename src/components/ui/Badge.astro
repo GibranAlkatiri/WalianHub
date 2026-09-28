@@ -1,0 +1,24 @@
+---
+// Label kecil berbentuk pil.
+import Icon from './Icon.astro';
+
+interface Props {
+  variant?: 'kategori' | 'pengumuman' | 'penting' | 'chip';
+  icon?: string;
+  class?: string;
+}
+
+const { variant = 'kategori', icon, class: kelas } = Astro.props;
+
+const gaya = {
+  kategori: 'bg-sage-100 text-forest-900',
+  pengumuman: 'bg-sun-100 text-sun-700',
+  penting: 'bg-danger text-white',
+  chip: 'bg-forest-600 text-white',
+};
+---
+
+<span class:list={['inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold', gaya[variant], kelas]}>
+  {icon && <Icon name={icon} class="size-4" />}
+  <slot />
+</span>

@@ -1,0 +1,35 @@
+---
+// Section 5 Beranda: layanan yang paling sering dicari. Anchor #layanan.
+import { getCollection } from 'astro:content';
+import Container from '../ui/Container.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+import ServiceCard from '../ui/ServiceCard.astro';
+import Button from '../ui/Button.astro';
+
+const layanan = (await getCollection('layanan', ({ data }) => data.unggulan))
+  .sort((a, b) => a.data.urutan - b.data.urutan)
+  .slice(0, 4);
+---
+
+<section id="layanan" class="py-16 lg:py-24">
+  <Container>
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+      <SectionHeading
+        overline="Layanan"
+        title="Layanan kelurahan"
+        description="Persyaratan dan alur pengurusan surat yang paling sering dibutuhkan warga."
+      />
+      <div class="shrink-0">
+        <Button href="/layanan" variant="outline">Semua Layanan</Button>
+      </div>
+    </div>
+
+    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+      {
+        layanan.map((item) => (
+          <ServiceCard judul={item.data.judul} ringkasan={item.data.ringkasan} ikon={item.data.ikon} href={`/layanan#${item.id}`} />
+        ))
+      }
+    </div>
+  </Container>
+</section>

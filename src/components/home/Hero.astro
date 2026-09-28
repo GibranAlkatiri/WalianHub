@@ -1,0 +1,49 @@
+---
+// Section 1 Beranda: gambar selebar layar sebagai latar, dengan judul di atasnya.
+// Header melayang di atas gambar, teks putih rata kiri.
+import type { CollectionEntry } from 'astro:content';
+import Container from '../ui/Container.astro';
+import SmartImage from '../ui/SmartImage.astro';
+import Badge from '../ui/Badge.astro';
+import Button from '../ui/Button.astro';
+import { SIAP_DIINDEKS } from '../../lib/konfigurasi';
+
+interface Props {
+  hero: CollectionEntry<'beranda'>['data']['hero'];
+}
+
+const { hero } = Astro.props;
+const tanpaFoto = !hero.gambar?.trim();
+---
+
+<section aria-labelledby="judul-hero" class="relative isolate flex min-h-[560px] items-center overflow-hidden lg:min-h-[min(720px,90vh)]">
+  {/* Latar: gambar, lapisan gelap, lalu label foto di paling atas agar tidak ikut tergelapkan */}
+  <div data-foto-wadah class="absolute inset-0 -z-10">
+    <SmartImage src={hero.gambar} alt="Pemandangan Kelurahan Walian" fill priority showLabel={false} />
+    {/* Lapisan gelap agar teks putih terbaca: rata di HP, bergradasi dari kiri di desktop */}
+    <div
+      aria-hidden="true"
+      class="absolute inset-0 bg-forest-900/70 lg:bg-transparent lg:bg-linear-to-r lg:from-forest-900/85 lg:via-forest-900/60 lg:via-50% lg:to-transparent lg:to-70%"
+    >
+    </div>
+    <span
+      data-label-foto
+      hidden={!tanpaFoto}
+      class="absolute right-4 bottom-16 rounded-full bg-ink/80 px-3 py-1 text-sm font-semibold text-white lg:right-8 lg:bottom-20"
+    >
+      Foto belum tersedia
+    </span>
+  </div>
+
+  {/* Jarak atas lebih besar selama pita "Versi pratinjau" tampil di atas header */}
+  <Container class={SIAP_DIINDEKS ? 'pt-28 pb-28 lg:pt-32 lg:pb-36' : 'pt-36 pb-28 lg:pt-40 lg:pb-36'}>
+    <Badge variant="chip" icon="map-pin">{hero.label}</Badge>
+    <h1 id="judul-hero" class="mt-5 max-w-2xl text-4xl leading-[1.1] font-extrabold text-balance text-white lg:text-6xl">
+      {hero.judul}
+    </h1>
+    <p class="mt-5 max-w-xl text-lg text-white/90 lg:text-xl">{hero.subjudul}</p>
+    <div class="mt-8">
+      <Button href={hero.tombol.tautan} variant="light">{hero.tombol.teks}</Button>
+    </div>
+  </Container>
+</section>

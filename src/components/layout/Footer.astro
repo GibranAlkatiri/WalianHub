@@ -1,0 +1,145 @@
+---
+// Footer yang tampil di semua halaman.
+import type { CollectionEntry } from 'astro:content';
+import Logo from './Logo.astro';
+import Icon from '../ui/Icon.astro';
+import { menuUtama } from '../../lib/navigasi';
+import { url } from '../../lib/url';
+import { tautanWhatsapp } from '../../lib/format';
+
+interface Props {
+  situs: CollectionEntry<'situs'>['data'];
+}
+
+const { situs } = Astro.props;
+const tahun = new Date().getFullYear();
+
+// Placeholder seperti "[Nomor telepon kantor]" ditampilkan sebagai teks biasa, bukan tautan.
+const bisaDitelepon = situs.telepon && /^[+\d\s-]+$/.test(situs.telepon);
+const bisaDiemail = situs.email?.includes('@');
+---
+
+<footer class="bg-forest-800 text-sage-200">
+  <div class="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-4 lg:px-8 lg:py-16">
+    <div>
+      <Logo nama={situs.namaKelurahan} keterangan={`Kota ${situs.kota}`} terang />
+      <p class="mt-4 text-base">
+        {situs.namaKelurahan}, Kecamatan {situs.kecamatan}, Kota {situs.kota}, {situs.provinsi}.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-bold text-white">Menu</h2>
+      <ul class="mt-4 space-y-2 text-base">
+        {
+          menuUtama.map((item) => (
+            <li>
+              <a href={url(item.href)} class="text-white/90 underline-offset-4 hover:underline">
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-base font-bold text-white">Kontak</h2>
+      <ul class="mt-4 space-y-3 text-base">
+        <li class="flex gap-3">
+          <Icon name="map-pin" class="mt-1 size-5 shrink-0" />
+          <span>{situs.alamat}</span>
+        </li>
+        {
+          situs.telepon && (
+            <li class="flex gap-3">
+              <Icon name="phone" class="mt-1 size-5 shrink-0" />
+              {bisaDitelepon ? (
+                <a href={`tel:${situs.telepon.replace(/\s/g, '')}`} class="text-white/90 hover:underline">
+                  {situs.telepon}
+                </a>
+              ) : (
+                <span>{situs.telepon}</span>
+              )}
+            </li>
+          )
+        }
+        {
+          situs.whatsapp && (
+            <li class="flex gap-3">
+              <Icon name="whatsapp" class="mt-1 size-5 shrink-0" />
+              <a href={tautanWhatsapp(situs.whatsapp)} target="_blank" rel="noopener" class="text-white/90 hover:underline">
+                Chat WhatsApp
+              </a>
+            </li>
+          )
+        }
+        {
+          situs.email && (
+            <li class="flex gap-3">
+              <Icon name="mail" class="mt-1 size-5 shrink-0" />
+              {bisaDiemail ? (
+                <a href={`mailto:${situs.email}`} class="break-all text-white/90 hover:underline">
+                  {situs.email}
+                </a>
+              ) : (
+                <span>{situs.email}</span>
+              )}
+            </li>
+          )
+        }
+        {
+          situs.jamLayanan.map((jam) => (
+            <li class="flex gap-3">
+              <Icon name="clock" class="mt-1 size-5 shrink-0" />
+              <span>
+                {jam.hari}: {jam.jam}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-base font-bold text-white">Tautan penting</h2>
+      <ul class="mt-4 space-y-2 text-base">
+        {
+          situs.tautanPenting.map((tautan) => (
+            <li>
+              <a href={tautan.url} target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 text-white/90 hover:underline">
+                {tautan.label}
+                <Icon name="external-link" class="size-4" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      {
+        situs.mediaSosial.length > 0 && (
+          <ul class="mt-6 flex gap-2">
+            {situs.mediaSosial.map((media) => (
+              <li>
+                <a
+                  href={media.url}
+                  target="_blank"
+                  rel="noopener"
+                  class="grid size-11 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
+                >
+                  <Icon name={media.platform} class="size-5" label={media.platform} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+  </div>
+
+  <div class="border-t border-white/15">
+    <div class="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-5 text-sm sm:flex-row sm:justify-between lg:px-8">
+      <p>© {tahun} {situs.namaKelurahan}</p>
+      <p>Dikembangkan oleh {situs.kredit}</p>
+    </div>
+  </div>
+</footer>

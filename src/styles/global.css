@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+/*
+  Design token Website Kelurahan Walian.
+  Setiap token otomatis menjadi kelas Tailwind, misalnya bg-forest-600, text-ink, shadow-card.
+*/
+@theme {
+  /* Font */
+  --font-sans: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
+
+  /* Warna utama (hijau) */
+  --color-forest-600: #45742f;
+  --color-forest-700: #3a6327;
+  --color-forest-800: #2f4f22;
+  --color-forest-900: #1f3316;
+  --color-sage-600: #708564;
+  --color-sage-300: #a8bd85;
+  --color-sage-200: #d8e4c2;
+  --color-sage-100: #eef3df;
+
+  /* Latar dan teks */
+  --color-cream-50: #f9f9f1;
+  --color-ink: #1f2a17;
+  --color-ink-muted: #4b5645;
+  --color-ink-subtle: #6b7563;
+  --color-line: #d9dfcb;
+  --color-line-strong: #748466;
+
+  /* Aksen dan status */
+  --color-sun-400: #e8a33d;
+  --color-sun-100: #fbf1c2;
+  --color-sun-700: #8a4b08;
+  --color-danger: #b42318;
+
+  /* Bayangan */
+  --shadow-card: 0 8px 24px rgb(31 51 22 / 0.08);
+  --shadow-float: 0 12px 32px rgb(31 51 22 / 0.14);
+}
+
+@layer base {
+  html {
+    /* Jarak saat menggulir ke anchor, supaya judul section tidak tertutup header sticky */
+    scroll-padding-top: 6rem;
+  }
+
+  body {
+    @apply bg-cream-50 font-sans text-ink antialiased;
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  /* Teks isi 16px di HP, 18px mulai layar desktop */
+  @media (width >= 64rem) {
+    body {
+      font-size: 1.125rem;
+    }
+  }
+
+  /* Focus ring untuk pengguna keyboard */
+  :focus-visible {
+    outline: 3px solid var(--color-forest-600);
+    outline-offset: 2px;
+  }
+
+  /* Di latar gelap (footer), focus ring memakai sun-400 agar tetap terlihat */
+  footer :focus-visible {
+    outline-color: var(--color-sun-400);
+  }
+}
+
+/* Gulir halus hanya jika pengunjung tidak meminta animasi dikurangi */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
