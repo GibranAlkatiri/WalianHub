@@ -4,6 +4,7 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { namaKategori } from './lib/kategori-berita';
 
 /** Angka yang belum diketahui diisi null, lalu tampil sebagai "Data menyusul". */
 const angkaAtauKosong = z.number().nonnegative().nullable();
@@ -131,7 +132,7 @@ const berita = defineCollection({
   schema: z.object({
     judul: z.string(),
     tanggal: z.coerce.date(),
-    kategori: z.enum(['Pengumuman', 'Kegiatan']),
+    kategori: z.enum(namaKategori),
     ringkasan: z.string().max(200),
     gambar: z.string().optional(),
     keteranganGambar: z.string().optional(),

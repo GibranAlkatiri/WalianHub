@@ -1,14 +1,14 @@
 ---
-// Section 3 Beranda: tiga berita terbaru yang bukan draf. Anchor #berita.
-import { getCollection } from 'astro:content';
+// Section 3 Beranda: 1 berita terbaru tampil besar, lalu 3 berita berikutnya dalam daftar ringkas. Anchor #berita.
 import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
 import NewsCard from '../ui/NewsCard.astro';
+import NewsListItem from '../ui/NewsListItem.astro';
 import Button from '../ui/Button.astro';
+import { ambilBeritaTerbit } from '../../lib/berita';
 
-const berita = (await getCollection('berita', ({ data }) => !data.draf))
-  .sort((a, b) => b.data.tanggal.getTime() - a.data.tanggal.getTime())
-  .slice(0, 3);
+const berita = (await ambilBeritaTerbit()).slice(0, 4);
+const [utama, ...lainnya] = berita;
 ---
 
 <section id="berita" class="py-12 sm:py-16 lg:pt-28 lg:pb-24">
@@ -24,20 +24,40 @@ const berita = (await getCollection('berita', ({ data }) => !data.draf))
       </div>
     </div>
 
-    <div class="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-6">
-      {
-        berita.map((item) => (
-          <NewsCard
-            judul={item.data.judul}
-            tanggal={item.data.tanggal}
-            kategori={item.data.kategori}
-            ringkasan={item.data.ringkasan}
-            gambar={item.data.gambar}
-            penting={item.data.penting}
-            href={`/berita/${item.id}`}
-          />
-        ))
-      }
-    </div>
+    {
+      utama ? (
+        <div class="mt-8 grid gap-4 sm:mt-10 lg:grid-cols-5 lg:gap-6">
+          <div class:list={[lainnya.length > 0 ? 'lg:col-span-3' : 'lg:col-span-5']}>
+            <NewsCard
+              judul={utama.data.judul}
+              tanggal={utama.data.tanggal}
+              kategori={utama.data.kategori}
+              ringkasan={utama.data.ringkasan}
+              gambar={utama.data.gambar}
+              penting={utama.data.penting}
+              href={`/berita/${utama.id}`}
+              utama
+            />
+          </div>
+          {lainnya.length > 0 && (
+            <ul role="list" class="flex flex-col divide-y divide-line overflow-hidden rounded-2xl bg-white shadow-card lg:col-span-2">
+              {lainnya.map((item) => (
+                <li class="flex-1">
+                  <NewsListItem
+                    judul={item.data.judul}
+                    tanggal={item.data.tanggal}
+                    kategori={item.data.kategori}
+                    penting={item.data.penting}
+                    href={`/berita/${item.id}`}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : (
+        <div class="mt-8 rounded-2xl bg-white p-8 text-center text-ink-muted shadow-card sm:mt-10">Belum ada berita.</div>
+      )
+    }
   </Container>
 </section>

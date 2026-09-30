@@ -19,7 +19,10 @@ interface Props {
 const { namaKelurahan, kota, transparan = false } = Astro.props;
 
 const halamanIni = Astro.url.pathname.replace(/\/$/, '');
-const aktif = (href: string) => url(href).replace(/\/$/, '') === halamanIni;
+const aktif = (href: string) => {
+  const tujuan = url(href).replace(/\/$/, '');
+  return tujuan === halamanIni || (href !== '/' && halamanIni.startsWith(`${tujuan}/`));
+};
 ---
 
 <header

@@ -1,0 +1,143 @@
+---
+// Isi halaman daftar Berita: kepala halaman, filter kategori, grid, dan nomor halaman.
+import type { CollectionEntry } from 'astro:content';
+import Container from '../ui/Container.astro';
+import NewsCard from '../ui/NewsCard.astro';
+import Icon from '../ui/Icon.astro';
+import { url } from '../../lib/url';
+import { alamatDaftarBerita } from '../../lib/berita';
+import { namaKategori, slugKategori, type KategoriBerita } from '../../lib/kategori-berita';
+
+interface Props {
+  berita: CollectionEntry<'berita'>[];
+  kategoriAktif?: KategoriBerita;
+  halaman: number;
+  totalHalaman: number;
+}
+
+const { berita, kategoriAktif, halaman, totalHalaman } = Astro.props;
+
+const nomorHalaman = Array.from({ length: totalHalaman }, (_, i) => i + 1);
+---
+
+<section class="pt-8 pb-12 sm:pt-10 sm:pb-16 lg:pt-12 lg:pb-20">
+  <Container>
+    <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-sm text-ink-subtle">
+      <a href={url('/')} class="hover:text-forest-600 hover:underline">Beranda</a>
+      <span aria-hidden="true">/</span>
+      {
+        kategoriAktif ? (
+          <a href={url('/berita')} class="hover:text-forest-600 hover:underline">
+            Berita
+          </a>
+        ) : (
+          <span class="text-ink">Berita</span>
+        )
+      }
+      {
+        kategoriAktif && (
+          <>
+            <span aria-hidden="true">/</span>
+            <span class="text-ink">{kategoriAktif}</span>
+          </>
+        )
+      }
+    </nav>
+    <h1 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl">Berita dan Pengumuman</h1>
+    <p class="mt-4 max-w-2xl text-ink-muted">Kabar kegiatan, pengumuman, dan pembangunan dari Kelurahan Walian.</p>
+
+    <nav aria-label="Kategori berita">
+      <ul class="mt-6 flex flex-wrap gap-2">
+        <li>
+          <a
+            href={url(alamatDaftarBerita())}
+            aria-current={!kategoriAktif ? 'page' : undefined}
+            class:list={[
+              'inline-flex h-10 items-center rounded-full px-4 text-sm font-semibold transition-colors',
+              !kategoriAktif ? 'bg-forest-600 text-white' : 'bg-sage-100 text-forest-900 hover:bg-sage-200',
+            ]}
+          >
+            Semua
+          </a>
+        </li>
+        {
+          namaKategori.map((nama) => (
+            <li>
+              <a
+                href={url(alamatDaftarBerita(slugKategori(nama)))}
+                aria-current={kategoriAktif === nama ? 'page' : undefined}
+                class:list={[
+                  'inline-flex h-10 items-center rounded-full px-4 text-sm font-semibold transition-colors',
+                  kategoriAktif === nama ? 'bg-forest-600 text-white' : 'bg-sage-100 text-forest-900 hover:bg-sage-200',
+                ]}
+              >
+                {nama}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </Container>
+</section>
+
+<Container class="pb-16 lg:pb-24">
+  {
+    berita.length > 0 ? (
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+        {berita.map((item) => (
+          <NewsCard
+            judul={item.data.judul}
+            tanggal={item.data.tanggal}
+            kategori={item.data.kategori}
+            ringkasan={item.data.ringkasan}
+            gambar={item.data.gambar}
+            penting={item.data.penting}
+            href={`/berita/${item.id}`}
+          />
+        ))}
+      </div>
+    ) : (
+      <div class="rounded-2xl bg-white p-8 text-center text-ink-muted shadow-card">Belum ada berita di kategori ini.</div>
+    )
+  }
+
+  {
+    totalHalaman > 1 && (
+      <nav aria-label="Halaman daftar berita" class="mt-10 flex flex-wrap items-center justify-center gap-2">
+        {halaman > 1 && (
+          <a
+            href={url(alamatDaftarBerita(kategoriAktif && slugKategori(kategoriAktif), halaman - 1))}
+            rel="prev"
+            class="inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 font-semibold text-ink shadow-card hover:bg-sage-100"
+          >
+            <Icon name="arrow-left" class="size-4" />
+            Sebelumnya
+          </a>
+        )}
+        {nomorHalaman.map((nomor) => (
+          <a
+            href={url(alamatDaftarBerita(kategoriAktif && slugKategori(kategoriAktif), nomor))}
+            aria-current={nomor === halaman ? 'page' : undefined}
+            class:list={[
+              'grid size-11 place-items-center rounded-full font-semibold',
+              nomor === halaman ? 'bg-forest-600 text-white' : 'bg-white text-ink shadow-card hover:bg-sage-100',
+            ]}
+          >
+            {nomor}
+          </a>
+        ))}
+        {halaman < totalHalaman && (
+          <a
+            href={url(alamatDaftarBerita(kategoriAktif && slugKategori(kategoriAktif), halaman + 1))}
+            rel="next"
+            class="inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 font-semibold text-ink shadow-card hover:bg-sage-100"
+          >
+            Berikutnya
+            <Icon name="arrow-right" class="size-4" />
+          </a>
+        )}
+      </nav>
+    )
+  }
+</Container>
