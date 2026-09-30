@@ -1,0 +1,43 @@
+---
+// Kepala halaman Profil: breadcrumb, judul, ringkasan, dan tautan pil ke setiap section.
+import Container from '../ui/Container.astro';
+import { url } from '../../lib/url';
+
+interface Props {
+  ringkasan: string;
+}
+
+const { ringkasan } = Astro.props;
+
+const tautanSection = [
+  { label: 'Visi dan Misi', anchor: '#visi-misi' },
+  { label: 'Wilayah', anchor: '#wilayah' },
+  { label: 'Penduduk', anchor: '#penduduk' },
+];
+---
+
+<section class="pt-8 pb-12 sm:pt-10 sm:pb-16 lg:pt-12 lg:pb-20">
+  <Container>
+    <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-sm text-ink-subtle">
+      <a href={url('/')} class="hover:text-forest-600 hover:underline">Beranda</a>
+      <span aria-hidden="true">/</span>
+      <span class="text-ink">Profil</span>
+    </nav>
+    <h1 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl lg:text-5xl">Profil Kelurahan Walian</h1>
+    <p class="mt-4 max-w-2xl text-ink-muted">{ringkasan}</p>
+    <ul class="mt-6 flex flex-wrap gap-2">
+      {
+        tautanSection.map((item) => (
+          <li>
+            <a
+              href={url(item.anchor)}
+              class="inline-flex h-10 items-center rounded-full bg-sage-100 px-4 text-sm font-semibold text-forest-900 transition-colors hover:bg-sage-200"
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </Container>
+</section>

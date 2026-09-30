@@ -7,9 +7,10 @@ import { HALAMAN_PENDUKUNG_SIAP } from './konfigurasi';
 export const tujuan = (halaman: string, anchor: string) => (HALAMAN_PENDUKUNG_SIAP ? halaman : `/#${anchor}`);
 
 // Menu utama di header, menu HP, dan footer.
+// Profil sudah menjadi halaman sendiri. Menu lain masih menggulir ke section di Beranda sampai halamannya siap.
 export const menuUtama = [
   { label: 'Beranda', href: '/' },
-  { label: 'Profil', href: tujuan('/profil', 'profil') },
+  { label: 'Profil', href: '/profil' },
   { label: 'Layanan', href: tujuan('/layanan', 'layanan') },
   { label: 'Wisata & Potensi', href: tujuan('/wisata', 'wisata') },
   { label: 'Berita', href: tujuan('/berita', 'berita') },

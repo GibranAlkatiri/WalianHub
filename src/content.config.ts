@@ -49,17 +49,9 @@ const beranda = defineCollection({
       label: z.string(),
       judul: z.string(),
       subjudul: z.string(),
-      tombol: z.object({ teks: z.string(), tautan: z.string() }),
       gambar: z.string().optional(),
     }),
     aksesCepat: z.array(z.object({ label: z.string(), ikon: z.string(), tautan: z.string() })).max(3),
-    sambutan: z.object({
-      judul: z.string(),
-      isi: z.string(),
-      nama: z.string(),
-      jabatan: z.string(),
-      foto: z.string().optional(),
-    }),
   }),
 });
 
@@ -67,6 +59,15 @@ const profil = defineCollection({
   loader: glob({ pattern: 'profil.json', base: './src/content/pengaturan' }),
   schema: z.object({
     ringkasan: z.string(),
+    visi: z.string(),
+    misi: z.array(z.string()),
+    batasWilayah: z.object({
+      utara: z.string(),
+      selatan: z.string(),
+      timur: z.string(),
+      barat: z.string(),
+    }),
+    petaWilayah: z.string().optional(),
     luasKm2: angkaAtauKosong,
     lingkungan: z.array(z.object({ nama: z.string(), kepalaLingkungan: z.string() })).default([]),
     penduduk: z.object({
@@ -77,6 +78,7 @@ const profil = defineCollection({
       tahun: z.string(),
       sumber: z.string(),
     }),
+    diperbarui: z.coerce.date(),
   }),
 });
 

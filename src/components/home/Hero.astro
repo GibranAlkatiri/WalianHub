@@ -5,7 +5,6 @@ import type { CollectionEntry } from 'astro:content';
 import Container from '../ui/Container.astro';
 import SmartImage from '../ui/SmartImage.astro';
 import Badge from '../ui/Badge.astro';
-import Button from '../ui/Button.astro';
 import { SIAP_DIINDEKS } from '../../lib/konfigurasi';
 
 interface Props {
@@ -42,8 +41,5 @@ const tanpaFoto = !hero.gambar?.trim();
       {hero.judul}
     </h1>
     <p class="mt-4 max-w-xl text-base text-white/90 sm:mt-5 sm:text-lg lg:text-xl">{hero.subjudul}</p>
-    <div class="mt-8">
-      <Button href={hero.tombol.tautan} variant="light">{hero.tombol.teks}</Button>
-    </div>
   </Container>
 </section>

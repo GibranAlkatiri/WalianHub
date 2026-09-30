@@ -1,0 +1,62 @@
+---
+// Section Wilayah pada halaman Profil.
+import Container from '../ui/Container.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+import StatCard from '../ui/StatCard.astro';
+import SmartImage from '../ui/SmartImage.astro';
+import Badge from '../ui/Badge.astro';
+import { formatAngka } from '../../lib/format';
+
+interface Props {
+  batasWilayah: { utara: string; selatan: string; timur: string; barat: string };
+  luasKm2: number | null;
+  lingkungan: { nama: string; kepalaLingkungan: string }[];
+  petaWilayah?: string;
+}
+
+const { batasWilayah, luasKm2, lingkungan, petaWilayah } = Astro.props;
+const batas = [
+  { label: 'Utara', isi: batasWilayah.utara },
+  { label: 'Selatan', isi: batasWilayah.selatan },
+  { label: 'Timur', isi: batasWilayah.timur },
+  { label: 'Barat', isi: batasWilayah.barat },
+];
+---
+
+<section id="wilayah" class="py-12 sm:py-16 lg:py-24">
+  <Container class="grid gap-10 lg:grid-cols-2 lg:gap-16">
+    <div>
+      <SectionHeading overline="Wilayah" title="Batas dan luas wilayah" />
+      <div class="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
+        {
+          batas.map((item) => (
+            <div class="rounded-2xl bg-white p-4 shadow-card">
+              <p class="text-sm font-semibold text-ink-subtle">{item.label}</p>
+              <p class="mt-1 font-semibold text-ink">{item.isi}</p>
+            </div>
+          ))
+        }
+      </div>
+      <div class="mt-4">
+        <StatCard ikon="land-plot" label="Luas wilayah" angka={formatAngka(luasKm2)} satuan="km²" />
+      </div>
+      <div class="mt-6">
+        <p class="font-semibold text-ink">Lingkungan</p>
+        {
+          lingkungan.length > 0 ? (
+            <ul class="mt-2 flex flex-wrap gap-2">
+              {lingkungan.map((item) => (
+                <li>
+                  <Badge>{item.nama}</Badge>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="mt-2 text-ink-muted">Daftar lingkungan menyusul.</p>
+          )
+        }
+      </div>
+    </div>
+    <SmartImage src={petaWilayah} alt="Peta wilayah Kelurahan Walian" class="aspect-[4/3] rounded-2xl" />
+  </Container>
+</section>

@@ -1,0 +1,23 @@
+---
+// Halaman Profil: empat section, dari kepala halaman sampai keterangan pembaruan.
+import { getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Container from '../components/ui/Container.astro';
+import KepalaHalaman from '../components/profil/KepalaHalaman.astro';
+import VisiMisi from '../components/profil/VisiMisi.astro';
+import Wilayah from '../components/profil/Wilayah.astro';
+import Penduduk from '../components/profil/Penduduk.astro';
+import { formatTanggal } from '../lib/format';
+
+const profil = (await getEntry('profil', 'profil'))!.data;
+---
+
+<BaseLayout title="Profil" description="Profil, visi misi, wilayah, dan penduduk Kelurahan Walian.">
+  <KepalaHalaman ringkasan={profil.ringkasan} />
+  <VisiMisi visi={profil.visi} misi={profil.misi} />
+  <Wilayah batasWilayah={profil.batasWilayah} luasKm2={profil.luasKm2} lingkungan={profil.lingkungan} petaWilayah={profil.petaWilayah} />
+  <Penduduk penduduk={profil.penduduk} />
+  <Container>
+    <p class="py-8 text-center text-sm text-ink-subtle">Terakhir diperbarui: {formatTanggal(profil.diperbarui)}</p>
+  </Container>
+</BaseLayout>

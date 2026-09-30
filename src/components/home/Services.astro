@@ -1,5 +1,5 @@
 ---
-// Section 5 Beranda: layanan yang paling sering dicari. Anchor #layanan.
+// Section 4 Beranda: layanan yang paling sering dicari. Anchor #layanan.
 import { getCollection } from 'astro:content';
 import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
@@ -11,7 +11,7 @@ const layanan = (await getCollection('layanan', ({ data }) => data.unggulan))
   .slice(0, 4);
 ---
 
-<section id="layanan" class="py-12 sm:py-16 lg:py-24">
+<section id="layanan" class="bg-white py-12 sm:py-16 lg:py-24">
   <Container>
     <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
       <SectionHeading

@@ -3,19 +3,11 @@
     "label": "Kecamatan Tomohon Selatan · Kota Tomohon",
     "judul": "Selamat Datang di Kelurahan Walian",
     "subjudul": "Informasi resmi layanan, profil wilayah, dan wisata Kelurahan Walian.",
-    "tombol": { "teks": "Jelajahi Walian", "tautan": "#sambutan" },
     "gambar": ""
   },
   "aksesCepat": [
     { "label": "Syarat Surat", "ikon": "file-text", "tautan": "#layanan" },
     { "label": "Jam Layanan", "ikon": "clock", "tautan": "#kontak" },
     { "label": "Destinasi Wisata", "ikon": "mountain", "tautan": "#wisata" }
-  ],
-  "sambutan": {
-    "judul": "Selamat datang di website resmi Kelurahan Walian",
-    "isi": "[Kata sambutan Lurah Walian, 2–4 kalimat. Misalnya ucapan selamat datang, harapan agar website ini memudahkan warga mendapatkan informasi layanan, dan ajakan mengenal potensi serta wisata Walian.]",
-    "nama": "[Nama Lurah]",
-    "jabatan": "Lurah Walian",
-    "foto": ""
-  }
+  ]
 }
