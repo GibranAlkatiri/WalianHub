@@ -3,10 +3,10 @@
   "kecamatan": "Tomohon Selatan",
   "kota": "Tomohon",
   "provinsi": "Sulawesi Utara",
-  "alamat": "[Alamat kantor Kelurahan Walian], Kecamatan Tomohon Selatan, Kota Tomohon 95439",
-  "koordinat": { "lat": 1.29401, "lng": 124.84452 },
-  "telepon": "[Nomor telepon kantor]",
-  "email": "[Email resmi kelurahan]",
+  "alamat": "Lingkungan IV, Kelurahan Walian, Kecamatan Tomohon Selatan, Kota Tomohon 95439",
+  "koordinat": { "lat": 1.313138, "lng": 124.838766 },
+  "whatsapp": "6281356418736",
+  "email": "",
   "jamLayanan": {
     "jadwal": [
       { "hari": "Senin", "buka": "08.00", "tutup": "16.30", "istirahat": { "mulai": "12.00", "selesai": "13.00" } },

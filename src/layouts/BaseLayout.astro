@@ -13,7 +13,7 @@ interface Props {
   title?: string;
   /** Deskripsi untuk Google dan link preview. */
   description?: string;
-  /** Gambar link preview (JPG/PNG). Kosong berarti memakai default-og.png. */
+  /** Gambar link preview (JPG/PNG/WebP). Kosong berarti memakai default-og.png. */
   image?: string;
   /** true jika header melayang di atas hero (Beranda). */
   overlayHeader?: boolean;
@@ -56,8 +56,15 @@ const gambarPreview = new URL(url(image || '/images/default-og.png'), Astro.site
     <meta property="og:description" content={description} />
     <meta property="og:url" content={alamatHalaman} />
     <meta property="og:image" content={gambarPreview} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    {/* Ukuran hanya ditulis untuk default-og.png (1200 × 630), karena ukuran foto lain berbeda-beda */}
+    {
+      !image && (
+        <>
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+        </>
+      )
+    }
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body class="min-h-dvh">

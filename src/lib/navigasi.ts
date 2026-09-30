@@ -18,3 +18,6 @@ export const menuUtama = [
 
 /** Tujuan tombol "Hubungi Kami": section Kontak di Beranda. */
 export const tautanKontak = '/#kontak';
+
+/** Pesan pembuka otomatis saat pengunjung membuka chat WhatsApp kantor kelurahan. */
+export const pesanWhatsapp = 'Halo Kantor Kelurahan Walian, saya ingin bertanya tentang ';

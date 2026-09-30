@@ -1,72 +1,42 @@
 ---
-// Section 2 Beranda: kotak akses cepat yang menempel di batas bawah hero, tiga pintasan.
-// Tablet dan desktop: 3 pintasan sebaris, ikon di kiri tulisan.
-// HP: status jam layanan satu baris penuh di atas, 2 tombol lain di bawahnya, ikon di atas tulisan.
-// Item berjenis "status-layanan" menampilkan status kantor langsung (buka, istirahat, atau tutup) menurut waktu WITA.
-import type { CollectionEntry } from 'astro:content';
+// Section 2 Beranda: kotak status jam layanan yang menempel di batas bawah hero.
+// Menampilkan status kantor langsung (buka, istirahat, atau tutup) menurut waktu WITA,
+// dan menuju section Kontak yang berisi jadwal lengkap, peta, dan WhatsApp.
+// Kotak ini sengaja hanya berisi status, karena pintasan lain sudah ada di menu dan section Kontak.
 import Container from '../ui/Container.astro';
 import Icon from '../ui/Icon.astro';
 import { url } from '../../lib/url';
+import { tautanKontak } from '../../lib/navigasi';
 import type { DataJamLayanan } from '../../lib/jam-layanan';
 
 interface Props {
-  items: CollectionEntry<'beranda'>['data']['aksesCepat'];
   jamLayanan: DataJamLayanan;
 }
 
-const { items, jamLayanan } = Astro.props;
-const adaStatus = items.some((item) => item.jenis === 'status-layanan');
+const { jamLayanan } = Astro.props;
 ---
 
-<section aria-label="Akses cepat" class="relative z-10 -mt-14 lg:-mt-12">
+<section aria-label="Status layanan kantor" class="relative z-10 -mt-9">
   <Container>
-    <div class="rounded-3xl bg-sage-300 p-2.5 shadow-float sm:rounded-4xl sm:p-3 lg:p-4">
-      <ul
-        role="list"
-        class:list={[
-          'grid gap-2 md:flex md:gap-3 lg:gap-0 lg:rounded-full lg:bg-white lg:p-1.5 lg:[&>li+li]:border-l lg:[&>li+li]:border-line',
-          adaStatus ? 'grid-cols-2' : 'grid-cols-3',
-        ]}
+    <div class="mx-auto max-w-md rounded-full bg-sage-300 p-2.5 shadow-float sm:p-3">
+      <a
+        href={url(tautanKontak)}
+        data-status-layanan={JSON.stringify(jamLayanan)}
+        class="group/status flex items-center justify-center gap-3 rounded-full bg-white px-4 py-2.5 text-sm leading-tight font-semibold text-forest-900 transition-colors hover:bg-sage-100 lg:py-2 lg:text-base"
       >
-        {
-          items.map((item) =>
-            item.jenis === 'status-layanan' ? (
-              <li class="col-span-2 order-first md:order-none md:flex-1">
-                <a
-                  href={url(item.tautan)}
-                  data-status-layanan={JSON.stringify(jamLayanan)}
-                  class="group/status flex h-full flex-row items-center justify-center gap-3 rounded-2xl bg-white p-2.5 text-center text-sm leading-tight font-semibold text-forest-900 transition-colors hover:bg-sage-100 md:justify-start md:text-left lg:rounded-full lg:px-4 lg:py-2 lg:text-base"
-                >
-                  <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600 lg:size-9">
-                    {/* Sebelum skrip berjalan: ikon jam. Setelah itu: lampu status. */}
-                    <Icon name={item.ikon} class="size-4 group-data-[status]/status:hidden lg:size-5" />
-                    <span class="relative hidden size-3 group-data-[status]/status:block" aria-hidden="true">
-                      <span class="absolute inset-0 hidden animate-ping rounded-full bg-lampu-buka opacity-75 group-data-[status=buka]/status:block motion-reduce:animate-none" />
-                      <span class="relative block size-3 rounded-full group-data-[status=buka]/status:bg-lampu-buka group-data-[status=istirahat]/status:bg-lampu-istirahat group-data-[status=tutup]/status:bg-lampu-tutup" />
-                    </span>
-                  </span>
-                  <span>
-                    <span class="sr-only" data-status-pembaca />
-                    <span data-status-teks>{item.label}</span>
-                  </span>
-                </a>
-              </li>
-            ) : (
-              <li class="md:flex-1">
-                <a
-                  href={url(item.tautan)}
-                  class="flex h-full flex-col items-center justify-center gap-1.5 rounded-2xl bg-white p-2.5 text-center text-sm leading-tight font-semibold text-forest-900 transition-colors hover:bg-sage-100 md:flex-row md:justify-start md:gap-3 md:text-left lg:rounded-full lg:px-4 lg:py-2 lg:text-base"
-                >
-                  <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600 lg:size-9">
-                    <Icon name={item.ikon} class="size-4 lg:size-5" />
-                  </span>
-                  {item.label}
-                </a>
-              </li>
-            ),
-          )
-        }
-      </ul>
+        <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600 lg:size-9">
+          {/* Sebelum skrip berjalan: ikon jam. Setelah itu: lampu status. */}
+          <Icon name="clock" class="size-4 group-data-[status]/status:hidden lg:size-5" />
+          <span class="relative hidden size-3 group-data-[status]/status:block" aria-hidden="true">
+            <span class="absolute inset-0 hidden animate-ping rounded-full bg-lampu-buka opacity-75 group-data-[status=buka]/status:block motion-reduce:animate-none" />
+            <span class="relative block size-3 rounded-full group-data-[status=buka]/status:bg-lampu-buka group-data-[status=istirahat]/status:bg-lampu-istirahat group-data-[status=tutup]/status:bg-lampu-tutup" />
+          </span>
+        </span>
+        <span>
+          <span class="sr-only" data-status-pembaca />
+          <span data-status-teks>Jam Layanan</span>
+        </span>
+      </a>
     </div>
   </Container>
 </section>
@@ -74,11 +44,12 @@ const adaStatus = items.some((item) => item.jenis === 'status-layanan');
 <script>
   import { statusLayanan, type DataJamLayanan, type StatusLayanan } from '../../lib/jam-layanan';
 
-  // Teks tambahan untuk pembaca layar, karena istirahat hanya ditandai warna lampu.
+  // Teks tambahan untuk pembaca layar, karena buka dan istirahat hanya dibedakan lewat warna lampu.
+  // Status tutup sudah jelas dari tulisannya ("Kantor tutup"), jadi tidak perlu teks tambahan.
   const teksPembaca: Record<StatusLayanan, string> = {
     buka: 'Kantor sedang buka. ',
     istirahat: 'Kantor sedang istirahat, tetap bisa didatangi. ',
-    tutup: 'Kantor kelurahan: ',
+    tutup: '',
   };
 
   function perbarui() {

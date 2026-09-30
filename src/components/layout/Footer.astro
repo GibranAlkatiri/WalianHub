@@ -3,9 +3,11 @@
 import type { CollectionEntry } from 'astro:content';
 import Logo from './Logo.astro';
 import Icon from '../ui/Icon.astro';
-import { menuUtama } from '../../lib/navigasi';
+import { menuUtama, pesanWhatsapp } from '../../lib/navigasi';
 import { url } from '../../lib/url';
 import { ringkasJadwal } from '../../lib/jam-layanan';
+import { formatNomorWhatsapp, tautanWhatsapp } from '../../lib/format';
+import Button from '../ui/Button.astro';
 
 interface Props {
   situs: CollectionEntry<'situs'>['data'];
@@ -14,8 +16,7 @@ interface Props {
 const { situs } = Astro.props;
 const tahun = new Date().getFullYear();
 
-// Placeholder seperti "[Nomor telepon kantor]" ditampilkan sebagai teks biasa, bukan tautan.
-const bisaDitelepon = situs.telepon && /^[+\d\s-]+$/.test(situs.telepon);
+// Email yang belum valid (misalnya placeholder) ditampilkan sebagai teks biasa, bukan tautan.
 const bisaDiemail = situs.email?.includes('@');
 ---
 
@@ -51,16 +52,15 @@ const bisaDiemail = situs.email?.includes('@');
           <span>{situs.alamat}</span>
         </li>
         {
-          situs.telepon && (
+          situs.whatsapp && (
             <li class="flex gap-3">
-              <Icon name="phone" class="mt-1 size-5 shrink-0" />
-              {bisaDitelepon ? (
-                <a href={`tel:${situs.telepon.replace(/\s/g, '')}`} class="text-white/90 hover:underline">
-                  {situs.telepon}
-                </a>
-              ) : (
-                <span>{situs.telepon}</span>
-              )}
+              <Icon name="whatsapp" class="mt-1 size-5 shrink-0" />
+              <div>
+                <span class="block">{formatNomorWhatsapp(situs.whatsapp)}</span>
+                <Button href={tautanWhatsapp(situs.whatsapp, pesanWhatsapp)} variant="light" size="sm" class="mt-3">
+                  Chat WhatsApp
+                </Button>
+              </div>
             </li>
           )
         }

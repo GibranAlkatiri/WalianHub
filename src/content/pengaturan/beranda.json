@@ -6,10 +6,5 @@
     "foto": [
       { "gambar": "/images/beranda/kantor-kelurahan-walian.webp", "keterangan": "Kantor Kelurahan Walian", "posisi": "tengah" }
     ]
-  },
-  "aksesCepat": [
-    { "label": "Syarat Surat", "ikon": "file-text", "tautan": "#layanan" },
-    { "label": "Jam Layanan", "ikon": "clock", "tautan": "#kontak", "jenis": "status-layanan" },
-    { "label": "Destinasi Wisata", "ikon": "mountain", "tautan": "#wisata" }
-  ]
+  }
 }

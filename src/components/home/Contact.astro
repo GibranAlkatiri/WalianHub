@@ -6,6 +6,8 @@ import SectionHeading from '../ui/SectionHeading.astro';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
 import { ringkasJadwal } from '../../lib/jam-layanan';
+import { formatNomorWhatsapp, tautanWhatsapp } from '../../lib/format';
+import { pesanWhatsapp } from '../../lib/navigasi';
 
 interface Props {
   situs: CollectionEntry<'situs'>['data'];
@@ -16,7 +18,8 @@ const { lat, lng } = situs.koordinat;
 
 // Alamat embed Google Maps tanpa API key, langsung ke halaman embed (tanpa pengalihan).
 const petaEmbed = `https://www.google.com/maps/embed?origin=mfe&pb=!1m3!2m1!1s${lat},${lng}!6i15`;
-const petaGoogle = situs.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+// Petunjuk arah langsung ke titik kantor. Jika googleMapsUrl diisi, link itu yang dipakai.
+const petunjukArah = situs.googleMapsUrl || `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 const lapor = situs.tautanPenting.find((tautan) => tautan.url.includes('lapor.go.id'));
 
 // Selama alamat kantor masih placeholder, titik peta hanya perkiraan wilayah Walian.
@@ -29,7 +32,7 @@ const titikPerkiraan = situs.alamat.includes('[');
       <SectionHeading
         overline="Kontak"
         title="Hubungi Kelurahan Walian"
-        description="Datang langsung ke kantor kelurahan, atau hubungi kami lewat telepon."
+        description="Datang langsung ke kantor kelurahan, atau hubungi kami lewat WhatsApp."
       />
 
       <ul class="mt-8 space-y-5">
@@ -49,14 +52,22 @@ const titikPerkiraan = situs.alamat.includes('[');
           </div>
         </li>
         {
-          situs.telepon && (
+          situs.whatsapp && (
             <li class="flex gap-4">
               <span class="grid size-11 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600">
-                <Icon name="phone" />
+                <Icon name="whatsapp" />
               </span>
               <div>
-                <p class="font-semibold text-ink">Telepon</p>
-                <p class="text-ink-muted">{situs.telepon}</p>
+                <p class="font-semibold text-ink">WhatsApp</p>
+                <a
+                  href={tautanWhatsapp(situs.whatsapp, pesanWhatsapp)}
+                  target="_blank"
+                  rel="noopener"
+                  class="font-semibold text-forest-600 underline underline-offset-4 hover:text-forest-700"
+                >
+                  <span class="sr-only">Chat WhatsApp </span>
+                  {formatNomorWhatsapp(situs.whatsapp)}
+                </a>
               </div>
             </li>
           )
@@ -92,7 +103,7 @@ const titikPerkiraan = situs.alamat.includes('[');
       </div>
       <div class="flex flex-wrap items-center justify-between gap-3">
         {titikPerkiraan && <p class="text-sm text-ink-subtle">Titik peta masih perkiraan wilayah Walian, menunggu titik lokasi kantor kelurahan.</p>}
-        <Button href={petaGoogle} variant="outline" iconRight="external-link">Buka di Google Maps</Button>
+        <Button href={petunjukArah} variant="outline" iconRight="external-link">Petunjuk Arah</Button>
       </div>
     </div>
   </Container>

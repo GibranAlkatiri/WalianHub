@@ -41,7 +41,7 @@ export function statusLayanan(data: DataJamLayanan, sekarang: Date): { status: S
   const hari = namaHari[(wita.getUTCDay() + 6) % 7];
   const menit = wita.getUTCHours() * 60 + wita.getUTCMinutes();
   const jadwal = data.jadwal.find((item) => item.hari === hari);
-  const tutup = { status: 'tutup', teks: 'Tutup' } as const;
+  const tutup = { status: 'tutup', teks: 'Kantor tutup' } as const;
 
   if (data.tanggalLibur.some((libur) => libur.tanggal === tanggal)) return tutup;
   if (!jadwal?.buka || !jadwal.tutup) return tutup;

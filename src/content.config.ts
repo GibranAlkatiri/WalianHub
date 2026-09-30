@@ -30,7 +30,9 @@ const situs = defineCollection({
     alamat: z.string(),
     koordinat: z.object({ lat: z.number(), lng: z.number() }),
     googleMapsUrl: z.string().optional(),
-    telepon: z.string().optional(),
+    /** Nomor WhatsApp kantor dengan kode negara, contoh 6281234567890. */
+    whatsapp: nomorWhatsapp.optional(),
+    /** Kosongkan jika belum ada. Selama kosong, email tidak ditampilkan. */
     email: z.string().optional(),
     jamLayanan: z.object({
       jadwal: z
@@ -84,17 +86,6 @@ const beranda = defineCollection({
         .max(5)
         .default([]),
     }),
-    aksesCepat: z
-      .array(
-        z.object({
-          label: z.string(),
-          ikon: z.string(),
-          tautan: z.string(),
-          /** "status-layanan" menampilkan status jam layanan langsung, bukan tulisan label. */
-          jenis: z.enum(['tautan', 'status-layanan']).default('tautan'),
-        }),
-      )
-      .max(3),
   }),
 });
 

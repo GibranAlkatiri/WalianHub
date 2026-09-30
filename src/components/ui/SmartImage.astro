@@ -13,8 +13,9 @@ interface Props {
   /** Posisi label "Foto belum tersedia". Bawaan: pojok kiri bawah. */
   labelClass?: string;
   /**
-   * false jika label ditampilkan sendiri oleh komponen induk (misalnya di hero, agar label
-   * berada di atas lapisan gelap). Induknya perlu atribut data-foto-wadah dan label data-label-foto.
+   * false jika gambar ini tidak menampilkan label "Foto belum tersedia" sendiri, misalnya latar hero.
+   * Jika induknya punya atribut data-foto-wadah dan label data-label-foto, label induk itu
+   * yang dimunculkan saat gambar gagal dimuat.
    */
   showLabel?: boolean;
   /** true jika gambar memenuhi seluruh elemen induknya, misalnya latar hero. */

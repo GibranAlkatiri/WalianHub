@@ -21,7 +21,7 @@ const gambarPreview = fotoPertama && /\.(jpe?g|png|webp)$/i.test(fotoPertama) ? 
 
 <BaseLayout overlayHeader image={gambarPreview}>
   <Hero hero={beranda.hero} />
-  <QuickAccess items={beranda.aksesCepat} jamLayanan={situs.jamLayanan} />
+  <QuickAccess jamLayanan={situs.jamLayanan} />
   <LatestNews />
   <Services />
   <FeaturedDestinations />
