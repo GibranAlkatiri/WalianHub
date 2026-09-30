@@ -40,6 +40,32 @@
   /* Bayangan */
   --shadow-card: 0 8px 24px rgb(31 51 22 / 0.08);
   --shadow-float: 0 12px 32px rgb(31 51 22 / 0.14);
+
+  /* Animasi hero: zoom pelan pada foto, dan teks yang muncul bertahap */
+  --animate-hero-zoom: hero-zoom 5s ease-out both;
+  --animate-hero-muncul-1: hero-muncul 0.8s ease-out both;
+  --animate-hero-muncul-2: hero-muncul 0.8s ease-out 150ms both;
+  --animate-hero-muncul-3: hero-muncul 0.8s ease-out 300ms both;
+
+  @keyframes hero-zoom {
+    from {
+      transform: scale(1.06);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes hero-muncul {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 @layer base {

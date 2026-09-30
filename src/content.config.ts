@@ -70,7 +70,19 @@ const beranda = defineCollection({
       label: z.string(),
       judul: z.string(),
       subjudul: z.string(),
-      gambar: z.string().optional(),
+      /** Foto latar hero, sesuai urutan. Lebih dari satu foto berganti otomatis. Kosong: gambar default. */
+      foto: z
+        .array(
+          z.object({
+            gambar: z.string(),
+            /** Isi foto, contoh "Kantor Kelurahan Walian". Tampil di pojok hero dan dibacakan screen reader. */
+            keterangan: z.string().min(1, 'Keterangan foto wajib diisi'),
+            /** Bagian foto yang tetap terlihat saat foto terpotong di layar sempit. */
+            posisi: z.enum(['kiri', 'tengah', 'kanan']).default('tengah'),
+          }),
+        )
+        .max(5)
+        .default([]),
     }),
     aksesCepat: z
       .array(

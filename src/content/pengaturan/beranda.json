@@ -3,7 +3,9 @@
     "label": "Kecamatan Tomohon Selatan · Kota Tomohon",
     "judul": "Selamat Datang di Kelurahan Walian",
     "subjudul": "Informasi resmi layanan, profil wilayah, dan wisata Kelurahan Walian.",
-    "gambar": ""
+    "foto": [
+      { "gambar": "/images/beranda/kantor-kelurahan-walian.webp", "keterangan": "Kantor Kelurahan Walian", "posisi": "tengah" }
+    ]
   },
   "aksesCepat": [
     { "label": "Syarat Surat", "ikon": "file-text", "tautan": "#layanan" },
