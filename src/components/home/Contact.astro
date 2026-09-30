@@ -5,6 +5,7 @@ import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
+import { ringkasJadwal } from '../../lib/jam-layanan';
 
 interface Props {
   situs: CollectionEntry<'situs'>['data'];
@@ -43,7 +44,8 @@ const titikPerkiraan = situs.alamat.includes('[');
           <span class="grid size-11 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600"><Icon name="clock" /></span>
           <div>
             <p class="font-semibold text-ink">Jam layanan</p>
-            {situs.jamLayanan.map((jam) => <p class="text-ink-muted">{jam.hari}: {jam.jam}</p>)}
+            {ringkasJadwal(situs.jamLayanan.jadwal).map((baris) => <p class="text-ink-muted">{baris.hari}: {baris.jam}</p>)}
+            <p class="mt-1 text-sm text-ink-subtle">Tutup pada hari libur nasional dan cuti bersama.</p>
           </div>
         </li>
         {

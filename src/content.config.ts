@@ -5,6 +5,7 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { namaKategori } from './lib/kategori-berita';
+import { namaHari } from './lib/jam-layanan';
 
 /** Angka yang belum diketahui diisi null, lalu tampil sebagai "Data menyusul". */
 const angkaAtauKosong = z.number().nonnegative().nullable();
@@ -13,6 +14,9 @@ const angkaAtauKosong = z.number().nonnegative().nullable();
 const nomorWhatsapp = z
   .string()
   .regex(/^\d{8,15}$/, 'Tulis nomor WhatsApp dengan kode negara, tanpa + dan spasi. Contoh: 6281234567890');
+
+/** Jam dalam format "08.00". */
+const jam = z.string().regex(/^([01]\d|2[0-3])\.[0-5]\d$/, 'Format jam harus "08.00"');
 
 // ---------- Data tunggal: src/content/pengaturan/ ----------
 
@@ -28,7 +32,24 @@ const situs = defineCollection({
     googleMapsUrl: z.string().optional(),
     telepon: z.string().optional(),
     email: z.string().optional(),
-    jamLayanan: z.array(z.object({ hari: z.string(), jam: z.string() })),
+    jamLayanan: z.object({
+      jadwal: z
+        .array(
+          z
+            .object({
+              hari: z.enum(namaHari),
+              buka: jam.nullable(),
+              tutup: jam.nullable(),
+              istirahat: z.object({ mulai: jam, selesai: jam }).nullable(),
+            })
+            .refine((h) => (h.buka === null) === (h.tutup === null), 'Jam buka dan jam tutup harus diisi keduanya, atau dikosongkan keduanya'),
+        )
+        .length(7)
+        .refine((jadwal) => new Set(jadwal.map((h) => h.hari)).size === 7, 'Setiap hari harus ada tepat satu kali'),
+      tanggalLibur: z
+        .array(z.object({ tanggal: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal harus "2026-12-25"'), keterangan: z.string() }))
+        .default([]),
+    }),
     mediaSosial: z
       .array(
         z.object({
@@ -51,7 +72,17 @@ const beranda = defineCollection({
       subjudul: z.string(),
       gambar: z.string().optional(),
     }),
-    aksesCepat: z.array(z.object({ label: z.string(), ikon: z.string(), tautan: z.string() })).max(3),
+    aksesCepat: z
+      .array(
+        z.object({
+          label: z.string(),
+          ikon: z.string(),
+          tautan: z.string(),
+          /** "status-layanan" menampilkan status jam layanan langsung, bukan tulisan label. */
+          jenis: z.enum(['tautan', 'status-layanan']).default('tautan'),
+        }),
+      )
+      .max(3),
   }),
 });
 

@@ -32,6 +32,11 @@
   --color-sun-700: #8a4b08;
   --color-danger: #b42318;
 
+  /* Lampu status jam layanan (cerah, hanya untuk titik status) */
+  --color-lampu-buka: #22c55e;
+  --color-lampu-istirahat: #facc15;
+  --color-lampu-tutup: #ef4444;
+
   /* Bayangan */
   --shadow-card: 0 8px 24px rgb(31 51 22 / 0.08);
   --shadow-float: 0 12px 32px rgb(31 51 22 / 0.14);

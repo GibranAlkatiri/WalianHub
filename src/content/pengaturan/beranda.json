@@ -7,7 +7,7 @@
   },
   "aksesCepat": [
     { "label": "Syarat Surat", "ikon": "file-text", "tautan": "#layanan" },
-    { "label": "Jam Layanan", "ikon": "clock", "tautan": "#kontak" },
+    { "label": "Jam Layanan", "ikon": "clock", "tautan": "#kontak", "jenis": "status-layanan" },
     { "label": "Destinasi Wisata", "ikon": "mountain", "tautan": "#wisata" }
   ]
 }

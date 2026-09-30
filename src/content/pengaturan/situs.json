@@ -7,7 +7,21 @@
   "koordinat": { "lat": 1.29401, "lng": 124.84452 },
   "telepon": "[Nomor telepon kantor]",
   "email": "[Email resmi kelurahan]",
-  "jamLayanan": [{ "hari": "[Hari layanan]", "jam": "[Jam layanan]" }],
+  "jamLayanan": {
+    "jadwal": [
+      { "hari": "Senin", "buka": "08.00", "tutup": "16.30", "istirahat": { "mulai": "12.00", "selesai": "13.00" } },
+      { "hari": "Selasa", "buka": "08.00", "tutup": "16.30", "istirahat": { "mulai": "12.00", "selesai": "13.00" } },
+      { "hari": "Rabu", "buka": "08.00", "tutup": "16.30", "istirahat": { "mulai": "12.00", "selesai": "13.00" } },
+      { "hari": "Kamis", "buka": "08.00", "tutup": "16.30", "istirahat": { "mulai": "12.00", "selesai": "13.00" } },
+      { "hari": "Jumat", "buka": "08.00", "tutup": "13.30", "istirahat": null },
+      { "hari": "Sabtu", "buka": null, "tutup": null, "istirahat": null },
+      { "hari": "Minggu", "buka": null, "tutup": null, "istirahat": null }
+    ],
+    "tanggalLibur": [
+      { "tanggal": "2026-12-25", "keterangan": "[Contoh: Hari Raya Natal]" },
+      { "tanggal": "2027-01-01", "keterangan": "[Contoh: Tahun Baru]" }
+    ]
+  },
   "mediaSosial": [],
   "tautanPenting": [
     { "label": "Pemerintah Kota Tomohon", "url": "https://tomohon.go.id" },

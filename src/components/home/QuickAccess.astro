@@ -1,17 +1,21 @@
 ---
 // Section 2 Beranda: kotak akses cepat yang menempel di batas bawah hero, tiga pintasan.
-// HP: 3 tombol sebaris, ikon di atas tulisan. Tablet: 3 tombol sebaris, ikon di kiri tulisan.
-// Desktop: pil putih berisi 3 pintasan dengan garis pemisah.
+// Tablet dan desktop: 3 pintasan sebaris, ikon di kiri tulisan.
+// HP: status jam layanan satu baris penuh di atas, 2 tombol lain di bawahnya, ikon di atas tulisan.
+// Item berjenis "status-layanan" menampilkan status kantor langsung (buka, istirahat, atau tutup) menurut waktu WITA.
 import type { CollectionEntry } from 'astro:content';
 import Container from '../ui/Container.astro';
 import Icon from '../ui/Icon.astro';
 import { url } from '../../lib/url';
+import type { DataJamLayanan } from '../../lib/jam-layanan';
 
 interface Props {
   items: CollectionEntry<'beranda'>['data']['aksesCepat'];
+  jamLayanan: DataJamLayanan;
 }
 
-const { items } = Astro.props;
+const { items, jamLayanan } = Astro.props;
+const adaStatus = items.some((item) => item.jenis === 'status-layanan');
 ---
 
 <section aria-label="Akses cepat" class="relative z-10 -mt-14 lg:-mt-12">
@@ -19,24 +23,77 @@ const { items } = Astro.props;
     <div class="rounded-3xl bg-sage-300 p-2.5 shadow-float sm:rounded-4xl sm:p-3 lg:p-4">
       <ul
         role="list"
-        class="grid grid-cols-3 gap-2 md:flex md:gap-3 lg:gap-0 lg:rounded-full lg:bg-white lg:p-1.5 lg:[&>li+li]:border-l lg:[&>li+li]:border-line"
+        class:list={[
+          'grid gap-2 md:flex md:gap-3 lg:gap-0 lg:rounded-full lg:bg-white lg:p-1.5 lg:[&>li+li]:border-l lg:[&>li+li]:border-line',
+          adaStatus ? 'grid-cols-2' : 'grid-cols-3',
+        ]}
       >
         {
-          items.map((item) => (
-            <li class="md:flex-1">
-              <a
-                href={url(item.tautan)}
-                class="flex h-full flex-col items-center justify-center gap-1.5 rounded-2xl bg-white p-2.5 text-center text-sm leading-tight font-semibold text-forest-900 transition-colors hover:bg-sage-100 md:flex-row md:justify-start md:gap-3 md:text-left lg:rounded-full lg:px-4 lg:py-2 lg:text-base"
-              >
-                <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600 lg:size-9">
-                  <Icon name={item.ikon} class="size-4 lg:size-5" />
-                </span>
-                {item.label}
-              </a>
-            </li>
-          ))
+          items.map((item) =>
+            item.jenis === 'status-layanan' ? (
+              <li class="col-span-2 order-first md:order-none md:flex-1">
+                <a
+                  href={url(item.tautan)}
+                  data-status-layanan={JSON.stringify(jamLayanan)}
+                  class="group/status flex h-full flex-row items-center justify-center gap-3 rounded-2xl bg-white p-2.5 text-center text-sm leading-tight font-semibold text-forest-900 transition-colors hover:bg-sage-100 md:justify-start md:text-left lg:rounded-full lg:px-4 lg:py-2 lg:text-base"
+                >
+                  <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600 lg:size-9">
+                    {/* Sebelum skrip berjalan: ikon jam. Setelah itu: lampu status. */}
+                    <Icon name={item.ikon} class="size-4 group-data-[status]/status:hidden lg:size-5" />
+                    <span class="relative hidden size-3 group-data-[status]/status:block" aria-hidden="true">
+                      <span class="absolute inset-0 hidden animate-ping rounded-full bg-lampu-buka opacity-75 group-data-[status=buka]/status:block motion-reduce:animate-none" />
+                      <span class="relative block size-3 rounded-full group-data-[status=buka]/status:bg-lampu-buka group-data-[status=istirahat]/status:bg-lampu-istirahat group-data-[status=tutup]/status:bg-lampu-tutup" />
+                    </span>
+                  </span>
+                  <span>
+                    <span class="sr-only" data-status-pembaca />
+                    <span data-status-teks>{item.label}</span>
+                  </span>
+                </a>
+              </li>
+            ) : (
+              <li class="md:flex-1">
+                <a
+                  href={url(item.tautan)}
+                  class="flex h-full flex-col items-center justify-center gap-1.5 rounded-2xl bg-white p-2.5 text-center text-sm leading-tight font-semibold text-forest-900 transition-colors hover:bg-sage-100 md:flex-row md:justify-start md:gap-3 md:text-left lg:rounded-full lg:px-4 lg:py-2 lg:text-base"
+                >
+                  <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600 lg:size-9">
+                    <Icon name={item.ikon} class="size-4 lg:size-5" />
+                  </span>
+                  {item.label}
+                </a>
+              </li>
+            ),
+          )
         }
       </ul>
     </div>
   </Container>
 </section>
+
+<script>
+  import { statusLayanan, type DataJamLayanan, type StatusLayanan } from '../../lib/jam-layanan';
+
+  // Teks tambahan untuk pembaca layar, karena istirahat hanya ditandai warna lampu.
+  const teksPembaca: Record<StatusLayanan, string> = {
+    buka: 'Kantor sedang buka. ',
+    istirahat: 'Kantor sedang istirahat, tetap bisa didatangi. ',
+    tutup: 'Kantor kelurahan: ',
+  };
+
+  function perbarui() {
+    document.querySelectorAll<HTMLElement>('[data-status-layanan]').forEach((el) => {
+      const data: DataJamLayanan = JSON.parse(el.dataset.statusLayanan ?? '');
+      const { status, teks } = statusLayanan(data, new Date());
+      el.dataset.status = status;
+      el.querySelector('[data-status-pembaca]')!.textContent = teksPembaca[status];
+      el.querySelector('[data-status-teks]')!.textContent = teks;
+    });
+  }
+
+  perbarui();
+  setInterval(perbarui, 30_000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) perbarui();
+  });
+</script>

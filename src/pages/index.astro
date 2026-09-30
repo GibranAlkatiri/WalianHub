@@ -20,7 +20,7 @@ const gambarPreview = /\.(jpe?g|png|webp)$/i.test(beranda.hero.gambar ?? '') ? b
 
 <BaseLayout overlayHeader image={gambarPreview}>
   <Hero hero={beranda.hero} />
-  <QuickAccess items={beranda.aksesCepat} />
+  <QuickAccess items={beranda.aksesCepat} jamLayanan={situs.jamLayanan} />
   <LatestNews />
   <Services />
   <FeaturedDestinations />

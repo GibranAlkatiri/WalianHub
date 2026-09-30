@@ -5,6 +5,7 @@ import Logo from './Logo.astro';
 import Icon from '../ui/Icon.astro';
 import { menuUtama } from '../../lib/navigasi';
 import { url } from '../../lib/url';
+import { ringkasJadwal } from '../../lib/jam-layanan';
 
 interface Props {
   situs: CollectionEntry<'situs'>['data'];
@@ -77,16 +78,16 @@ const bisaDiemail = situs.email?.includes('@');
             </li>
           )
         }
-        {
-          situs.jamLayanan.map((jam) => (
-            <li class="flex gap-3">
-              <Icon name="clock" class="mt-1 size-5 shrink-0" />
-              <span>
-                {jam.hari}: {jam.jam}
+        <li class="flex gap-3">
+          <Icon name="clock" class="mt-1 size-5 shrink-0" />
+          <span>
+            {ringkasJadwal(situs.jamLayanan.jadwal).map((baris) => (
+              <span class="block">
+                {baris.hari}: {baris.jam}
               </span>
-            </li>
-          ))
-        }
+            ))}
+          </span>
+        </li>
       </ul>
     </div>
 
