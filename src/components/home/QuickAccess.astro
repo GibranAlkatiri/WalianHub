@@ -1,63 +1,42 @@
 ---
-// Section 2 Beranda: kotak akses cepat yang menempel di batas bawah hero.
-// Desktop: pil putih berisi pintasan, lalu tombol hijau di kanan.
-// HP: grid 2 × 2 yang ringkas (ikon di kiri, tulisan di kanan). Tablet: 4 pintasan sebaris.
+// Section 2 Beranda: kotak akses cepat yang menempel di batas bawah hero, tiga pintasan.
+// HP: 3 tombol sebaris, ikon di atas tulisan. Tablet: 3 tombol sebaris, ikon di kiri tulisan.
+// Desktop: pil putih berisi 3 pintasan dengan garis pemisah.
 import type { CollectionEntry } from 'astro:content';
 import Container from '../ui/Container.astro';
 import Icon from '../ui/Icon.astro';
 import { url } from '../../lib/url';
-import { tautanWhatsapp } from '../../lib/format';
 
 interface Props {
   items: CollectionEntry<'beranda'>['data']['aksesCepat'];
-  whatsapp?: string;
 }
 
-const { items, whatsapp } = Astro.props;
-
-// Selama nomor WhatsApp resmi belum ada, tombol diarahkan ke section Kontak.
-const tautanWa = whatsapp
-  ? tautanWhatsapp(whatsapp, 'Halo Kelurahan Walian, saya ingin bertanya tentang layanan kelurahan.')
-  : '#kontak';
+const { items } = Astro.props;
 ---
 
 <section aria-label="Akses cepat" class="relative z-10 -mt-14 lg:-mt-12">
   <Container>
     <div class="rounded-3xl bg-sage-300 p-2.5 shadow-float sm:rounded-4xl sm:p-3 lg:p-4">
-      <div class="grid grid-cols-2 gap-2 md:grid-cols-4 lg:flex lg:items-center lg:gap-3">
-        <ul
-          role="list"
-          class="contents lg:flex lg:flex-1 lg:items-center lg:rounded-full lg:bg-white lg:p-1.5 lg:[&>li+li]:border-l lg:[&>li+li]:border-line"
-        >
-          {
-            items.map((item) => (
-              <li class="lg:flex-1">
-                <a
-                  href={url(item.tautan)}
-                  class="flex h-full items-center gap-2 rounded-2xl bg-white p-2.5 text-sm leading-tight font-semibold text-forest-900 transition-colors hover:bg-sage-100 lg:gap-3 lg:rounded-full lg:px-4 lg:py-2 lg:text-base"
-                >
-                  <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600 lg:size-9">
-                    <Icon name={item.ikon} class="size-4 lg:size-5" />
-                  </span>
-                  {item.label}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-
-        <a
-          href={url(tautanWa)}
-          target={whatsapp ? '_blank' : undefined}
-          rel={whatsapp ? 'noopener' : undefined}
-          class="flex items-center gap-2 rounded-2xl bg-forest-600 p-2.5 text-sm leading-tight font-semibold text-white transition-colors hover:bg-forest-700 lg:h-14 lg:shrink-0 lg:rounded-full lg:px-7 lg:text-base"
-        >
-          <span class="grid size-8 shrink-0 place-items-center rounded-full bg-white/15 lg:size-auto lg:bg-transparent">
-            <Icon name="whatsapp" class="size-4 lg:size-5" />
-          </span>
-          Chat WhatsApp
-        </a>
-      </div>
+      <ul
+        role="list"
+        class="grid grid-cols-3 gap-2 md:flex md:gap-3 lg:gap-0 lg:rounded-full lg:bg-white lg:p-1.5 lg:[&>li+li]:border-l lg:[&>li+li]:border-line"
+      >
+        {
+          items.map((item) => (
+            <li class="md:flex-1">
+              <a
+                href={url(item.tautan)}
+                class="flex h-full flex-col items-center justify-center gap-1.5 rounded-2xl bg-white p-2.5 text-center text-sm leading-tight font-semibold text-forest-900 transition-colors hover:bg-sage-100 md:flex-row md:justify-start md:gap-3 md:text-left lg:rounded-full lg:px-4 lg:py-2 lg:text-base"
+              >
+                <span class="grid size-8 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600 lg:size-9">
+                  <Icon name={item.ikon} class="size-4 lg:size-5" />
+                </span>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </Container>
 </section>

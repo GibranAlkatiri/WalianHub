@@ -19,7 +19,7 @@ const { nama, keterangan, terang = false } = Astro.props;
     <Icon name="mountain" class="size-5 sm:size-6" />
   </span>
   <span class="leading-tight">
-    <span class:list={['block text-[15px] font-extrabold sm:text-base lg:text-lg', terang ? 'text-white' : 'text-forest-600']}>{nama}</span>
-    <span class:list={['block text-xs font-medium', terang ? 'text-sage-200' : 'text-ink-subtle']}>{keterangan}</span>
+    <span class:list={['block text-[15px] font-extrabold sm:text-base lg:text-lg', terang ? 'text-white' : 'text-forest-600 group-data-atas:text-white']}>{nama}</span>
+    <span class:list={['block text-xs font-medium', terang ? 'text-sage-200' : 'text-ink-subtle group-data-atas:text-white/80']}>{keterangan}</span>
   </span>
 </a>

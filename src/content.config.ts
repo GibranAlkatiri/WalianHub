@@ -26,7 +26,6 @@ const situs = defineCollection({
     koordinat: z.object({ lat: z.number(), lng: z.number() }),
     googleMapsUrl: z.string().optional(),
     telepon: z.string().optional(),
-    whatsapp: nomorWhatsapp.optional(),
     email: z.string().optional(),
     jamLayanan: z.array(z.object({ hari: z.string(), jam: z.string() })),
     mediaSosial: z

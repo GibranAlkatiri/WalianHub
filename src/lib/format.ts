@@ -19,8 +19,3 @@ export function tanggalIso(tanggal: Date): string {
 export function formatAngka(angka: number | null | undefined): string | null {
   return angka == null ? null : angka.toLocaleString('id-ID');
 }
-
-/** Tautan chat WhatsApp. Nomor ditulis dengan kode negara, contoh 6281234567890. */
-export function tautanWhatsapp(nomor: string, pesan?: string): string {
-  return `https://wa.me/${nomor}${pesan ? `?text=${encodeURIComponent(pesan)}` : ''}`;
-}

@@ -2,35 +2,34 @@
 // Header melayang yang tampil di semua halaman.
 // Menu lengkap tampil mulai lebar 1280px; di bawahnya memakai hamburger menu.
 // Ukuran logo, tombol bahasa, dan hamburger dibuat ringkas di HP agar muat di layar 360px.
+// Di Beranda (transparan=true), header tanpa latar saat posisi paling atas, lalu berubah jadi kartu putih setelah di-scroll.
 import Logo from './Logo.astro';
 import LanguageToggle from './LanguageToggle.astro';
 import MobileMenu from './MobileMenu.astro';
 import Button from '../ui/Button.astro';
 import { menuUtama, tautanKontak } from '../../lib/navigasi';
 import { url } from '../../lib/url';
-import { SIAP_DIINDEKS } from '../../lib/konfigurasi';
 
 interface Props {
   namaKelurahan: string;
   kota: string;
+  transparan?: boolean;
 }
 
-const { namaKelurahan, kota } = Astro.props;
+const { namaKelurahan, kota, transparan = false } = Astro.props;
 
 const halamanIni = Astro.url.pathname.replace(/\/$/, '');
 const aktif = (href: string) => url(href).replace(/\/$/, '') === halamanIni;
 ---
 
-<header class="fixed inset-x-0 top-0 z-50 px-2 pt-2 sm:px-3 sm:pt-3 lg:px-6 lg:pt-4">
-  {
-    !SIAP_DIINDEKS && (
-      <p class="mx-auto mb-2 w-fit rounded-full bg-sun-100 px-3 py-1 text-xs font-semibold text-sun-700 shadow-card sm:text-sm">
-        Versi pratinjau · isi masih contoh
-      </p>
-    )
-  }
+<header
+  class="group fixed inset-x-0 top-0 z-50 px-2 pt-2 sm:px-3 sm:pt-3 lg:px-6 lg:pt-4"
+  data-header
+  data-transparan={transparan || undefined}
+  data-atas={transparan || undefined}
+>
   <div
-    class="relative mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 rounded-2xl bg-white/95 px-2.5 shadow-float backdrop-blur sm:px-3 lg:h-18 lg:px-5"
+    class="relative mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 rounded-2xl bg-white/95 px-2.5 shadow-float backdrop-blur transition-[background-color,box-shadow] duration-300 group-data-atas:bg-transparent group-data-atas:shadow-none group-data-atas:backdrop-blur-none motion-reduce:transition-none sm:px-3 lg:h-18 lg:px-5"
   >
     <Logo nama={namaKelurahan} keterangan={`Kota ${kota}`} />
 
@@ -43,8 +42,10 @@ const aktif = (href: string) => url(href).replace(/\/$/, '') === halamanIni;
                 href={url(item.href)}
                 aria-current={aktif(item.href) ? 'page' : undefined}
                 class:list={[
-                  'rounded-full px-3 py-2 text-base font-medium transition-colors hover:text-forest-600',
-                  aktif(item.href) ? 'text-forest-600 underline decoration-2 underline-offset-8' : 'text-ink',
+                  'rounded-full px-3 py-2 text-base font-medium transition-colors hover:text-forest-600 group-data-atas:hover:text-white/80',
+                  aktif(item.href)
+                    ? 'text-forest-600 underline decoration-2 underline-offset-8 group-data-atas:text-white'
+                    : 'text-ink group-data-atas:text-white',
                 ]}
               >
                 {item.label}
@@ -64,3 +65,13 @@ const aktif = (href: string) => url(href).replace(/\/$/, '') === halamanIni;
     </div>
   </div>
 </header>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+
+  if (header && header.dataset.transparan !== undefined) {
+    const aturPosisi = () => header.toggleAttribute('data-atas', window.scrollY <= 16);
+    aturPosisi();
+    window.addEventListener('scroll', aturPosisi, { passive: true });
+  }
+</script>

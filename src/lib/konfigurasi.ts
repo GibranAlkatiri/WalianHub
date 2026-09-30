@@ -9,6 +9,6 @@ export const HALAMAN_PENDUKUNG_SIAP = false;
 /**
  * Ubah menjadi true setelah website disetujui Lurah dan siap dipublikasikan.
  * Selama false, mesin pencari seperti Google diminta tidak menampilkan website ini
- * (isinya masih placeholder), dan pita "Versi pratinjau" tampil di bagian atas.
+ * (isinya masih placeholder).
  */
 export const SIAP_DIINDEKS = false;

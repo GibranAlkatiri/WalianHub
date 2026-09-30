@@ -43,17 +43,11 @@
     scroll-padding-top: 6rem;
   }
 
+  /* Teks isi 16px di semua ukuran layar */
   body {
     @apply bg-cream-50 font-sans text-ink antialiased;
     font-size: 1rem;
     line-height: 1.7;
-  }
-
-  /* Teks isi 16px di HP, 18px mulai layar desktop */
-  @media (width >= 64rem) {
-    body {
-      font-size: 1.125rem;
-    }
   }
 
   /* Focus ring untuk pengguna keyboard */

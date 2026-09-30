@@ -5,7 +5,6 @@ import Logo from './Logo.astro';
 import Icon from '../ui/Icon.astro';
 import { menuUtama } from '../../lib/navigasi';
 import { url } from '../../lib/url';
-import { tautanWhatsapp } from '../../lib/format';
 
 interface Props {
   situs: CollectionEntry<'situs'>['data'];
@@ -61,16 +60,6 @@ const bisaDiemail = situs.email?.includes('@');
               ) : (
                 <span>{situs.telepon}</span>
               )}
-            </li>
-          )
-        }
-        {
-          situs.whatsapp && (
-            <li class="flex gap-3">
-              <Icon name="whatsapp" class="mt-1 size-5 shrink-0" />
-              <a href={tautanWhatsapp(situs.whatsapp)} target="_blank" rel="noopener" class="text-white/90 hover:underline">
-                Chat WhatsApp
-              </a>
             </li>
           )
         }
