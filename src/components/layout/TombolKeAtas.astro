@@ -1,0 +1,31 @@
+---
+// Tombol kembali ke atas di pojok kanan bawah, di semua halaman.
+// Muncul setelah halaman digulir lebih dari satu layar. Cincin putih membuatnya tetap terlihat di atas footer hijau tua.
+import Icon from '../ui/Icon.astro';
+---
+
+<button
+  type="button"
+  data-ke-atas
+  aria-label="Kembali ke atas"
+  class="invisible fixed right-4 bottom-4 z-40 grid size-12 translate-y-4 place-items-center rounded-full bg-forest-600 text-white opacity-0 shadow-float ring-2 ring-white transition-[opacity,translate,visibility,background-color] duration-300 hover:bg-forest-700 data-tampil:visible data-tampil:translate-y-0 data-tampil:opacity-100 motion-reduce:transition-none sm:right-6 sm:bottom-6"
+>
+  <Icon name="arrow-up" class="size-5" />
+</button>
+
+<script>
+  const tombol = document.querySelector<HTMLButtonElement>('[data-ke-atas]');
+
+  if (tombol) {
+    const atur = () => tombol.toggleAttribute('data-tampil', window.scrollY > window.innerHeight);
+    atur();
+    window.addEventListener('scroll', atur, { passive: true });
+
+    tombol.addEventListener('click', () => {
+      // Gulir ke atas (halus, kecuali pengunjung mematikan animasi), lalu fokus pindah ke logo di header,
+      // supaya pengguna keyboard melanjutkan dari awal halaman.
+      window.scrollTo({ top: 0 });
+      document.querySelector<HTMLAnchorElement>('header a')?.focus({ preventScroll: true });
+    });
+  }
+</script>

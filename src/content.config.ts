@@ -92,6 +92,8 @@ const profil = defineCollection({
   loader: glob({ pattern: 'profil.json', base: './src/content/pengaturan' }),
   schema: z.object({
     ringkasan: z.string(),
+    /** Lurah yang sedang menjabat. Foto kosong: gambar default. Sebaiknya foto tegak (rasio 3:4). */
+    lurah: z.object({ nama: z.string(), foto: z.string().optional() }),
     visi: z.string(),
     misi: z.array(z.string()),
     batasWilayah: z.object({
@@ -111,6 +113,16 @@ const profil = defineCollection({
       tahun: z.string(),
       sumber: z.string(),
     }),
+    /** Bagan struktur organisasi di bawah kotak Lurah, disusun per baris dari atas ke bawah. */
+    strukturOrganisasi: z
+      .array(
+        z.object({
+          anggota: z
+            .array(z.object({ jabatan: z.string(), nama: z.string() }))
+            .min(1, 'Setiap baris bagan berisi minimal satu jabatan'),
+        }),
+      )
+      .default([]),
     diperbarui: z.coerce.date(),
   }),
 });

@@ -153,3 +153,95 @@
     color: var(--color-ink-muted);
   }
 }
+
+/*
+  Garis bagan struktur organisasi. Setiap baris bagan adalah satu <ul class="bagan-baris">.
+  HP: kotak bertumpuk, digaris dari sisi kiri. Setiap baris menjorok ke kanan sesuai --tingkat.
+  Desktop (mulai 1024px): kotak sebaris, dengan garis turun dari baris di atasnya lalu bercabang ke setiap kotak.
+*/
+@layer components {
+  .bagan-baris > li {
+    position: relative;
+  }
+  .bagan-baris + .bagan-baris > li::before,
+  .bagan-baris + .bagan-baris > li::after {
+    content: "";
+    position: absolute;
+    border: 0 solid var(--color-line-strong);
+  }
+
+  @media (width < 64rem) {
+    .bagan-baris + .bagan-baris {
+      margin-left: calc(var(--tingkat) * 2rem - 1rem);
+      padding-left: 1rem;
+    }
+    .bagan-baris + .bagan-baris > li {
+      padding-top: 0.75rem;
+    }
+    /* Garis dari atas sampai tengah kotak, lalu belok ke kotak */
+    .bagan-baris + .bagan-baris > li::before {
+      top: 0;
+      bottom: calc(50% - 0.375rem);
+      left: -1rem;
+      width: 1rem;
+      border-left-width: 2px;
+      border-bottom-width: 2px;
+    }
+    /* Garis lanjutan ke kotak berikutnya di baris yang sama */
+    .bagan-baris + .bagan-baris > li:not(:last-child)::after {
+      top: calc(50% + 0.375rem);
+      bottom: 0;
+      left: -1rem;
+      border-left-width: 2px;
+    }
+  }
+
+  @media (width >= 64rem) {
+    .bagan-baris {
+      display: flex;
+      justify-content: center;
+    }
+    .bagan-baris > li {
+      flex: 1 1 0;
+      max-width: 16rem;
+      padding-inline: 0.5rem;
+    }
+    .bagan-baris + .bagan-baris {
+      position: relative;
+    }
+    .bagan-baris + .bagan-baris > li {
+      padding-top: 2.5rem;
+    }
+    /* Garis turun dari baris di atasnya */
+    .bagan-baris + .bagan-baris::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      height: 1.25rem;
+      margin-left: -1px;
+      border-left: 2px solid var(--color-line-strong);
+    }
+    /* Garis datar, separuh kiri kotak */
+    .bagan-baris + .bagan-baris > li::before {
+      top: 1.25rem;
+      left: 0;
+      width: 50%;
+      border-top-width: 2px;
+    }
+    /* Garis datar separuh kanan kotak, dan garis turun ke kotak */
+    .bagan-baris + .bagan-baris > li::after {
+      top: 1.25rem;
+      left: 50%;
+      width: 50%;
+      height: 1.25rem;
+      margin-left: -1px;
+      border-top-width: 2px;
+      border-left-width: 2px;
+    }
+    .bagan-baris + .bagan-baris > li:first-child::before,
+    .bagan-baris + .bagan-baris > li:last-child::after {
+      border-top-width: 0;
+    }
+  }
+}

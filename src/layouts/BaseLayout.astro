@@ -1,10 +1,11 @@
 ---
-// Kerangka HTML setiap halaman: <head> (SEO dan link preview), header, dan footer.
+// Kerangka HTML setiap halaman: <head> (SEO dan link preview), header, footer, dan tombol kembali ke atas.
 import '@fontsource-variable/plus-jakarta-sans';
 import '../styles/global.css';
 import { getEntry } from 'astro:content';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
+import TombolKeAtas from '../components/layout/TombolKeAtas.astro';
 import { url } from '../lib/url';
 import { SIAP_DIINDEKS } from '../lib/konfigurasi';
 
@@ -79,5 +80,6 @@ const gambarPreview = new URL(url(image || '/images/default-og.png'), Astro.site
       <slot />
     </main>
     <Footer situs={situs} />
+    <TombolKeAtas />
   </body>
 </html>

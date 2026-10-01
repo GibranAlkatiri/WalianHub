@@ -1,5 +1,6 @@
 {
   "ringkasan": "Kelurahan Walian berada di Kecamatan Tomohon Selatan, Kota Tomohon, Sulawesi Utara. [Ringkasan singkat tentang Walian: letak, suasana, dan ciri khas wilayah.]",
+  "lurah": { "nama": "Frano R. Rowan, S.Sos.", "foto": "" },
   "visi": "[Visi Kelurahan Walian]",
   "misi": ["[Misi pertama]", "[Misi kedua]", "[Misi ketiga]"],
   "batasWilayah": {
@@ -17,5 +18,16 @@
     "tahun": "[Tahun data]",
     "sumber": "[Sumber data]"
   },
-  "diperbarui": "2026-09-30"
+  "strukturOrganisasi": [
+    { "anggota": [{ "jabatan": "Sekretaris Kelurahan", "nama": "[Nama]" }] },
+    {
+      "anggota": [
+        { "jabatan": "Kepala Seksi [Nama seksi]", "nama": "[Nama]" },
+        { "jabatan": "Kepala Seksi [Nama seksi]", "nama": "[Nama]" },
+        { "jabatan": "Kepala Seksi [Nama seksi]", "nama": "[Nama]" },
+        { "jabatan": "Kepala Seksi [Nama seksi]", "nama": "[Nama]" }
+      ]
+    }
+  ],
+  "diperbarui": "2026-10-01"
 }

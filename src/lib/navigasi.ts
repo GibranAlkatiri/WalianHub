@@ -12,7 +12,7 @@ export const menuUtama = [
   { label: 'Beranda', href: '/' },
   { label: 'Profil', href: '/profil' },
   { label: 'Layanan', href: tujuan('/layanan', 'layanan') },
-  { label: 'Wisata & Potensi', href: tujuan('/wisata', 'wisata') },
+  { label: 'Wisata', href: tujuan('/wisata', 'wisata') },
   { label: 'Berita', href: '/berita' },
 ];
 

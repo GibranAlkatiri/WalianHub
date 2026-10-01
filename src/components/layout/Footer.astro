@@ -127,7 +127,8 @@ const bisaDiemail = situs.email?.includes('@');
   </div>
 
   <div class="border-t border-white/15">
-    <div class="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-5 text-sm sm:flex-row sm:justify-between lg:px-8">
+    {/* Jarak bawah lebih lega di bawah 1280px, supaya tulisan tidak tertutup tombol kembali ke atas */}
+    <div class="mx-auto flex max-w-6xl flex-col gap-1 px-4 pt-5 pb-20 text-sm sm:flex-row sm:justify-between lg:px-8 xl:pb-5">
       <p>© {tahun} {situs.namaKelurahan}</p>
       <p>Dikembangkan oleh {situs.kredit}</p>
     </div>

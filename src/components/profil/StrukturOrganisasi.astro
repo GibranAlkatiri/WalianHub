@@ -1,0 +1,45 @@
+---
+// Section Struktur Organisasi pada halaman Profil.
+// Bagan disusun per baris: kotak Lurah paling atas, lalu baris-baris dari data profil.
+// HP: kotak bertumpuk dengan garis di sisi kiri. Desktop: kotak sebaris dengan garis penghubung di atasnya.
+// Garis bagan diatur oleh kelas .bagan-baris di global.css.
+import Container from '../ui/Container.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+interface Props {
+  lurah: { nama: string };
+  strukturOrganisasi: { anggota: { jabatan: string; nama: string }[] }[];
+}
+
+const { lurah, strukturOrganisasi } = Astro.props;
+---
+
+<section id="struktur-organisasi" class="bg-sage-100 py-12 sm:py-16 lg:py-24">
+  <Container>
+    <SectionHeading overline="Struktur Organisasi" title="Struktur organisasi Kelurahan Walian" />
+    <div class="mt-8 lg:mt-12">
+      <ul class="bagan-baris">
+        <li>
+          <div class="h-full rounded-2xl bg-forest-600 p-4 text-white shadow-card lg:text-center">
+            <p class="text-sm font-semibold">Lurah</p>
+            <p class="mt-1 font-bold">{lurah.nama}</p>
+          </div>
+        </li>
+      </ul>
+      {
+        strukturOrganisasi.map((baris, i) => (
+          <ul class="bagan-baris" style={`--tingkat: ${i + 1}`}>
+            {baris.anggota.map((item) => (
+              <li>
+                <div class="h-full rounded-2xl bg-white p-4 shadow-card lg:text-center">
+                  <p class="text-sm font-semibold text-forest-600">{item.jabatan}</p>
+                  <p class="mt-1 font-bold text-ink">{item.nama}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ))
+      }
+    </div>
+  </Container>
+</section>
