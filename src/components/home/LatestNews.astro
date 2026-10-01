@@ -1,5 +1,6 @@
 ---
-// Section 3 Beranda: 1 berita terbaru tampil besar, lalu 3 berita berikutnya dalam daftar ringkas. Anchor #berita.
+// Section 2 Beranda: 1 berita terbaru tampil besar, lalu 3 berita berikutnya dalam daftar ringkas. Anchor #berita.
+// Jarak atasnya lebih kecil dari section lain, karena gradasi bawah hero sudah memberi ruang.
 import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
 import NewsCard from '../ui/NewsCard.astro';
@@ -11,7 +12,7 @@ const berita = (await ambilBeritaTerbit()).slice(0, 4);
 const [utama, ...lainnya] = berita;
 ---
 
-<section id="berita" class="py-12 sm:py-16 lg:py-24">
+<section id="berita" class="pt-4 pb-12 sm:pt-6 sm:pb-16 lg:pt-8 lg:pb-24">
   <Container>
     <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
       <SectionHeading

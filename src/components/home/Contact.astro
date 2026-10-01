@@ -1,5 +1,5 @@
 ---
-// Section 6 Beranda: kontak dan peta. Anchor #kontak untuk tombol "Hubungi Kami".
+// Section 5 Beranda: kontak, status jam layanan langsung, dan peta. Anchor #kontak untuk tombol "Hubungi Kami".
 import type { CollectionEntry } from 'astro:content';
 import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
@@ -20,7 +20,6 @@ const { lat, lng } = situs.koordinat;
 const petaEmbed = `https://www.google.com/maps/embed?origin=mfe&pb=!1m3!2m1!1s${lat},${lng}!6i15`;
 // Petunjuk arah langsung ke titik kantor. Jika googleMapsUrl diisi, link itu yang dipakai.
 const petunjukArah = situs.googleMapsUrl || `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-const lapor = situs.tautanPenting.find((tautan) => tautan.url.includes('lapor.go.id'));
 ---
 
 <section id="kontak" class="bg-white py-12 sm:py-16 lg:py-24">
@@ -44,6 +43,20 @@ const lapor = situs.tautanPenting.find((tautan) => tautan.url.includes('lapor.go
           <span class="grid size-11 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600"><Icon name="clock" /></span>
           <div>
             <p class="font-semibold text-ink">Jam layanan</p>
+            {/* Status langsung menurut waktu WITA. Tersembunyi sampai skrip selesai menghitung statusnya. */}
+            <p
+              data-status-layanan={JSON.stringify(situs.jamLayanan)}
+              class="group/status my-2 hidden w-fit items-center gap-2 rounded-full bg-sage-100 px-3 py-1 text-sm font-semibold text-forest-900 data-[status]:flex"
+            >
+              <span class="relative size-3 shrink-0" aria-hidden="true">
+                <span class="absolute inset-0 hidden animate-ping rounded-full bg-lampu-buka opacity-75 group-data-[status=buka]/status:block motion-reduce:animate-none" />
+                <span class="relative block size-3 rounded-full group-data-[status=buka]/status:bg-lampu-buka group-data-[status=istirahat]/status:bg-lampu-istirahat group-data-[status=tutup]/status:bg-lampu-tutup" />
+              </span>
+              <span>
+                <span class="sr-only" data-status-pembaca />
+                <span data-status-teks />
+              </span>
+            </p>
             {ringkasJadwal(situs.jamLayanan.jadwal).map((baris) => <p class="text-ink-muted">{baris.hari}: {baris.jam}</p>)}
             <p class="mt-1 text-sm text-ink-subtle">Tutup pada hari libur nasional dan cuti bersama.</p>
           </div>
@@ -83,10 +96,6 @@ const lapor = situs.tautanPenting.find((tautan) => tautan.url.includes('lapor.go
           )
         }
       </ul>
-
-      <div class="mt-8 flex flex-wrap gap-3">
-        {lapor && <Button href={lapor.url} variant="outline" iconRight="external-link">Pengaduan lewat LAPOR!</Button>}
-      </div>
     </div>
 
     <div class="flex flex-col gap-4">
@@ -104,3 +113,32 @@ const lapor = situs.tautanPenting.find((tautan) => tautan.url.includes('lapor.go
     </div>
   </Container>
 </section>
+
+<script>
+  // Status jam layanan di baris "Jam layanan". Dihitung ulang setiap 30 detik dan saat tab dibuka kembali.
+  import { statusLayanan, type DataJamLayanan, type StatusLayanan } from '../../lib/jam-layanan';
+
+  // Teks tambahan untuk pembaca layar. Saat istirahat tulisannya tetap "Buka sekarang" dan hanya warna lampu yang berubah,
+  // jadi pembaca layar perlu diberi tahu. Buka dan tutup sudah jelas dari tulisannya.
+  const teksPembaca: Record<StatusLayanan, string> = {
+    buka: '',
+    istirahat: 'Kantor sedang istirahat, tetap bisa didatangi. ',
+    tutup: '',
+  };
+
+  function perbarui() {
+    document.querySelectorAll<HTMLElement>('[data-status-layanan]').forEach((el) => {
+      const data: DataJamLayanan = JSON.parse(el.dataset.statusLayanan ?? '');
+      const { status, teks } = statusLayanan(data, new Date());
+      el.dataset.status = status;
+      el.querySelector('[data-status-pembaca]')!.textContent = teksPembaca[status];
+      el.querySelector('[data-status-teks]')!.textContent = teks;
+    });
+  }
+
+  perbarui();
+  setInterval(perbarui, 30_000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) perbarui();
+  });
+</script>
