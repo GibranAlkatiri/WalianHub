@@ -1,23 +1,27 @@
 ---
-// Logo situs: lambang Kota Tomohon, nama kelurahan, dan nama kota.
+// Logo situs: lambang Kota Tomohon, nama kelurahan, lalu nama kecamatan dan kota.
+// Di bawah 640px, kecamatan dan kota ditulis dua baris agar header tetap muat di layar 360px.
 import { Image } from 'astro:assets';
 import logoTomohon from '../../assets/logo-tomohon.png';
 import { url } from '../../lib/url';
 
 interface Props {
   nama: string;
-  keterangan: string;
+  kecamatan: string;
+  kota: string;
   /** true untuk latar gelap, misalnya di footer. */
   terang?: boolean;
 }
 
-const { nama, keterangan, terang = false } = Astro.props;
+const { nama, kecamatan, kota, terang = false } = Astro.props;
 ---
 
 <a href={url('/')} class="flex shrink-0 items-center gap-2 rounded-xl sm:gap-2.5">
   <Image src={logoTomohon} alt="" height={48} densities={[1, 2]} loading="eager" class="h-9 w-auto sm:h-10 lg:h-12" />
   <span class="leading-tight">
     <span class:list={['block text-[15px] font-extrabold sm:text-base lg:text-lg', terang ? 'text-white' : 'text-forest-600 group-data-atas:text-white']}>{nama}</span>
-    <span class:list={['block text-xs font-medium', terang ? 'text-sage-200' : 'text-ink-subtle group-data-atas:text-white/80']}>{keterangan}</span>
+    <span class:list={['block text-xs font-medium', terang ? 'text-sage-200' : 'text-ink-subtle group-data-atas:text-white/80']}>
+      <span class="block sm:inline">{kecamatan}</span><span class="hidden sm:inline"> · </span><span class="block sm:inline">Kota {kota}</span>
+    </span>
   </span>
 </a>

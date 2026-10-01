@@ -21,9 +21,6 @@ const petaEmbed = `https://www.google.com/maps/embed?origin=mfe&pb=!1m3!2m1!1s${
 // Petunjuk arah langsung ke titik kantor. Jika googleMapsUrl diisi, link itu yang dipakai.
 const petunjukArah = situs.googleMapsUrl || `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 const lapor = situs.tautanPenting.find((tautan) => tautan.url.includes('lapor.go.id'));
-
-// Selama alamat kantor masih placeholder, titik peta hanya perkiraan wilayah Walian.
-const titikPerkiraan = situs.alamat.includes('[');
 ---
 
 <section id="kontak" class="bg-white py-12 sm:py-16 lg:py-24">
@@ -101,8 +98,7 @@ const titikPerkiraan = situs.alamat.includes('[');
           referrerpolicy="no-referrer-when-downgrade"
           class="block aspect-[4/3] w-full border-0 lg:aspect-auto lg:h-[440px]"></iframe>
       </div>
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        {titikPerkiraan && <p class="text-sm text-ink-subtle">Titik peta masih perkiraan wilayah Walian, menunggu titik lokasi kantor kelurahan.</p>}
+      <div>
         <Button href={petunjukArah} variant="outline" iconRight="external-link">Petunjuk Arah</Button>
       </div>
     </div>

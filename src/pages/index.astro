@@ -1,10 +1,9 @@
 ---
-// Beranda (landing page): enam section, dari hero sampai kontak dan peta.
+// Beranda (landing page): lima section, dari hero sampai kontak dan peta.
 // Semua isinya diambil dari src/content/.
 import { getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/home/Hero.astro';
-import QuickAccess from '../components/home/QuickAccess.astro';
 import LatestNews from '../components/home/LatestNews.astro';
 import Services from '../components/home/Services.astro';
 import FeaturedDestinations from '../components/home/FeaturedDestinations.astro';
@@ -20,8 +19,7 @@ const gambarPreview = fotoPertama && /\.(jpe?g|png|webp)$/i.test(fotoPertama) ? 
 ---
 
 <BaseLayout overlayHeader image={gambarPreview}>
-  <Hero hero={beranda.hero} />
-  <QuickAccess jamLayanan={situs.jamLayanan} />
+  <Hero hero={beranda.hero} jamLayanan={situs.jamLayanan} />
   <LatestNews />
   <Services />
   <FeaturedDestinations />

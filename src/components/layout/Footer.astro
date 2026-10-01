@@ -23,7 +23,7 @@ const bisaDiemail = situs.email?.includes('@');
 <footer class="bg-forest-800 text-sage-200">
   <div class="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-4 lg:px-8 lg:py-16">
     <div>
-      <Logo nama={situs.namaKelurahan} keterangan={`Kota ${situs.kota}`} terang />
+      <Logo nama={situs.namaKelurahan} kecamatan={situs.kecamatan} kota={situs.kota} terang />
       <p class="mt-4 text-base">
         {situs.namaKelurahan}, Kecamatan {situs.kecamatan}, Kota {situs.kota}, {situs.provinsi}.
       </p>

@@ -47,7 +47,8 @@ export function statusLayanan(data: DataJamLayanan, sekarang: Date): { status: S
   if (!jadwal?.buka || !jadwal.tutup) return tutup;
   if (menit < keMenit(jadwal.buka) || menit >= keMenit(jadwal.tutup)) return tutup;
 
-  const teks = `${hari}: ${teksJam(jadwal.buka, jadwal.tutup)}`;
+  // Saat istirahat tulisannya tetap "Buka", karena warga tetap boleh datang. Bedanya hanya di warna lampu.
+  const teks = `Buka · ${teksJam(jadwal.buka, jadwal.tutup)}`;
   const { istirahat } = jadwal;
   if (istirahat && menit >= keMenit(istirahat.mulai) && menit < keMenit(istirahat.selesai)) {
     return { status: 'istirahat', teks };

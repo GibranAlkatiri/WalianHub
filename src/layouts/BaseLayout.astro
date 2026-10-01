@@ -74,7 +74,7 @@ const gambarPreview = new URL(url(image || '/images/default-og.png'), Astro.site
     >
       Langsung ke konten
     </a>
-    <Header namaKelurahan={situs.namaKelurahan} kota={situs.kota} transparan={overlayHeader} />
+    <Header namaKelurahan={situs.namaKelurahan} kecamatan={situs.kecamatan} kota={situs.kota} transparan={overlayHeader} />
     <main id="konten" class:list={[!overlayHeader && 'pt-28 lg:pt-32']}>
       <slot />
     </main>

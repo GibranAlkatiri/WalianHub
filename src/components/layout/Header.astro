@@ -12,11 +12,12 @@ import { url } from '../../lib/url';
 
 interface Props {
   namaKelurahan: string;
+  kecamatan: string;
   kota: string;
   transparan?: boolean;
 }
 
-const { namaKelurahan, kota, transparan = false } = Astro.props;
+const { namaKelurahan, kecamatan, kota, transparan = false } = Astro.props;
 
 const halamanIni = Astro.url.pathname.replace(/\/$/, '');
 const aktif = (href: string) => {
@@ -34,7 +35,7 @@ const aktif = (href: string) => {
   <div
     class="relative mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 rounded-2xl bg-white/95 px-2.5 shadow-float backdrop-blur transition-[background-color,box-shadow] duration-300 group-data-atas:bg-transparent group-data-atas:shadow-none group-data-atas:backdrop-blur-none motion-reduce:transition-none sm:px-3 lg:h-18 lg:px-5"
   >
-    <Logo nama={namaKelurahan} keterangan={`Kota ${kota}`} />
+    <Logo nama={namaKelurahan} kecamatan={kecamatan} kota={kota} />
 
     <nav aria-label="Menu utama" class="hidden xl:block">
       <ul class="flex items-center gap-1">

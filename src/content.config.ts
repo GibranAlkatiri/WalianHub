@@ -69,7 +69,6 @@ const beranda = defineCollection({
   loader: glob({ pattern: 'beranda.json', base: './src/content/pengaturan' }),
   schema: z.object({
     hero: z.object({
-      label: z.string(),
       judul: z.string(),
       subjudul: z.string(),
       /** Foto latar hero, sesuai urutan. Lebih dari satu foto berganti otomatis. Kosong: gambar default. */
@@ -77,7 +76,7 @@ const beranda = defineCollection({
         .array(
           z.object({
             gambar: z.string(),
-            /** Isi foto, contoh "Kantor Kelurahan Walian". Tampil di pojok hero dan dibacakan screen reader. */
+            /** Isi foto, contoh "Kantor Kelurahan Walian". Tidak tampil di layar, tetapi dibacakan screen reader. */
             keterangan: z.string().min(1, 'Keterangan foto wajib diisi'),
             /** Bagian foto yang tetap terlihat saat foto terpotong di layar sempit. */
             posisi: z.enum(['kiri', 'tengah', 'kanan']).default('tengah'),

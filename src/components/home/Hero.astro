@@ -1,20 +1,22 @@
 ---
 // Section 1 Beranda: foto selebar layar sebagai latar, dengan judul di atasnya.
 // Header melayang di atas foto, teks putih rata kiri. Teks muncul bertahap saat halaman dibuka.
+// Di atas judul: status jam layanan langsung menurut waktu WITA. Hanya informasi, bukan tautan.
 // Warna foto diredam dan diberi lapisan hijau agar menyatu dengan website, lalu bagian bawahnya melebur ke latar halaman.
 // Lebih dari satu foto: berganti otomatis dengan efek memudar dan zoom pelan, disertai tombol jeda.
 // Pengunjung yang mematikan animasi di perangkatnya: tanpa animasi, dan foto tidak berganti sendiri.
 import type { CollectionEntry } from 'astro:content';
 import Container from '../ui/Container.astro';
 import SmartImage from '../ui/SmartImage.astro';
-import Badge from '../ui/Badge.astro';
 import Icon from '../ui/Icon.astro';
+import type { DataJamLayanan } from '../../lib/jam-layanan';
 
 interface Props {
   hero: CollectionEntry<'beranda'>['data']['hero'];
+  jamLayanan: DataJamLayanan;
 }
 
-const { hero } = Astro.props;
+const { hero, jamLayanan } = Astro.props;
 const daftarFoto = hero.foto.filter((foto) => foto.gambar.trim());
 const tanpaFoto = daftarFoto.length === 0;
 const bergilir = daftarFoto.length > 1;
@@ -63,7 +65,23 @@ const posisiFoto = {
   </div>
 
   <Container class="pt-28 pb-28 lg:pt-32 lg:pb-36">
-    <Badge variant="chip" icon="map-pin" class="motion-safe:animate-hero-muncul-1">{hero.label}</Badge>
+    <p
+      data-status-layanan={JSON.stringify(jamLayanan)}
+      class="group/status flex items-center gap-2.5 text-sm font-semibold text-white motion-safe:animate-hero-muncul-1 sm:text-base"
+    >
+      <span class="grid size-5 shrink-0 place-items-center">
+        {/* Sebelum skrip berjalan: ikon jam. Setelah itu: lampu status. */}
+        <Icon name="clock" class="size-5 group-data-[status]/status:hidden" />
+        <span class="relative hidden size-3 group-data-[status]/status:block" aria-hidden="true">
+          <span class="absolute inset-0 hidden animate-ping rounded-full bg-lampu-buka opacity-75 group-data-[status=buka]/status:block motion-reduce:animate-none" />
+          <span class="relative block size-3 rounded-full group-data-[status=buka]/status:bg-lampu-buka group-data-[status=istirahat]/status:bg-lampu-istirahat group-data-[status=tutup]/status:bg-lampu-tutup" />
+        </span>
+      </span>
+      <span>
+        <span class="sr-only" data-status-pembaca />
+        <span data-status-teks>Jam Layanan</span>
+      </span>
+    </p>
     <h1
       id="judul-hero"
       class="mt-5 max-w-2xl text-3xl leading-[1.1] font-extrabold text-balance text-white motion-safe:animate-hero-muncul-2 sm:text-4xl lg:text-6xl"
@@ -73,27 +91,10 @@ const posisiFoto = {
     <p class="mt-4 max-w-xl text-base text-white/90 motion-safe:animate-hero-muncul-3 sm:mt-5 sm:text-lg lg:text-xl">{hero.subjudul}</p>
   </Container>
 
-  {/* Pojok kanan bawah: keterangan foto dan tombol jeda, tepat di atas kotak akses cepat */}
+  {/* Pojok kanan bawah: label gambar default, atau tombol jeda jika fotonya lebih dari satu. Keterangan foto tidak ditampilkan. */}
   <div class="absolute inset-x-0 bottom-16 lg:bottom-20">
     <Container class="flex items-center justify-end gap-2">
-      {/* Keterangan foto hanya untuk mata. Screen reader sudah membacanya dari alt foto. */}
-      {
-        tanpaFoto ? (
-          <span class="rounded-full bg-ink/80 px-3 py-1 text-sm font-semibold text-white">Foto belum tersedia</span>
-        ) : (
-          <span aria-hidden="true" class="grid min-w-0 grid-cols-1 justify-items-end">
-            {daftarFoto.map((foto, i) => (
-              <span
-                data-keterangan
-                data-aktif={i === 0 ? '' : undefined}
-                class="col-start-1 row-start-1 max-w-full truncate rounded-full bg-ink/80 px-3 py-1 text-sm font-semibold text-white opacity-0 transition-opacity duration-1000 data-aktif:opacity-100"
-              >
-                {foto.keterangan}
-              </span>
-            ))}
-          </span>
-        )
-      }
+      {tanpaFoto && <span class="rounded-full bg-ink/80 px-3 py-1 text-sm font-semibold text-white">Foto belum tersedia</span>}
       {
         bergilir && (
           <button
@@ -120,7 +121,6 @@ const posisiFoto = {
 
   if (hero) {
     const daftarSlide = hero.querySelectorAll<HTMLElement>('[data-slide]');
-    const daftarKeterangan = hero.querySelectorAll<HTMLElement>('[data-keterangan]');
     const tombol = hero.querySelector<HTMLButtonElement>('[data-hero-jeda]')!;
     let aktif = 0;
     let timer: ReturnType<typeof setInterval> | undefined;
@@ -129,7 +129,6 @@ const posisiFoto = {
 
     function tandai(nomor: number, nyala: boolean) {
       daftarSlide[nomor].toggleAttribute('data-aktif', nyala);
-      daftarKeterangan[nomor].toggleAttribute('data-aktif', nyala);
       if (nyala) daftarSlide[nomor].removeAttribute('aria-hidden');
       else daftarSlide[nomor].setAttribute('aria-hidden', 'true');
     }
@@ -164,4 +163,33 @@ const posisiFoto = {
     perbaruiTombol();
     aturTimer();
   }
+</script>
+
+<script>
+  // Status jam layanan di atas judul. Dihitung ulang setiap 30 detik dan saat tab dibuka kembali.
+  import { statusLayanan, type DataJamLayanan, type StatusLayanan } from '../../lib/jam-layanan';
+
+  // Teks tambahan untuk pembaca layar. Saat istirahat tulisannya tetap "Buka" dan hanya warna lampu yang berubah,
+  // jadi pembaca layar perlu diberi tahu. Buka dan tutup sudah jelas dari tulisannya.
+  const teksPembaca: Record<StatusLayanan, string> = {
+    buka: '',
+    istirahat: 'Kantor sedang istirahat, tetap bisa didatangi. ',
+    tutup: '',
+  };
+
+  function perbarui() {
+    document.querySelectorAll<HTMLElement>('[data-status-layanan]').forEach((el) => {
+      const data: DataJamLayanan = JSON.parse(el.dataset.statusLayanan ?? '');
+      const { status, teks } = statusLayanan(data, new Date());
+      el.dataset.status = status;
+      el.querySelector('[data-status-pembaca]')!.textContent = teksPembaca[status];
+      el.querySelector('[data-status-teks]')!.textContent = teks;
+    });
+  }
+
+  perbarui();
+  setInterval(perbarui, 30_000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) perbarui();
+  });
 </script>

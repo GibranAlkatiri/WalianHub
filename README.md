@@ -22,7 +22,7 @@ Semua isi website ada di folder `src/content/`. Untuk mengganti isi, tampilan ti
 | Isi | File |
 |---|---|
 | Nama, alamat, kontak, jam layanan, tautan penting | `src/content/pengaturan/situs.json` |
-| Teks hero, akses cepat, sambutan Lurah | `src/content/pengaturan/beranda.json` |
+| Teks dan foto hero | `src/content/pengaturan/beranda.json` |
 | Ringkasan profil dan data penduduk | `src/content/pengaturan/profil.json` |
 | Layanan (satu file per layanan) | `src/content/layanan/*.md` |
 | Destinasi wisata (satu file per destinasi) | `src/content/destinasi/*.md` |
