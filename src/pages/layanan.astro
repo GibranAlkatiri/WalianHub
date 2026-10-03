@@ -1,11 +1,11 @@
 ---
-// Halaman Layanan: panduan umum pengurusan surat di kantor kelurahan, beserta info kantor, pengumuman, dan pengaduan.
+// Halaman Layanan: panduan umum pengurusan surat di kantor kelurahan, beserta status kantor, pengumuman, dan pengaduan.
 // Warga membaca persyaratan dan alurnya lebih dulu, lalu bertanya ke kelurahan jika ada yang belum jelas.
 import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Container from '../components/ui/Container.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
-import InfoKantor from '../components/ui/InfoKantor.astro';
+import StatusKantor from '../components/ui/StatusKantor.astro';
 import DaftarPengumuman from '../components/layanan/DaftarPengumuman.astro';
 import ItemLayanan from '../components/layanan/ItemLayanan.astro';
 import Pengaduan from '../components/layanan/Pengaduan.astro';
@@ -23,25 +23,23 @@ const pengumuman = [...(await getEntry('pengumuman', 'pengumuman'))!.data.daftar
 const diperbarui = layanan.length > 0 ? new Date(Math.max(...layanan.map((item) => item.data.diperbarui.getTime()))) : null;
 ---
 
-<BaseLayout title="Layanan" description="Persyaratan dan alur pengurusan surat di Kantor Kelurahan Walian, jam layanan, pengumuman, dan pengaduan.">
+<BaseLayout title="Layanan" description="Persyaratan dan alur pengurusan surat di Kantor Kelurahan Walian, pengumuman, dan pengaduan.">
   <section class="pt-8 pb-12 sm:pt-10 sm:pb-16 lg:pt-12 lg:pb-20">
-    <Container class="grid gap-8 lg:grid-cols-[1fr_26rem] lg:items-start lg:gap-16">
-      <div>
-        <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-sm text-ink-subtle">
-          <a href={url('/')} class="hover:text-forest-600 hover:underline">Beranda</a>
-          <span aria-hidden="true">/</span>
-          <span class="text-ink">Layanan</span>
-        </nav>
-        <h1 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl">Layanan Kelurahan</h1>
-        <p class="mt-4 max-w-2xl text-ink-muted">
-          Panduan umum pengurusan surat di Kantor Kelurahan Walian. Baca persyaratan dan alurnya terlebih dahulu, lalu
-          tanyakan kepada kami jika ada yang belum jelas.
-        </p>
+    <Container>
+      <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-sm text-ink-subtle">
+        <a href={url('/')} class="hover:text-forest-600 hover:underline">Beranda</a>
+        <span aria-hidden="true">/</span>
+        <span class="text-ink">Layanan</span>
+      </nav>
+      <h1 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl">Layanan Kelurahan</h1>
+      {/* Tempatnya disediakan lebih dulu, supaya paragraf di bawahnya tidak bergeser saat status muncul */}
+      <div class="mt-4 min-h-7">
+        <StatusKantor jamLayanan={situs.jamLayanan} />
       </div>
-      <div class="rounded-2xl bg-white p-6 shadow-card sm:p-8">
-        <h2 class="text-lg font-bold text-ink">Info kantor</h2>
-        <InfoKantor situs={situs} class="mt-5" />
-      </div>
+      <p class="mt-4 max-w-2xl text-ink-muted">
+        Panduan umum pengurusan surat di Kantor Kelurahan Walian. Baca persyaratan dan alurnya terlebih dahulu, lalu
+        tanyakan kepada kami jika ada yang belum jelas.
+      </p>
     </Container>
   </section>
 

@@ -1,0 +1,58 @@
+---
+// Lampu status buka atau tutup kantor menurut waktu WITA, berbentuk pil kecil. Tersembunyi sampai skrip selesai menghitung statusnya.
+// Dipakai di baris "Jam layanan" pada InfoKantor dan di kepala halaman Layanan. Astro hanya memasukkan skripnya sekali per halaman.
+import type { DataJamLayanan } from '../../lib/jam-layanan';
+
+interface Props {
+  jamLayanan: DataJamLayanan;
+  class?: string;
+}
+
+const { jamLayanan, class: kelas } = Astro.props;
+---
+
+<p
+  data-status-layanan={JSON.stringify(jamLayanan)}
+  class:list={[
+    'group/status hidden w-fit items-center gap-2 rounded-full bg-sage-100 px-3 py-1 text-sm font-semibold text-forest-900 data-[status]:flex',
+    kelas,
+  ]}
+>
+  <span class="relative size-3 shrink-0" aria-hidden="true">
+    <span class="absolute inset-0 hidden animate-ping rounded-full bg-lampu-buka opacity-75 group-data-[status=buka]/status:block motion-reduce:animate-none" />
+    <span class="relative block size-3 rounded-full group-data-[status=buka]/status:bg-lampu-buka group-data-[status=istirahat]/status:bg-lampu-istirahat group-data-[status=tutup]/status:bg-lampu-tutup" />
+  </span>
+  <span>
+    <span class="sr-only" data-status-pembaca />
+    <span data-status-teks />
+  </span>
+</p>
+
+<script>
+  // Status jam layanan. Dihitung ulang setiap 30 detik dan saat tab dibuka kembali.
+  import { statusLayanan, type DataJamLayanan, type StatusLayanan } from '../../lib/jam-layanan';
+
+  // Teks tambahan untuk pembaca layar. Saat istirahat tulisannya tetap "Buka sekarang" dan hanya warna lampu yang berubah,
+  // jadi pembaca layar perlu diberi tahu. Buka dan tutup sudah jelas dari tulisannya.
+  const teksPembaca: Record<StatusLayanan, string> = {
+    buka: '',
+    istirahat: 'Kantor sedang istirahat, tetap bisa didatangi. ',
+    tutup: '',
+  };
+
+  function perbarui() {
+    document.querySelectorAll<HTMLElement>('[data-status-layanan]').forEach((el) => {
+      const data: DataJamLayanan = JSON.parse(el.dataset.statusLayanan ?? '');
+      const { status, teks } = statusLayanan(data, new Date());
+      el.dataset.status = status;
+      el.querySelector('[data-status-pembaca]')!.textContent = teksPembaca[status];
+      el.querySelector('[data-status-teks]')!.textContent = teks;
+    });
+  }
+
+  perbarui();
+  setInterval(perbarui, 30_000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) perbarui();
+  });
+</script>
