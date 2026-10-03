@@ -56,15 +56,13 @@ const diperbarui = layanan.length > 0 ? new Date(Math.max(...layanan.map((item) 
         layanan.length > 0 ? (
           <div class="mt-8 space-y-3 sm:space-y-4">
             {layanan.map((item) => (
-              <ItemLayanan layanan={item} whatsapp={situs.whatsapp} />
+              <ItemLayanan layanan={item} />
             ))}
           </div>
         ) : (
           <div class="mt-8 rounded-2xl bg-white p-8 text-center text-ink-muted shadow-card">Daftar layanan sedang disiapkan.</div>
         )
       }
-      {/* Pemberitahuan untuk pembaca layar setelah link layanan disalin */}
-      <p data-salin-status class="sr-only" aria-live="polite"></p>
     </Container>
   </section>
 
