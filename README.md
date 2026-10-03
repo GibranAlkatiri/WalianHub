@@ -12,8 +12,8 @@ Website di link ini diperbarui otomatis setiap ada perubahan di branch `main`.
 
 ## Status
 
-- **Beranda dan halaman Profil:** selesai.
-- **Berikutnya:** halaman Layanan, lalu halaman Wisata.
+- **Beranda, halaman Profil, dan halaman Layanan:** selesai.
+- **Berikutnya:** halaman Wisata.
 
 ## Isi website
 
@@ -25,6 +25,7 @@ Semua isi website ada di folder `src/content/`. Untuk mengganti isi, tampilan ti
 | Teks dan foto hero | `src/content/pengaturan/beranda.json` |
 | Profil: ringkasan, Lurah, struktur organisasi, wilayah dan lingkungan, visi dan misi | `src/content/pengaturan/profil.json` |
 | Layanan (satu file per layanan) | `src/content/layanan/*.md` |
+| Pengumuman untuk warga (tampil di halaman Layanan) | `src/content/pengaturan/pengumuman.json` |
 | Destinasi wisata (satu file per destinasi) | `src/content/destinasi/*.md` |
 
 **Aturan penulisan data:**
@@ -53,7 +54,7 @@ Setiap isi diperiksa oleh `src/content.config.ts` setiap kali website dibangun. 
 
 ```
 src/
-├── components/        Potongan tampilan: layout (header, footer), ui (tombol, card), home (section Beranda), profil (section Profil)
+├── components/        Potongan tampilan: layout (header, footer), ui (tombol, card), home (section Beranda), profil (section Profil), layanan (halaman Layanan)
 ├── content/           Isi website
 ├── content.config.ts  Kontrak bentuk data
 ├── icons/             Ikon SVG

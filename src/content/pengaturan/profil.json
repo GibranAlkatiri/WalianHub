@@ -16,13 +16,6 @@
     { "jabatan": "Pembantu Kasie Pembangunan", "nama": ["[Nama]"], "atasan": "Staf Seksi Pembangunan" },
     { "jabatan": "Staf Seksi Kesra", "nama": ["[Nama]", "[Nama]", "[Nama]"], "atasan": "Kasie Kesra" }
   ],
-  "batasWilayah": {
-    "utara": "[Berbatasan dengan ...]",
-    "selatan": "[Berbatasan dengan ...]",
-    "timur": "[Berbatasan dengan ...]",
-    "barat": "[Berbatasan dengan ...]"
-  },
-  "petaWilayah": "",
   "sumberData": { "tahun": "[Tahun data]", "sumber": "[Sumber data]" },
   "lingkungan": [
     { "nama": "Lingkungan I", "kepala": "[Nama]", "wakil": "[Nama]", "kepalaKeluarga": null, "jumlahPenduduk": null, "luasKm2": null },

@@ -111,13 +111,6 @@ const profil = defineCollection({
       .superRefine((daftar, ctx) => {
         for (const message of cekBagan(daftar)) ctx.addIssue({ code: 'custom', message });
       }),
-    batasWilayah: z.object({
-      utara: z.string(),
-      selatan: z.string(),
-      timur: z.string(),
-      barat: z.string(),
-    }),
-    petaWilayah: z.string().optional(),
     /** Tahun dan sumber data penduduk dan luas wilayah. */
     sumberData: z.object({ tahun: z.string(), sumber: z.string() }),
     /** Data setiap lingkungan. Total kelurahan dijumlahkan dari angka yang sudah diisi. Nama kosong tampil sebagai "[kosong]". */
@@ -141,6 +134,25 @@ const profil = defineCollection({
     /** Alamat halaman sumber visi dan misi. Kosong: tautan sumber tidak ditampilkan. */
     sumberVisiMisi: z.string().optional(),
     diperbarui: z.coerce.date(),
+  }),
+});
+
+const pengumuman = defineCollection({
+  loader: glob({ pattern: 'pengumuman.json', base: './src/content/pengaturan' }),
+  schema: z.object({
+    /** Pengumuman untuk warga di halaman Layanan, yang terbaru di atas. Kosong: bagian Pengumuman tidak tampil. */
+    daftar: z
+      .array(
+        z.object({
+          judul: z.string(),
+          tanggal: z.coerce.date(),
+          /** Isi singkat pengumuman. Baris baru di sini juga menjadi baris baru di halaman. */
+          isi: z.string(),
+          /** true berarti diberi label "Penting". */
+          penting: z.boolean().default(false),
+        }),
+      )
+      .default([]),
   }),
 });
 
@@ -181,4 +193,4 @@ const destinasi = defineCollection({
   }),
 });
 
-export const collections = { situs, beranda, profil, layanan, destinasi };
+export const collections = { situs, beranda, profil, pengumuman, layanan, destinasi };

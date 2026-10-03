@@ -7,11 +7,11 @@ import { HALAMAN_PENDUKUNG_SIAP } from './konfigurasi';
 export const tujuan = (halaman: string, anchor: string) => (HALAMAN_PENDUKUNG_SIAP ? halaman : `/#${anchor}`);
 
 // Menu utama di header, menu HP, dan footer.
-// Profil sudah menjadi halaman sendiri. Menu lain masih menggulir ke section di Beranda sampai halamannya siap.
+// Profil dan Layanan sudah menjadi halaman sendiri. Wisata masih menggulir ke section di Beranda sampai halamannya siap.
 export const menuUtama = [
   { label: 'Beranda', href: '/' },
   { label: 'Profil', href: '/profil' },
-  { label: 'Layanan', href: tujuan('/layanan', 'layanan') },
+  { label: 'Layanan', href: '/layanan' },
   { label: 'Wisata', href: tujuan('/wisata', 'wisata') },
 ];
 
@@ -20,3 +20,6 @@ export const tautanKontak = '/#kontak';
 
 /** Pesan pembuka otomatis saat pengunjung membuka chat WhatsApp kantor kelurahan. */
 export const pesanWhatsapp = 'Halo Kantor Kelurahan Walian, saya ingin bertanya tentang ';
+
+/** Pesan pembuka otomatis untuk tombol pengaduan di halaman Layanan. */
+export const pesanPengaduan = 'Halo Kantor Kelurahan Walian, saya ingin menyampaikan keluhan atau masukan: ';

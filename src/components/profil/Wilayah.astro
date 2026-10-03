@@ -1,11 +1,10 @@
 ---
-// Section Wilayah pada halaman Profil: batas wilayah, peta, ringkasan kelurahan, dan data setiap lingkungan.
+// Section Wilayah pada halaman Profil: ringkasan kelurahan dan data setiap lingkungan.
 // Total kelurahan dijumlahkan dari angka lingkungan yang sudah diisi. Angka yang belum diisi tidak ikut dihitung.
 // Data lingkungan: tabel dengan baris total mulai lebar 768px, dan satu kartu untuk setiap lingkungan di HP.
 import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
 import StatCard from '../ui/StatCard.astro';
-import SmartImage from '../ui/SmartImage.astro';
 import { formatAngka } from '../../lib/format';
 
 interface Lingkungan {
@@ -18,19 +17,11 @@ interface Lingkungan {
 }
 
 interface Props {
-  batasWilayah: { utara: string; selatan: string; timur: string; barat: string };
-  petaWilayah?: string;
   sumberData: { tahun: string; sumber: string };
   lingkungan: Lingkungan[];
 }
 
-const { batasWilayah, petaWilayah, sumberData, lingkungan } = Astro.props;
-const batas = [
-  { label: 'Utara', isi: batasWilayah.utara },
-  { label: 'Selatan', isi: batasWilayah.selatan },
-  { label: 'Timur', isi: batasWilayah.timur },
-  { label: 'Barat', isi: batasWilayah.barat },
-];
+const { sumberData, lingkungan } = Astro.props;
 
 // Jumlah dari lingkungan yang sudah diisi. Jika belum ada satu pun yang diisi: null ("Data menyusul").
 const jumlahkan = (ambil: (item: Lingkungan) => number | null) => {
@@ -52,24 +43,8 @@ const nama = (isi: string) => isi.trim() || '[kosong]';
 <section id="wilayah" class="py-12 sm:py-16 lg:py-24">
   <Container>
     <SectionHeading overline="Wilayah" title="Wilayah dan penduduk" />
-    <div class="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-16">
-      <div>
-        <h3 class="text-lg font-bold text-ink">Batas wilayah</h3>
-        <div class="mt-4 grid grid-cols-2 gap-3 sm:gap-4">
-          {
-            batas.map((item) => (
-              <div class="rounded-2xl bg-white p-4 shadow-card">
-                <p class="text-sm font-semibold text-ink-subtle">{item.label}</p>
-                <p class="mt-1 font-semibold text-ink">{item.isi}</p>
-              </div>
-            ))
-          }
-        </div>
-      </div>
-      <SmartImage src={petaWilayah} alt="Peta wilayah Kelurahan Walian" class="aspect-[4/3] rounded-2xl" />
-    </div>
 
-    <h3 class="mt-12 text-lg font-bold text-ink lg:mt-16">Ringkasan kelurahan</h3>
+    <h3 class="mt-8 text-lg font-bold text-ink">Ringkasan kelurahan</h3>
     <div class="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
       <StatCard ikon="map" label="Lingkungan" angka={lingkungan.length > 0 ? String(lingkungan.length) : null} />
       <StatCard ikon="house" label="Kepala keluarga" angka={formatAngka(total.kepalaKeluarga)} />

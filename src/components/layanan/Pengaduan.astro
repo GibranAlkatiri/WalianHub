@@ -1,0 +1,39 @@
+---
+// Bagian Pengaduan di halaman Layanan: keluhan atau masukan lewat WhatsApp kantor, atau lewat LAPOR!.
+import Container from '../ui/Container.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+import Button from '../ui/Button.astro';
+import { tautanWhatsapp } from '../../lib/format';
+import { pesanPengaduan } from '../../lib/navigasi';
+
+interface Props {
+  /** Nomor WhatsApp kantor. Kosong: hanya tautan LAPOR! yang tampil. */
+  whatsapp?: string;
+}
+
+const { whatsapp } = Astro.props;
+// LAPOR! adalah layanan pengaduan resmi pemerintah, alamatnya tetap.
+const tautanLapor = 'https://www.lapor.go.id';
+---
+
+<section id="pengaduan" class="bg-white py-12 sm:py-16 lg:py-20">
+  <Container class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+    <SectionHeading
+      overline="Pengaduan"
+      title="Ada keluhan atau masukan?"
+      description="Sampaikan langsung ke kantor kelurahan lewat WhatsApp, atau lewat LAPOR!, layanan pengaduan resmi pemerintah."
+    />
+    <div class="flex flex-wrap gap-3 lg:shrink-0">
+      {
+        whatsapp && (
+          <Button href={tautanWhatsapp(whatsapp, pesanPengaduan)} icon="whatsapp">
+            Chat WhatsApp
+          </Button>
+        )
+      }
+      <Button href={tautanLapor} variant="outline" iconRight="external-link">
+        Buka LAPOR!
+      </Button>
+    </div>
+  </Container>
+</section>

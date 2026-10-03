@@ -1,0 +1,128 @@
+---
+// Satu layanan di halaman Layanan. Nama dan ringkasan selalu terlihat; persyaratan, alur, lama proses, biaya, dan catatan
+// muncul saat ditekan. Memakai <details>, jadi setiap layanan dibuka dan ditutup sendiri, dan tetap berfungsi tanpa skrip.
+// Anchor layanan memakai nama filenya, contoh /layanan#surat-keterangan-domisili. Layanan yang dibuka lewat anchor langsung terbuka.
+// Di bawah rincian: tombol tanya lewat WhatsApp dan tombol salin link ke layanan ini.
+import { render, type CollectionEntry } from 'astro:content';
+import Icon from '../ui/Icon.astro';
+import Button from '../ui/Button.astro';
+import { tautanWhatsapp } from '../../lib/format';
+import { pesanWhatsapp } from '../../lib/navigasi';
+
+interface Props {
+  layanan: CollectionEntry<'layanan'>;
+  /** Nomor WhatsApp kantor. Kosong: tombol tanya tidak ditampilkan. */
+  whatsapp?: string;
+}
+
+const { layanan, whatsapp } = Astro.props;
+const { judul, ringkasan, ikon, persyaratan, alur, lamaProses, biaya } = layanan.data;
+const { Content } = await render(layanan);
+const adaCatatan = Boolean(layanan.body?.trim());
+---
+
+<details id={layanan.id} class="group rounded-2xl bg-white shadow-card target:ring-2 target:ring-forest-600">
+  <summary class="flex cursor-pointer list-none items-center gap-4 rounded-2xl p-4 sm:p-5 [&::-webkit-details-marker]:hidden">
+    <span class="grid size-11 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600"><Icon name={ikon} /></span>
+    <span class="min-w-0 flex-1">
+      <h3 class="font-bold text-ink">{judul}</h3>
+      <span class="mt-0.5 block text-sm text-ink-muted">{ringkasan}</span>
+    </span>
+    <Icon name="chevron-down" class="size-5 shrink-0 text-forest-600 transition-transform group-open:rotate-180 motion-reduce:transition-none" />
+  </summary>
+
+  <div class="border-t border-line p-4 sm:p-5 lg:px-20">
+    <div class="grid gap-6 md:grid-cols-2">
+      <div>
+        <h4 class="text-sm font-semibold tracking-widest text-forest-600 uppercase">Persyaratan</h4>
+        <ul class="mt-2 list-disc space-y-1 pl-5 text-ink-muted marker:text-forest-600">
+          {persyaratan.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold tracking-widest text-forest-600 uppercase">Alur pengurusan</h4>
+        <ol class="mt-2 list-decimal space-y-1 pl-5 text-ink-muted marker:font-semibold marker:text-forest-600">
+          {alur.map((item) => <li>{item}</li>)}
+        </ol>
+      </div>
+    </div>
+
+    <dl class="mt-6 grid gap-3 sm:grid-cols-2">
+      <div class="rounded-xl bg-sage-100 px-4 py-3">
+        <dt class="text-sm text-ink-subtle">Lama proses</dt>
+        <dd class="font-semibold text-ink">{lamaProses}</dd>
+      </div>
+      <div class="rounded-xl bg-sage-100 px-4 py-3">
+        <dt class="text-sm text-ink-subtle">Biaya</dt>
+        <dd class="font-semibold text-ink">{biaya}</dd>
+      </div>
+    </dl>
+
+    {
+      adaCatatan && (
+        <div class="mt-6 space-y-2 text-ink-muted [&_a]:font-semibold [&_a]:text-forest-600 [&_a]:underline [&_a]:underline-offset-4">
+          <Content />
+        </div>
+      )
+    }
+
+    <div class="mt-6 flex flex-wrap gap-3">
+      {
+        whatsapp && (
+          <Button href={tautanWhatsapp(whatsapp, `${pesanWhatsapp}${judul}.`)} size="sm" icon="whatsapp">
+            Tanya lewat WhatsApp<span class="sr-only"> tentang {judul}</span>
+          </Button>
+        )
+      }
+      {/* Dimunculkan skrip, hanya jika browser bisa menyalin teks */}
+      <button
+        type="button"
+        data-salin-link={layanan.id}
+        hidden
+        class="group/salin inline-flex h-11 items-center gap-2 rounded-full border-2 border-forest-600 px-5 font-semibold text-forest-600 transition-colors hover:bg-sage-100"
+      >
+        <Icon name="link" class="size-5 group-data-[disalin]/salin:hidden" />
+        <Icon name="check" class="hidden size-5 group-data-[disalin]/salin:block" />
+        <span data-salin-label>Salin link</span><span class="sr-only"> {judul}</span>
+      </button>
+    </div>
+  </div>
+</details>
+
+<script>
+  // Layanan yang dibuka lewat anchor (misalnya dari card layanan di Beranda) langsung terbuka.
+  function bukaDariAnchor() {
+    const id = decodeURIComponent(location.hash.slice(1));
+    const layanan = id ? document.getElementById(id) : null;
+    if (layanan instanceof HTMLDetailsElement) layanan.open = true;
+  }
+  bukaDariAnchor();
+  window.addEventListener('hashchange', bukaDariAnchor);
+
+  // Tombol salin link: menyalin alamat langsung ke layanan itu, lalu berubah menjadi "Link disalin" sebentar.
+  const pengumum = document.querySelector<HTMLElement>('[data-salin-status]');
+  if (navigator.clipboard && window.isSecureContext) {
+    document.querySelectorAll<HTMLButtonElement>('[data-salin-link]').forEach((tombol) => {
+      const label = tombol.querySelector<HTMLElement>('[data-salin-label]')!;
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      tombol.hidden = false;
+      tombol.addEventListener('click', async () => {
+        const alamat = new URL(`#${tombol.dataset.salinLink}`, location.href).href;
+        try {
+          await navigator.clipboard.writeText(alamat);
+        } catch {
+          return;
+        }
+        label.textContent = 'Link disalin';
+        tombol.toggleAttribute('data-disalin', true);
+        if (pengumum) pengumum.textContent = 'Link layanan disalin.';
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          label.textContent = 'Salin link';
+          tombol.toggleAttribute('data-disalin', false);
+          if (pengumum) pengumum.textContent = '';
+        }, 2500);
+      });
+    });
+  }
+</script>

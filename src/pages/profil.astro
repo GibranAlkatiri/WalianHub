@@ -15,7 +15,7 @@ const profil = (await getEntry('profil', 'profil'))!.data;
 <BaseLayout title="Profil" description="Struktur organisasi, wilayah, penduduk, serta visi dan misi Kelurahan Walian.">
   <KepalaHalaman ringkasan={profil.ringkasan} />
   <StrukturOrganisasi lurah={profil.lurah} strukturOrganisasi={profil.strukturOrganisasi} />
-  <Wilayah batasWilayah={profil.batasWilayah} petaWilayah={profil.petaWilayah} sumberData={profil.sumberData} lingkungan={profil.lingkungan} />
+  <Wilayah sumberData={profil.sumberData} lingkungan={profil.lingkungan} />
   <VisiMisi visi={profil.visi} misi={profil.misi} programUnggulan={profil.programUnggulan} sumber={profil.sumberVisiMisi} />
   <Container>
     <p class="py-8 text-center text-sm text-ink-subtle">Terakhir diperbarui: {formatTanggal(profil.diperbarui)}</p>

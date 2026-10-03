@@ -1,0 +1,39 @@
+---
+// Bagian Pengumuman di halaman Layanan: pengumuman atau surat pemberitahuan untuk warga, yang terbaru di atas.
+// Halaman Layanan hanya memanggil komponen ini jika ada pengumuman, jadi bagian ini tidak pernah tampil kosong.
+import type { CollectionEntry } from 'astro:content';
+import Container from '../ui/Container.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+import Badge from '../ui/Badge.astro';
+import Icon from '../ui/Icon.astro';
+import { formatTanggal, tanggalIso } from '../../lib/format';
+
+interface Props {
+  pengumuman: CollectionEntry<'pengumuman'>['data']['daftar'];
+}
+
+const { pengumuman } = Astro.props;
+---
+
+<section id="pengumuman" class="bg-white py-12 sm:py-16 lg:py-20">
+  <Container>
+    <SectionHeading overline="Pengumuman" title="Pengumuman untuk warga" />
+    <ul class="mt-8 grid gap-4 md:grid-cols-2 lg:gap-6">
+      {
+        pengumuman.map((item) => (
+          <li class="rounded-2xl bg-cream-50 p-5 ring-1 ring-line sm:p-6">
+            <div class="flex min-h-7 flex-wrap items-center gap-3">
+              <span class="inline-flex items-center gap-1.5 text-sm text-ink-subtle">
+                <Icon name="calendar" class="size-4" />
+                <time datetime={tanggalIso(item.tanggal)}>{formatTanggal(item.tanggal)}</time>
+              </span>
+              {item.penting && <Badge variant="penting">Penting</Badge>}
+            </div>
+            <h3 class="mt-3 text-lg leading-snug font-bold text-ink">{item.judul}</h3>
+            <p class="mt-2 whitespace-pre-line text-ink-muted">{item.isi}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </Container>
+</section>
