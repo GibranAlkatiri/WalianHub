@@ -1,5 +1,5 @@
 ---
-// Satu layanan di halaman Layanan. Nama dan ringkasan selalu terlihat; persyaratan, alur, lama proses, biaya, dan catatan
+// Satu layanan di halaman Layanan. Nama dan ringkasan selalu terlihat; persyaratan, alur, dan catatan
 // muncul saat ditekan. Memakai <details>, jadi setiap layanan dibuka dan ditutup sendiri, dan tetap berfungsi tanpa skrip.
 // Anchor layanan memakai nama filenya, contoh /layanan#surat-keterangan-domisili. Layanan yang dibuka lewat anchor langsung terbuka.
 // Di bawah rincian: tombol tanya lewat WhatsApp dan tombol salin link ke layanan ini.
@@ -16,7 +16,7 @@ interface Props {
 }
 
 const { layanan, whatsapp } = Astro.props;
-const { judul, ringkasan, ikon, persyaratan, alur, lamaProses, biaya } = layanan.data;
+const { judul, ringkasan, ikon, persyaratan, alur } = layanan.data;
 const { Content } = await render(layanan);
 const adaCatatan = Boolean(layanan.body?.trim());
 ---
@@ -46,17 +46,6 @@ const adaCatatan = Boolean(layanan.body?.trim());
         </ol>
       </div>
     </div>
-
-    <dl class="mt-6 grid gap-3 sm:grid-cols-2">
-      <div class="rounded-xl bg-sage-100 px-4 py-3">
-        <dt class="text-sm text-ink-subtle">Lama proses</dt>
-        <dd class="font-semibold text-ink">{lamaProses}</dd>
-      </div>
-      <div class="rounded-xl bg-sage-100 px-4 py-3">
-        <dt class="text-sm text-ink-subtle">Biaya</dt>
-        <dd class="font-semibold text-ink">{biaya}</dd>
-      </div>
-    </dl>
 
     {
       adaCatatan && (

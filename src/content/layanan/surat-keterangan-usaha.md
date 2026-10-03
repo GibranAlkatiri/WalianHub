@@ -10,8 +10,6 @@ persyaratan:
 alur:
   - "[Langkah 1]"
   - "[Langkah 2]"
-lamaProses: "[Lama proses]"
-biaya: "[Biaya]"
 diperbarui: 2026-09-28
 ---
 

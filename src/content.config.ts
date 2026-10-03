@@ -168,8 +168,6 @@ const layanan = defineCollection({
     urutan: z.number().default(100),
     persyaratan: z.array(z.string()),
     alur: z.array(z.string()),
-    lamaProses: z.string(),
-    biaya: z.string(),
     diperbarui: z.coerce.date(),
   }),
 });
