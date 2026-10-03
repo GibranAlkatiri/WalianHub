@@ -6,6 +6,7 @@ import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { namaKategori } from './lib/kategori-berita';
 import { namaHari } from './lib/jam-layanan';
+import { cekBagan } from './lib/bagan';
 
 /** Angka yang belum diketahui diisi null, lalu tampil sebagai "Data menyusul". */
 const angkaAtauKosong = z.number().nonnegative().nullable();
@@ -94,8 +95,23 @@ const profil = defineCollection({
     ringkasan: z.string(),
     /** Lurah yang sedang menjabat. Foto kosong: gambar default. Sebaiknya foto tegak (rasio 3:4). */
     lurah: z.object({ nama: z.string(), foto: z.string().optional() }),
-    visi: z.string(),
-    misi: z.array(z.string()),
+    /**
+     * Bagan struktur organisasi di bawah kotak Lurah. Setiap jabatan mencatat atasannya ("Lurah" atau jabatan lain).
+     * Nama kosong tampil sebagai "[kosong]". Jika atasan tidak ditemukan atau saling berputar, build gagal.
+     */
+    strukturOrganisasi: z
+      .array(
+        z.object({
+          jabatan: z.string().min(1, 'Nama jabatan wajib diisi'),
+          nama: z.array(z.string()).default([]),
+          atasan: z.string(),
+          garisSamping: z.boolean().default(false),
+        }),
+      )
+      .default([])
+      .superRefine((daftar, ctx) => {
+        for (const message of cekBagan(daftar)) ctx.addIssue({ code: 'custom', message });
+      }),
     batasWilayah: z.object({
       utara: z.string(),
       selatan: z.string(),
@@ -103,26 +119,28 @@ const profil = defineCollection({
       barat: z.string(),
     }),
     petaWilayah: z.string().optional(),
-    luasKm2: angkaAtauKosong,
-    lingkungan: z.array(z.object({ nama: z.string(), kepalaLingkungan: z.string() })).default([]),
-    penduduk: z.object({
-      jumlahJiwa: angkaAtauKosong,
-      kepalaKeluarga: angkaAtauKosong,
-      lakiLaki: angkaAtauKosong.optional(),
-      perempuan: angkaAtauKosong.optional(),
-      tahun: z.string(),
-      sumber: z.string(),
-    }),
-    /** Bagan struktur organisasi di bawah kotak Lurah, disusun per baris dari atas ke bawah. */
-    strukturOrganisasi: z
+    /** Tahun dan sumber data penduduk dan luas wilayah. */
+    sumberData: z.object({ tahun: z.string(), sumber: z.string() }),
+    /** Data setiap lingkungan. Total kelurahan dijumlahkan dari angka yang sudah diisi. Nama kosong tampil sebagai "[kosong]". */
+    lingkungan: z
       .array(
         z.object({
-          anggota: z
-            .array(z.object({ jabatan: z.string(), nama: z.string() }))
-            .min(1, 'Setiap baris bagan berisi minimal satu jabatan'),
+          nama: z.string(),
+          kepala: z.string(),
+          wakil: z.string(),
+          kepalaKeluarga: angkaAtauKosong,
+          jumlahPenduduk: angkaAtauKosong,
+          luasKm2: angkaAtauKosong,
         }),
       )
       .default([]),
+    /** Visi dan misi Pemerintah Kota Tomohon, yang diikuti Kelurahan Walian. */
+    visi: z.string(),
+    misi: z.array(z.string()),
+    /** Program unggulan Kota Tomohon, tampil setelah tombol "Selengkapnya" ditekan. */
+    programUnggulan: z.array(z.string()).default([]),
+    /** Alamat halaman sumber visi dan misi. Kosong: tautan sumber tidak ditampilkan. */
+    sumberVisiMisi: z.string().optional(),
     diperbarui: z.coerce.date(),
   }),
 });

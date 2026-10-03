@@ -1,19 +1,28 @@
 ---
-// Section Visi dan Misi pada halaman Profil.
+// Section Visi dan Misi pada halaman Profil: visi dan misi Pemerintah Kota Tomohon, yang diikuti Kelurahan Walian.
+// Program unggulan tertutup di awal. Tombol "Selengkapnya" membukanya di halaman yang sama, lalu berubah menjadi "Tutup".
+// Tanpa skrip, daftar program unggulan langsung tampil.
 import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
+import Icon from '../ui/Icon.astro';
 
 interface Props {
   visi: string;
   misi: string[];
+  programUnggulan: string[];
+  sumber?: string;
 }
 
-const { visi, misi } = Astro.props;
+const { visi, misi, programUnggulan, sumber } = Astro.props;
 ---
 
 <section id="visi-misi" class="bg-sage-100 py-12 sm:py-16 lg:py-24">
   <Container>
-    <SectionHeading overline="Visi dan Misi" title="Visi dan misi Kelurahan Walian" />
+    <SectionHeading
+      overline="Visi dan Misi"
+      title="Visi dan misi Kota Tomohon"
+      description="Kelurahan Walian mengikuti visi dan misi Pemerintah Kota Tomohon."
+    />
     <div class="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-12">
       <div class="rounded-2xl bg-white p-6 shadow-card sm:p-8">
         <p class="text-sm font-semibold tracking-widest text-forest-600 uppercase">Visi</p>
@@ -30,5 +39,64 @@ const { visi, misi } = Astro.props;
         }
       </ol>
     </div>
+
+    {
+      programUnggulan.length > 0 && (
+        <div class="mt-8 rounded-2xl bg-white p-6 shadow-card sm:p-8 lg:mt-12">
+          <h3 class="text-sm font-semibold tracking-widest text-forest-600 uppercase">Program unggulan</h3>
+          <p class="mt-2 text-ink-muted">{programUnggulan.length} program unggulan Pemerintah Kota Tomohon.</p>
+          <ol id="program-unggulan" data-program-isi class="mt-4 lg:columns-2 lg:gap-10">
+            {programUnggulan.map((item, i) => (
+              <li class="flex break-inside-avoid gap-3 pb-3">
+                <span class="w-7 shrink-0 text-right font-bold text-forest-600 tabular-nums">{i + 1}.</span>
+                <span class="text-ink-muted">{item}</span>
+              </li>
+            ))}
+          </ol>
+          <button
+            type="button"
+            data-program-tombol
+            hidden
+            aria-expanded="false"
+            aria-controls="program-unggulan"
+            class="group/program mt-4 inline-flex h-10 items-center gap-1 rounded-full font-semibold text-forest-600 underline-offset-4 hover:underline"
+          >
+            <span data-program-label>Selengkapnya</span>
+            <Icon name="chevron-down" class="size-4 transition-transform group-aria-expanded/program:rotate-180 motion-reduce:transition-none" />
+          </button>
+        </div>
+      )
+    }
+
+    {
+      sumber && (
+        <p class="mt-6 text-sm text-ink-subtle">
+          Sumber:{' '}
+          <a href={sumber} target="_blank" rel="noopener" class="font-semibold text-forest-600 underline-offset-4 hover:underline">
+            situs Pemerintah Kota Tomohon<span class="sr-only"> (membuka tab baru)</span>
+          </a>
+        </p>
+      )
+    }
   </Container>
 </section>
+
+<script>
+  // Dengan skrip, daftar program unggulan ditutup, lalu tombol "Selengkapnya" dimunculkan.
+  const tombol = document.querySelector<HTMLButtonElement>('[data-program-tombol]');
+  const isi = document.querySelector<HTMLElement>('[data-program-isi]');
+  const label = tombol?.querySelector<HTMLElement>('[data-program-label]');
+
+  if (tombol && isi && label) {
+    isi.hidden = true;
+    tombol.hidden = false;
+    tombol.addEventListener('click', () => {
+      const buka = tombol.getAttribute('aria-expanded') !== 'true';
+      tombol.setAttribute('aria-expanded', String(buka));
+      isi.hidden = !buka;
+      label.textContent = buka ? 'Tutup' : 'Selengkapnya';
+      // Setelah ditutup, tombol tetap terlihat walaupun daftar di atasnya menghilang.
+      if (!buka) tombol.scrollIntoView({ block: 'nearest' });
+    });
+  }
+</script>

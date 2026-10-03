@@ -1,0 +1,51 @@
+---
+// Satu kotak jabatan di bagan struktur organisasi, beserta cabang samping dan bawahannya.
+// Komponen ini memanggil dirinya sendiri untuk setiap bawahan, jadi bagan bisa bercabang sampai tingkat berapa pun.
+// Jabatan tanpa nama tampil "[kosong]", supaya alur bagan tetap utuh sampai jabatan itu terisi.
+import type { SimpulBagan } from '../../lib/bagan';
+
+interface Props {
+  simpul: SimpulBagan;
+  /** Kotak Lurah di puncak bagan. */
+  puncak?: boolean;
+  /** Kotak di cabang samping: rata kiri, menempel ke garis datar dari garis tengah. */
+  samping?: boolean;
+}
+
+const { simpul, puncak = false, samping = false } = Astro.props;
+---
+
+<li>
+  <div class:list={['rounded-2xl p-3 text-center shadow-card', puncak ? 'mx-auto w-52 bg-forest-600' : 'w-42 bg-white', !puncak && !samping && 'mx-auto']}>
+    <p class:list={['text-sm leading-snug font-semibold', puncak ? 'text-white' : 'text-forest-600']}>{simpul.jabatan}</p>
+    {
+      simpul.nama.length > 0 ? (
+        <p class:list={['mt-1 text-sm leading-snug font-bold', puncak ? 'text-white' : 'text-ink']}>
+          {simpul.nama.map((nama) => (
+            <span class="block">{nama}</span>
+          ))}
+        </p>
+      ) : (
+        <p class:list={['mt-1 text-sm font-semibold', puncak ? 'text-white/80' : 'text-ink-subtle']}>[kosong]</p>
+      )
+    }
+  </div>
+  {
+    simpul.samping.length > 0 && (
+      <ul class="bagan-samping">
+        {simpul.samping.map((item) => (
+          <Astro.self simpul={item} samping />
+        ))}
+      </ul>
+    )
+  }
+  {
+    simpul.bawahan.length > 0 && (
+      <ul class="bagan-cabang">
+        {simpul.bawahan.map((item) => (
+          <Astro.self simpul={item} />
+        ))}
+      </ul>
+    )
+  }
+</li>

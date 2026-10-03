@@ -1,45 +1,141 @@
 ---
 // Section Struktur Organisasi pada halaman Profil.
-// Bagan disusun per baris: kotak Lurah paling atas, lalu baris-baris dari data profil.
-// HP: kotak bertumpuk dengan garis di sisi kiri. Desktop: kotak sebaris dengan garis penghubung di atasnya.
-// Garis bagan diatur oleh kelas .bagan-baris di global.css.
+// Bagan berbentuk pohon dari data profil: kotak Lurah di puncak, lalu setiap jabatan di bawah atasannya.
+// Ukuran bagan sama di semua layar. Jika bagan lebih lebar dari layar, bagan bisa digeser, dicubit dengan dua jari,
+// atau diperbesar dan diperkecil lewat tombol. Tampilan awal memakai ukuran asli, dengan kotak Lurah di tengah.
+// Garis bagan diatur oleh kelas .bagan-cabang dan .bagan-samping di global.css.
 import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
+import Icon from '../ui/Icon.astro';
+import SimpulBagan from './SimpulBagan.astro';
+import { susunBagan, type JabatanBagan } from '../../lib/bagan';
 
 interface Props {
   lurah: { nama: string };
-  strukturOrganisasi: { anggota: { jabatan: string; nama: string }[] }[];
+  strukturOrganisasi: JabatanBagan[];
 }
 
 const { lurah, strukturOrganisasi } = Astro.props;
+const bagan = susunBagan(lurah.nama, strukturOrganisasi);
 ---
 
 <section id="struktur-organisasi" class="bg-sage-100 py-12 sm:py-16 lg:py-24">
   <Container>
     <SectionHeading overline="Struktur Organisasi" title="Struktur organisasi Kelurahan Walian" />
-    <div class="mt-8 lg:mt-12">
-      <ul class="bagan-baris">
-        <li>
-          <div class="h-full rounded-2xl bg-forest-600 p-4 text-white shadow-card lg:text-center">
-            <p class="text-sm font-semibold">Lurah</p>
-            <p class="mt-1 font-bold">{lurah.nama}</p>
-          </div>
-        </li>
-      </ul>
-      {
-        strukturOrganisasi.map((baris, i) => (
-          <ul class="bagan-baris" style={`--tingkat: ${i + 1}`}>
-            {baris.anggota.map((item) => (
-              <li>
-                <div class="h-full rounded-2xl bg-white p-4 shadow-card lg:text-center">
-                  <p class="text-sm font-semibold text-forest-600">{item.jabatan}</p>
-                  <p class="mt-1 font-bold text-ink">{item.nama}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ))
-      }
+    {/* Petunjuk dan tombol zoom dimunculkan skrip, hanya jika bagan lebih lebar dari layar */}
+    <div data-bagan-kontrol hidden class="mt-6 flex flex-wrap items-center justify-between gap-3">
+      <p class="text-sm text-ink-muted">Geser bagan ke samping. Cubit dengan dua jari atau pakai tombol untuk memperbesar.</p>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          data-bagan-perkecil
+          aria-label="Perkecil bagan"
+          class="grid size-10 place-items-center rounded-full bg-white text-forest-600 shadow-card transition-colors hover:bg-sage-200 disabled:opacity-40 disabled:hover:bg-white"
+        >
+          <Icon name="minus" class="size-5" />
+        </button>
+        <button
+          type="button"
+          data-bagan-perbesar
+          aria-label="Perbesar bagan"
+          class="grid size-10 place-items-center rounded-full bg-white text-forest-600 shadow-card transition-colors hover:bg-sage-200 disabled:opacity-40 disabled:hover:bg-white"
+        >
+          <Icon name="plus" class="size-5" />
+        </button>
+        <button
+          type="button"
+          data-bagan-semua
+          class="inline-flex h-10 items-center rounded-full bg-white px-4 text-sm font-semibold text-forest-600 shadow-card transition-colors hover:bg-sage-200"
+        >
+          Lihat semua
+        </button>
+      </div>
+    </div>
+    <div
+      data-bagan-bingkai
+      role="region"
+      aria-label="Bagan struktur organisasi"
+      class="mt-8 overflow-x-auto overflow-y-hidden rounded-2xl data-bisa-zoom:mt-4 data-bisa-zoom:bg-white/50 data-bisa-zoom:ring-1 data-bisa-zoom:ring-line data-bisa-zoom:touch-pan-x data-bisa-zoom:touch-pan-y lg:mt-12"
+    >
+      <div data-bagan-isi class="mx-auto w-max p-2">
+        <ul class="bagan">
+          <SimpulBagan simpul={bagan} puncak />
+        </ul>
+      </div>
     </div>
   </Container>
 </section>
+
+<script>
+  const bingkai = document.querySelector<HTMLElement>('[data-bagan-bingkai]');
+  const isi = document.querySelector<HTMLElement>('[data-bagan-isi]');
+  const kontrol = document.querySelector<HTMLElement>('[data-bagan-kontrol]');
+  const perkecil = document.querySelector<HTMLButtonElement>('[data-bagan-perkecil]');
+  const perbesar = document.querySelector<HTMLButtonElement>('[data-bagan-perbesar]');
+  const semua = document.querySelector<HTMLButtonElement>('[data-bagan-semua]');
+
+  if (bingkai && isi && kontrol && perkecil && perbesar && semua) {
+    const SKALA_MAKS = 2;
+    const LANGKAH = 1.25;
+    // Lebar bagan pada ukuran asli. Kotak bagan lebarnya tetap, jadi cukup diukur sekali.
+    const lebarAsli = isi.offsetWidth;
+    let skala = 1;
+
+    // Skala terkecil: seluruh bagan muat selebar bingkai.
+    const skalaPas = () => Math.min(1, bingkai.clientWidth / lebarAsli);
+    const sudahPas = () => skala <= skalaPas() + 0.001;
+
+    // Ubah skala, dengan titik di bawah jari (atau tengah bingkai) tetap di tempatnya.
+    const atur = (baru: number, titikX = bingkai.clientWidth / 2) => {
+      const x = (bingkai.scrollLeft + titikX) / skala;
+      skala = Math.min(SKALA_MAKS, Math.max(skalaPas(), baru));
+      isi.style.zoom = String(skala);
+      bingkai.scrollLeft = x * skala - titikX;
+      perkecil.disabled = sudahPas();
+      perbesar.disabled = skala >= SKALA_MAKS;
+      semua.textContent = sudahPas() ? 'Ukuran asli' : 'Lihat semua';
+    };
+
+    // Tombol dan geser hanya dipakai jika bagan lebih lebar dari bingkai.
+    const periksa = () => {
+      const terlaluLebar = lebarAsli > bingkai.clientWidth;
+      kontrol.hidden = !terlaluLebar;
+      bingkai.toggleAttribute('data-bisa-zoom', terlaluLebar);
+      if (terlaluLebar) bingkai.tabIndex = 0;
+      else bingkai.removeAttribute('tabindex');
+      atur(terlaluLebar ? skala : 1);
+    };
+
+    periksa();
+    bingkai.scrollLeft = (bingkai.scrollWidth - bingkai.clientWidth) / 2;
+    window.addEventListener('resize', periksa);
+
+    perkecil.addEventListener('click', () => atur(skala / LANGKAH));
+    perbesar.addEventListener('click', () => atur(skala * LANGKAH));
+    semua.addEventListener('click', () => atur(sudahPas() ? 1 : 0));
+
+    // Cubit dua jari di dalam bingkai: hanya bagan yang membesar, bukan seluruh halaman.
+    let awal: { jarak: number; skala: number } | null = null;
+    const jarak = (sentuh: TouchList) => Math.hypot(sentuh[0].clientX - sentuh[1].clientX, sentuh[0].clientY - sentuh[1].clientY);
+    bingkai.addEventListener(
+      'touchstart',
+      (e) => {
+        if (e.touches.length === 2 && !kontrol.hidden) awal = { jarak: jarak(e.touches), skala };
+      },
+      { passive: true },
+    );
+    bingkai.addEventListener(
+      'touchmove',
+      (e) => {
+        if (!awal || e.touches.length !== 2) return;
+        e.preventDefault();
+        const tengah = (e.touches[0].clientX + e.touches[1].clientX) / 2 - bingkai.getBoundingClientRect().left;
+        atur((awal.skala * jarak(e.touches)) / awal.jarak, tengah);
+      },
+      { passive: false },
+    );
+    bingkai.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) awal = null;
+    });
+  }
+</script>

@@ -1,24 +1,22 @@
 ---
-// Halaman Profil: lima section, dari kepala halaman sampai keterangan pembaruan.
+// Halaman Profil: kepala halaman, Struktur Organisasi, Wilayah (termasuk penduduk), Visi dan Misi, lalu keterangan pembaruan.
 import { getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Container from '../components/ui/Container.astro';
 import KepalaHalaman from '../components/profil/KepalaHalaman.astro';
-import VisiMisi from '../components/profil/VisiMisi.astro';
-import Wilayah from '../components/profil/Wilayah.astro';
-import Penduduk from '../components/profil/Penduduk.astro';
 import StrukturOrganisasi from '../components/profil/StrukturOrganisasi.astro';
+import Wilayah from '../components/profil/Wilayah.astro';
+import VisiMisi from '../components/profil/VisiMisi.astro';
 import { formatTanggal } from '../lib/format';
 
 const profil = (await getEntry('profil', 'profil'))!.data;
 ---
 
-<BaseLayout title="Profil" description="Profil, visi misi, wilayah, penduduk, dan struktur organisasi Kelurahan Walian.">
+<BaseLayout title="Profil" description="Struktur organisasi, wilayah, penduduk, serta visi dan misi Kelurahan Walian.">
   <KepalaHalaman ringkasan={profil.ringkasan} lurah={profil.lurah} />
-  <VisiMisi visi={profil.visi} misi={profil.misi} />
-  <Wilayah batasWilayah={profil.batasWilayah} luasKm2={profil.luasKm2} lingkungan={profil.lingkungan} petaWilayah={profil.petaWilayah} />
-  <Penduduk penduduk={profil.penduduk} />
   <StrukturOrganisasi lurah={profil.lurah} strukturOrganisasi={profil.strukturOrganisasi} />
+  <Wilayah batasWilayah={profil.batasWilayah} petaWilayah={profil.petaWilayah} sumberData={profil.sumberData} lingkungan={profil.lingkungan} />
+  <VisiMisi visi={profil.visi} misi={profil.misi} programUnggulan={profil.programUnggulan} sumber={profil.sumberVisiMisi} />
   <Container>
     <p class="py-8 text-center text-sm text-ink-subtle">Terakhir diperbarui: {formatTanggal(profil.diperbarui)}</p>
   </Container>

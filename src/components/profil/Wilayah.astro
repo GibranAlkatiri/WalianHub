@@ -1,62 +1,159 @@
 ---
-// Section Wilayah pada halaman Profil.
+// Section Wilayah pada halaman Profil: batas wilayah, peta, ringkasan kelurahan, dan data setiap lingkungan.
+// Total kelurahan dijumlahkan dari angka lingkungan yang sudah diisi. Angka yang belum diisi tidak ikut dihitung.
+// Data lingkungan: tabel dengan baris total mulai lebar 768px, dan satu kartu untuk setiap lingkungan di HP.
 import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
 import StatCard from '../ui/StatCard.astro';
 import SmartImage from '../ui/SmartImage.astro';
-import Badge from '../ui/Badge.astro';
 import { formatAngka } from '../../lib/format';
+
+interface Lingkungan {
+  nama: string;
+  kepala: string;
+  wakil: string;
+  kepalaKeluarga: number | null;
+  jumlahPenduduk: number | null;
+  luasKm2: number | null;
+}
 
 interface Props {
   batasWilayah: { utara: string; selatan: string; timur: string; barat: string };
-  luasKm2: number | null;
-  lingkungan: { nama: string; kepalaLingkungan: string }[];
   petaWilayah?: string;
+  sumberData: { tahun: string; sumber: string };
+  lingkungan: Lingkungan[];
 }
 
-const { batasWilayah, luasKm2, lingkungan, petaWilayah } = Astro.props;
+const { batasWilayah, petaWilayah, sumberData, lingkungan } = Astro.props;
 const batas = [
   { label: 'Utara', isi: batasWilayah.utara },
   { label: 'Selatan', isi: batasWilayah.selatan },
   { label: 'Timur', isi: batasWilayah.timur },
   { label: 'Barat', isi: batasWilayah.barat },
 ];
+
+// Jumlah dari lingkungan yang sudah diisi. Jika belum ada satu pun yang diisi: null ("Data menyusul").
+const jumlahkan = (ambil: (item: Lingkungan) => number | null) => {
+  const terisi = lingkungan.map(ambil).filter((angka): angka is number => angka != null);
+  return terisi.length > 0 ? terisi.reduce((a, b) => a + b, 0) : null;
+};
+const total = {
+  kepalaKeluarga: jumlahkan((item) => item.kepalaKeluarga),
+  jumlahPenduduk: jumlahkan((item) => item.jumlahPenduduk),
+  luasKm2: jumlahkan((item) => item.luasKm2),
+};
+
+/** Angka di tabel dan kartu. Belum diisi: tanda pisah. */
+const angka = (nilai: number | null) => formatAngka(nilai) ?? '–';
+/** Nama kepala atau wakil lingkungan. Belum diisi: "[kosong]". */
+const nama = (isi: string) => isi.trim() || '[kosong]';
 ---
 
 <section id="wilayah" class="py-12 sm:py-16 lg:py-24">
-  <Container class="grid gap-10 lg:grid-cols-2 lg:gap-16">
-    <div>
-      <SectionHeading overline="Wilayah" title="Batas dan luas wilayah" />
-      <div class="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
-        {
-          batas.map((item) => (
-            <div class="rounded-2xl bg-white p-4 shadow-card">
-              <p class="text-sm font-semibold text-ink-subtle">{item.label}</p>
-              <p class="mt-1 font-semibold text-ink">{item.isi}</p>
-            </div>
-          ))
-        }
+  <Container>
+    <SectionHeading overline="Wilayah" title="Wilayah dan penduduk" />
+    <div class="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-16">
+      <div>
+        <h3 class="text-lg font-bold text-ink">Batas wilayah</h3>
+        <div class="mt-4 grid grid-cols-2 gap-3 sm:gap-4">
+          {
+            batas.map((item) => (
+              <div class="rounded-2xl bg-white p-4 shadow-card">
+                <p class="text-sm font-semibold text-ink-subtle">{item.label}</p>
+                <p class="mt-1 font-semibold text-ink">{item.isi}</p>
+              </div>
+            ))
+          }
+        </div>
       </div>
-      <div class="mt-4">
-        <StatCard ikon="land-plot" label="Luas wilayah" angka={formatAngka(luasKm2)} satuan="km²" />
-      </div>
-      <div class="mt-6">
-        <p class="font-semibold text-ink">Lingkungan</p>
-        {
-          lingkungan.length > 0 ? (
-            <ul class="mt-2 flex flex-wrap gap-2">
-              {lingkungan.map((item) => (
-                <li>
-                  <Badge>{item.nama}</Badge>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p class="mt-2 text-ink-muted">Daftar lingkungan menyusul.</p>
-          )
-        }
-      </div>
+      <SmartImage src={petaWilayah} alt="Peta wilayah Kelurahan Walian" class="aspect-[4/3] rounded-2xl" />
     </div>
-    <SmartImage src={petaWilayah} alt="Peta wilayah Kelurahan Walian" class="aspect-[4/3] rounded-2xl" />
+
+    <h3 class="mt-12 text-lg font-bold text-ink lg:mt-16">Ringkasan kelurahan</h3>
+    <div class="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
+      <StatCard ikon="map" label="Lingkungan" angka={lingkungan.length > 0 ? String(lingkungan.length) : null} />
+      <StatCard ikon="house" label="Kepala keluarga" angka={formatAngka(total.kepalaKeluarga)} />
+      <StatCard ikon="users" label="Jumlah penduduk" angka={formatAngka(total.jumlahPenduduk)} satuan="jiwa" />
+      <StatCard ikon="land-plot" label="Luas wilayah" angka={formatAngka(total.luasKm2)} satuan="km²" />
+    </div>
+    <p class="mt-4 text-sm text-ink-subtle">
+      Sumber data: {sumberData.sumber}, {sumberData.tahun}. Total dijumlahkan dari data lingkungan yang sudah diisi.
+    </p>
+
+    {
+      lingkungan.length > 0 && (
+        <>
+          <h3 class="mt-12 text-lg font-bold text-ink lg:mt-16">Data lingkungan</h3>
+
+          {/* Mulai 768px: tabel */}
+          <div class="mt-4 hidden overflow-hidden rounded-2xl bg-white shadow-card md:block">
+            <table class="w-full text-left">
+              <caption class="sr-only">Kepala lingkungan, wakil, jumlah kepala keluarga, jumlah penduduk, dan luas setiap lingkungan</caption>
+              <thead class="bg-sage-100 text-sm text-forest-900">
+                <tr>
+                  <th scope="col" class="px-4 py-3 font-semibold">Lingkungan</th>
+                  <th scope="col" class="px-4 py-3 font-semibold">Kepala lingkungan</th>
+                  <th scope="col" class="px-4 py-3 font-semibold">Wakil</th>
+                  <th scope="col" class="px-4 py-3 text-right font-semibold">Jumlah KK</th>
+                  <th scope="col" class="px-4 py-3 text-right font-semibold">Penduduk</th>
+                  <th scope="col" class="px-4 py-3 text-right font-semibold">Luas (km²)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-line">
+                {lingkungan.map((item) => (
+                  <tr>
+                    <th scope="row" class="px-4 py-3 font-semibold text-ink">{item.nama}</th>
+                    <td class:list={['px-4 py-3', item.kepala.trim() ? 'text-ink' : 'text-ink-subtle']}>{nama(item.kepala)}</td>
+                    <td class:list={['px-4 py-3', item.wakil.trim() ? 'text-ink' : 'text-ink-subtle']}>{nama(item.wakil)}</td>
+                    <td class="px-4 py-3 text-right text-ink tabular-nums">{angka(item.kepalaKeluarga)}</td>
+                    <td class="px-4 py-3 text-right text-ink tabular-nums">{angka(item.jumlahPenduduk)}</td>
+                    <td class="px-4 py-3 text-right text-ink tabular-nums">{angka(item.luasKm2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot class="border-t-2 border-line-strong font-bold text-ink">
+                <tr>
+                  <th scope="row" colspan="3" class="px-4 py-3">
+                    Total kelurahan
+                  </th>
+                  <td class="px-4 py-3 text-right tabular-nums">{angka(total.kepalaKeluarga)}</td>
+                  <td class="px-4 py-3 text-right tabular-nums">{angka(total.jumlahPenduduk)}</td>
+                  <td class="px-4 py-3 text-right tabular-nums">{angka(total.luasKm2)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          {/* HP: satu kartu untuk setiap lingkungan. Total ada di ringkasan kelurahan di atas. */}
+          <ul class="mt-4 grid gap-3 sm:grid-cols-2 sm:gap-4 md:hidden">
+            {lingkungan.map((item) => (
+              <li class="rounded-2xl bg-white p-4 shadow-card">
+                <h4 class="font-bold text-ink">{item.nama}</h4>
+                <dl class="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+                  <dt class="text-ink-subtle">Kepala</dt>
+                  <dd class:list={['font-semibold', item.kepala.trim() ? 'text-ink' : 'text-ink-subtle']}>{nama(item.kepala)}</dd>
+                  <dt class="text-ink-subtle">Wakil</dt>
+                  <dd class:list={['font-semibold', item.wakil.trim() ? 'text-ink' : 'text-ink-subtle']}>{nama(item.wakil)}</dd>
+                </dl>
+                <dl class="mt-3 grid grid-cols-3 gap-2 border-t border-line pt-3 text-center">
+                  <div>
+                    <dt class="text-xs text-ink-subtle">Jumlah KK</dt>
+                    <dd class="font-bold text-ink tabular-nums">{angka(item.kepalaKeluarga)}</dd>
+                  </div>
+                  <div>
+                    <dt class="text-xs text-ink-subtle">Penduduk</dt>
+                    <dd class="font-bold text-ink tabular-nums">{angka(item.jumlahPenduduk)}</dd>
+                  </div>
+                  <div>
+                    <dt class="text-xs text-ink-subtle">Luas (km²)</dt>
+                    <dd class="font-bold text-ink tabular-nums">{angka(item.luasKm2)}</dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
+        </>
+      )
+    }
   </Container>
 </section>
