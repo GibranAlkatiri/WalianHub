@@ -152,20 +152,12 @@ const destinasi = defineCollection({
     kategori: z.enum(['Alam', 'Budaya', 'Kuliner', 'Religi', 'Olahraga', 'Lainnya']),
     ringkasan: z.string().max(160),
     gambar: z.string().optional(),
-    galeri: z.array(z.string()).default([]),
+    /** Titik lokasi wajib diisi. Tombol "Cek Lokasi" membuka Google Maps tepat di titik ini. */
     lokasi: z.object({
       alamat: z.string(),
-      lat: z.number().optional(),
-      lng: z.number().optional(),
-      googleMapsUrl: z.string().optional(),
+      lat: z.number().min(-90).max(90),
+      lng: z.number().min(-180).max(180),
     }),
-    jamBuka: z.string().optional(),
-    hargaTiket: z.string().optional(),
-    fasilitas: z.array(z.string()).default([]),
-    kontakPengelola: z
-      .object({ nama: z.string().optional(), whatsapp: nomorWhatsapp.optional() })
-      .optional(),
-    caraMenuju: z.string().optional(),
     unggulan: z.boolean().default(false),
     urutan: z.number().default(100),
     diperbarui: z.coerce.date(),

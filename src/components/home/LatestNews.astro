@@ -1,6 +1,6 @@
 ---
 // Section 2 Beranda: 1 berita terbaru tampil besar, lalu 3 berita berikutnya dalam daftar ringkas.
-// Anchor #berita, juga tujuan tanda gulir di hero.
+// Anchor #berita.
 import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
 import NewsCard from '../ui/NewsCard.astro';
@@ -8,7 +8,10 @@ import NewsListItem from '../ui/NewsListItem.astro';
 import Button from '../ui/Button.astro';
 import { ambilBeritaTerbit } from '../../lib/berita';
 
-const berita = (await ambilBeritaTerbit()).slice(0, 4);
+const semuaBerita = await ambilBeritaTerbit();
+const berita = semuaBerita.slice(0, 4);
+// Tombol "Semua Berita" hanya tampil jika ada berita yang tidak muat di section ini.
+const adaLainnya = semuaBerita.length > berita.length;
 const [utama, ...lainnya] = berita;
 ---
 
@@ -20,9 +23,13 @@ const [utama, ...lainnya] = berita;
         title="Berita dan pengumuman terbaru"
         description="Kegiatan dan pengumuman terbaru dari Kelurahan Walian."
       />
-      <div class="shrink-0">
-        <Button href="/berita" variant="outline">Semua Berita</Button>
-      </div>
+      {
+        adaLainnya && (
+          <div class="shrink-0">
+            <Button href="/berita" variant="outline">Semua Berita</Button>
+          </div>
+        )
+      }
     </div>
 
     {

@@ -41,12 +41,10 @@
   --shadow-card: 0 8px 24px rgb(31 51 22 / 0.08);
   --shadow-float: 0 12px 32px rgb(31 51 22 / 0.14);
 
-  /* Animasi hero: zoom pelan pada foto, teks yang muncul bertahap, dan panah gulir yang bergerak 3 kali lalu diam */
+  /* Animasi hero: zoom pelan pada foto dan teks yang muncul bertahap */
   --animate-hero-zoom: hero-zoom 5s ease-out both;
   --animate-hero-muncul-1: hero-muncul 0.8s ease-out both;
   --animate-hero-muncul-2: hero-muncul 0.8s ease-out 150ms both;
-  --animate-hero-muncul-3: hero-muncul 0.8s ease-out 300ms both;
-  --animate-hero-gulir: hero-gulir 1.2s ease-in-out 1.2s 3;
 
   @keyframes hero-zoom {
     from {
@@ -65,16 +63,6 @@
     to {
       opacity: 1;
       transform: translateY(0);
-    }
-  }
-
-  @keyframes hero-gulir {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(0.25rem);
     }
   }
 }
@@ -229,11 +217,11 @@
       width: 50%;
       border-top-width: 2px;
     }
-    /* Garis datar separuh kanan kotak, dan garis turun ke kotak */
+    /* Garis datar separuh kanan kotak, dan garis turun ke kotak. Lebarnya ditambah 1px karena digeser -1px, supaya garis tersambung ke kotak berikutnya. */
     .bagan-baris + .bagan-baris > li::after {
       top: 1.25rem;
       left: 50%;
-      width: 50%;
+      width: calc(50% + 1px);
       height: 1.25rem;
       margin-left: -1px;
       border-top-width: 2px;

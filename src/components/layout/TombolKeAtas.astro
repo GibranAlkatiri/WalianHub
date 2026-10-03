@@ -22,10 +22,13 @@ import Icon from '../ui/Icon.astro';
     window.addEventListener('scroll', atur, { passive: true });
 
     tombol.addEventListener('click', () => {
-      // Gulir ke atas (halus, kecuali pengunjung mematikan animasi), lalu fokus pindah ke logo di header,
-      // supaya pengguna keyboard melanjutkan dari awal halaman.
+      // Gulir ke atas (halus, kecuali pengunjung mematikan animasi), lalu fokus pindah ke tombol pertama yang terlihat
+      // di header: hamburger di bawah 1280px, atau logo di layar lebar. Pengguna keyboard melanjutkan dari awal halaman.
       window.scrollTo({ top: 0 });
-      document.querySelector<HTMLAnchorElement>('header a')?.focus({ preventScroll: true });
+      const awalHeader = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-header] [data-menu-tombol], [data-header] [data-logo]'),
+      ).find((el) => el.offsetParent !== null);
+      awalHeader?.focus({ preventScroll: true });
     });
   }
 </script>

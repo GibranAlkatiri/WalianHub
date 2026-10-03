@@ -8,9 +8,17 @@ import SectionHeading from '../ui/SectionHeading.astro';
 import DestinationCard from '../ui/DestinationCard.astro';
 import Button from '../ui/Button.astro';
 
-const destinasi = (await getCollection('destinasi', ({ data }) => data.unggulan))
+const semuaDestinasi = await getCollection('destinasi');
+const destinasi = semuaDestinasi
+  .filter((item) => item.data.unggulan)
   .sort((a, b) => a.data.urutan - b.data.urutan)
   .slice(0, 3);
+// Tombol "Semua Wisata" hanya tampil jika ada destinasi yang tidak muat di section ini.
+const adaLainnya = semuaDestinasi.length > destinasi.length;
+
+// Tombol "Cek Lokasi" di card membuka Google Maps tepat di titik destinasi.
+const tautanPeta = (lokasi: { lat: number; lng: number }) =>
+  `https://www.google.com/maps/search/?api=1&query=${lokasi.lat},${lokasi.lng}`;
 ---
 
 <section id="wisata" class="bg-sage-100 py-12 sm:py-16 lg:py-24">
@@ -35,7 +43,7 @@ const destinasi = (await getCollection('destinasi', ({ data }) => data.unggulan)
                 kategori={item.data.kategori}
                 ringkasan={item.data.ringkasan}
                 gambar={item.data.gambar}
-                href={`/wisata/${item.id}`}
+                href={tautanPeta(item.data.lokasi)}
               />
             </div>
           ))
@@ -50,9 +58,13 @@ const destinasi = (await getCollection('destinasi', ({ data }) => data.unggulan)
       </div>
     </div>
 
-    <div class="mt-8 text-center sm:mt-10">
-      <Button href="/wisata" variant="outline">Lihat Semua Wisata</Button>
-    </div>
+    {
+      adaLainnya && (
+        <div class="mt-8 text-center sm:mt-10">
+          <Button href="/wisata" variant="outline">Semua Wisata</Button>
+        </div>
+      )
+    }
   </Container>
 </section>
 

@@ -1,6 +1,6 @@
 ---
 // Header melayang yang tampil di semua halaman.
-// Menu lengkap tampil mulai lebar 1280px; di bawahnya memakai hamburger menu.
+// Menu lengkap tampil mulai lebar 1280px; di bawahnya memakai hamburger menu di kiri logo.
 // Ukuran logo, tombol bahasa, dan hamburger dibuat ringkas di HP agar muat di layar 360px.
 // Di Beranda (transparan=true), header tanpa latar saat posisi paling atas, lalu berubah jadi kartu putih setelah di-scroll.
 import Logo from './Logo.astro';
@@ -35,7 +35,10 @@ const aktif = (href: string) => {
   <div
     class="relative mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 rounded-2xl bg-white/95 px-2.5 shadow-float backdrop-blur transition-[background-color,box-shadow] duration-300 group-data-atas:bg-transparent group-data-atas:shadow-none group-data-atas:backdrop-blur-none motion-reduce:transition-none sm:px-3 lg:h-18 lg:px-5"
   >
-    <Logo nama={namaKelurahan} kecamatan={kecamatan} kota={kota} />
+    <div class="flex items-center gap-1 sm:gap-2">
+      <MobileMenu menu={menuUtama} tautanKontak={tautanKontak} />
+      <Logo nama={namaKelurahan} kecamatan={kecamatan} kota={kota} />
+    </div>
 
     <nav aria-label="Menu utama" class="hidden xl:block">
       <ul class="flex items-center gap-1">
@@ -65,7 +68,6 @@ const aktif = (href: string) => {
       <div class="hidden xl:block">
         <Button href={tautanKontak}>Hubungi Kami</Button>
       </div>
-      <MobileMenu menu={menuUtama} tautanKontak={tautanKontak} />
     </div>
   </div>
 </header>

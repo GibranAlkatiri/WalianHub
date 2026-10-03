@@ -1,7 +1,6 @@
 ---
 // Section 1 Beranda: foto selebar layar sebagai latar, dengan judul di atasnya.
 // Tinggi hero penuh satu layar. Header melayang di atas foto. Judul dan subjudul putih berada di tengah foto, dan muncul bertahap saat halaman dibuka.
-// Di tengah bawah: tanda gulir ke section Berita.
 // Warna foto diredam dan diberi lapisan hijau agar menyatu dengan website, lalu bagian bawahnya melebur ke latar halaman.
 // Lebih dari satu foto: berganti otomatis dengan efek memudar dan zoom pelan, disertai tombol jeda.
 // Pengunjung yang mematikan animasi di perangkatnya: tanpa animasi, dan foto tidak berganti sendiri.
@@ -54,7 +53,7 @@ const posisiFoto = {
     <div aria-hidden="true" class="absolute inset-0 bg-forest-900/70"></div>
     {/* Gradasi gelap tambahan di atas, supaya menu navbar putih tetap terbaca di atas foto terang */}
     <div aria-hidden="true" class="absolute inset-x-0 top-0 h-40 bg-linear-to-b from-forest-900/60 to-transparent"></div>
-    {/* Gradasi bawah: foto melebur ke warna latar halaman. Dibuat pendek, supaya tanda gulir tetap berada di atas foto. */}
+    {/* Gradasi bawah: foto melebur ke warna latar halaman. Dibuat pendek, supaya foto tetap terlihat utuh. */}
     <div aria-hidden="true" class="absolute inset-x-0 bottom-0 h-12 bg-linear-to-b from-cream-50/0 to-cream-50 lg:h-16"></div>
   </div>
 
@@ -70,32 +69,23 @@ const posisiFoto = {
     </p>
   </Container>
 
-  {/* Bawah hero: tanda gulir di tengah, lalu label gambar default atau tombol jeda (jika foto lebih dari satu) di kanan. Keterangan foto tidak ditampilkan. */}
+  {/* Kanan bawah hero: label gambar default, atau tombol jeda jika foto lebih dari satu. Keterangan foto tidak ditampilkan. */}
   <div class="absolute inset-x-0 bottom-16 lg:bottom-20">
-    <Container class="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-      <a
-        href="#berita"
-        aria-label="Lanjut ke berita terbaru"
-        class="col-start-2 grid size-11 place-items-center rounded-full border-2 border-white/70 text-white transition-colors hover:bg-white/15 focus-visible:outline-sun-400 motion-safe:animate-hero-muncul-3"
-      >
-        <Icon name="chevron-down" class="size-5 motion-safe:animate-hero-gulir" />
-      </a>
-      <div class="flex items-center justify-end gap-2">
-        {tanpaFoto && <span class="rounded-2xl bg-ink/80 px-3 py-1 text-center text-sm font-semibold text-white">Foto belum tersedia</span>}
-        {
-          bergilir && (
-            <button
-              type="button"
-              data-hero-jeda
-              aria-label="Jeda pergantian foto"
-              class="group/jeda grid size-10 shrink-0 place-items-center rounded-full bg-ink/80 text-white transition-colors hover:bg-ink focus-visible:outline-sun-400"
-            >
-              <Icon name="pause" class="size-4 group-data-[berhenti]/jeda:hidden" />
-              <Icon name="play" class="hidden size-4 group-data-[berhenti]/jeda:block" />
-            </button>
-          )
-        }
-      </div>
+    <Container class="flex items-center justify-end gap-2">
+      {tanpaFoto && <span class="rounded-2xl bg-ink/80 px-3 py-1 text-center text-sm font-semibold text-white">Foto belum tersedia</span>}
+      {
+        bergilir && (
+          <button
+            type="button"
+            data-hero-jeda
+            aria-label="Jeda pergantian foto"
+            class="group/jeda grid size-10 shrink-0 place-items-center rounded-full bg-ink/80 text-white transition-colors hover:bg-ink focus-visible:outline-sun-400"
+          >
+            <Icon name="pause" class="size-4 group-data-[berhenti]/jeda:hidden" />
+            <Icon name="play" class="hidden size-4 group-data-[berhenti]/jeda:block" />
+          </button>
+        )
+      }
     </Container>
   </div>
 </section>

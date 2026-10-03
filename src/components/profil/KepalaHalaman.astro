@@ -1,6 +1,6 @@
 ---
 // Kepala halaman Profil: breadcrumb, judul, ringkasan, dan tautan pil ke setiap section.
-// Di kanan (HP: di bawah): foto Lurah beserta nama dan jabatannya.
+// Di kanan (HP: di bawah, rata tengah): foto Lurah beserta nama dan jabatannya.
 import Container from '../ui/Container.astro';
 import SmartImage from '../ui/SmartImage.astro';
 import { url } from '../../lib/url';
@@ -45,7 +45,7 @@ const tautanSection = [
         }
       </ul>
     </div>
-    <figure class="w-full max-w-64 lg:w-72 lg:max-w-none">
+    <figure class="mx-auto w-full max-w-64 lg:mx-0 lg:w-72 lg:max-w-none">
       <SmartImage src={lurah.foto} alt={lurah.nama} class="aspect-[3/4] rounded-2xl" />
       <figcaption class="mt-3 text-center">
         <span class="block font-bold text-ink">{lurah.nama}</span>
