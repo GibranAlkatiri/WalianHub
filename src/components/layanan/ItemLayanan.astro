@@ -1,6 +1,7 @@
 ---
 // Satu layanan di halaman Layanan. Nama dan ringkasan selalu terlihat; persyaratan, alur, dan catatan
-// muncul saat ditekan. Memakai <details>, jadi setiap layanan dibuka dan ditutup sendiri, dan tetap berfungsi tanpa skrip.
+// muncul saat ditekan. Memakai <details> dengan name yang sama, jadi hanya satu layanan terbuka dalam satu waktu:
+// membuka layanan baru menutup yang sebelumnya. Browser yang mengatur ini, jadi tetap berfungsi tanpa skrip.
 // Anchor layanan memakai nama filenya, contoh /layanan#surat-keterangan-domisili. Layanan yang dibuka lewat anchor langsung terbuka.
 import { render, type CollectionEntry } from 'astro:content';
 import Icon from '../ui/Icon.astro';
@@ -15,7 +16,7 @@ const { Content } = await render(layanan);
 const adaCatatan = Boolean(layanan.body?.trim());
 ---
 
-<details id={layanan.id} class="group rounded-2xl bg-white shadow-card target:ring-2 target:ring-forest-600">
+<details id={layanan.id} name="layanan" class="group rounded-2xl bg-white shadow-card target:ring-2 target:ring-forest-600">
   <summary class="flex cursor-pointer list-none items-center gap-4 rounded-2xl p-4 sm:p-5 [&::-webkit-details-marker]:hidden">
     <span class="grid size-11 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600"><Icon name={ikon} /></span>
     <span class="min-w-0 flex-1">
