@@ -4,13 +4,14 @@
 import { getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/home/Hero.astro';
-import LatestNews from '../components/home/LatestNews.astro';
+import ProfileIntro from '../components/home/ProfileIntro.astro';
 import Services from '../components/home/Services.astro';
 import FeaturedDestinations from '../components/home/FeaturedDestinations.astro';
 import Contact from '../components/home/Contact.astro';
 
 const situs = (await getEntry('situs', 'situs'))!.data;
 const beranda = (await getEntry('beranda', 'beranda'))!.data;
+const profil = (await getEntry('profil', 'profil'))!.data;
 
 // Link preview hanya bisa memakai foto JPG/PNG/WebP. Jika hero belum punya foto seperti itu,
 // BaseLayout otomatis memakai default-og.png.
@@ -20,7 +21,7 @@ const gambarPreview = fotoPertama && /\.(jpe?g|png|webp)$/i.test(fotoPertama) ? 
 
 <BaseLayout overlayHeader image={gambarPreview}>
   <Hero hero={beranda.hero} />
-  <LatestNews />
+  <ProfileIntro ringkasan={profil.ringkasan} lurah={profil.lurah} />
   <Services />
   <FeaturedDestinations />
   <Contact situs={situs} />

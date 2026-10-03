@@ -1,0 +1,34 @@
+---
+// Section 2 Beranda: foto Lurah, ringkasan tentang Walian, dan tombol ke halaman Profil. Anchor #profil.
+// Desktop: foto di kiri, teks di kanan. HP: teks dan tombol dulu, lalu foto di bawahnya.
+import Container from '../ui/Container.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+import SmartImage from '../ui/SmartImage.astro';
+import Button from '../ui/Button.astro';
+
+interface Props {
+  ringkasan: string;
+  lurah: { nama: string; foto?: string };
+}
+
+const { ringkasan, lurah } = Astro.props;
+---
+
+<section id="profil" class="py-12 sm:py-16 lg:py-24">
+  <Container class="grid gap-10 lg:grid-cols-[auto_1fr] lg:items-center lg:gap-16">
+    <div>
+      <SectionHeading overline="Profil" title="Mengenal Kelurahan Walian" />
+      <p class="mt-4 max-w-2xl text-ink-muted">{ringkasan}</p>
+      <Button href="/profil" variant="outline" class="mt-8">
+        Selengkapnya<span class="sr-only"> tentang profil Kelurahan Walian</span>
+      </Button>
+    </div>
+    <figure class="mx-auto w-full max-w-64 lg:order-first lg:mx-0 lg:w-72 lg:max-w-none">
+      <SmartImage src={lurah.foto} alt={lurah.nama} class="aspect-[3/4] rounded-2xl" />
+      <figcaption class="mt-3 text-center">
+        <span class="block font-bold text-ink">{lurah.nama}</span>
+        <span class="block text-sm text-ink-subtle">Lurah Walian</span>
+      </figcaption>
+    </figure>
+  </Container>
+</section>

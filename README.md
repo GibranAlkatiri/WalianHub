@@ -12,8 +12,8 @@ Website di link ini diperbarui otomatis setiap ada perubahan di branch `main`.
 
 ## Status
 
-- **Tahap 1, Langkah 1 (Beranda):** selesai.
-- **Berikutnya (Langkah 2):** halaman Profil, Layanan, Wisata & Potensi, dan Berita.
+- **Beranda dan halaman Profil:** selesai.
+- **Berikutnya:** halaman Layanan, lalu halaman Wisata.
 
 ## Isi website
 
@@ -23,10 +23,9 @@ Semua isi website ada di folder `src/content/`. Untuk mengganti isi, tampilan ti
 |---|---|
 | Nama, alamat, kontak, jam layanan, tautan penting | `src/content/pengaturan/situs.json` |
 | Teks dan foto hero | `src/content/pengaturan/beranda.json` |
-| Ringkasan profil dan data penduduk | `src/content/pengaturan/profil.json` |
+| Profil: ringkasan, Lurah, struktur organisasi, wilayah dan lingkungan, visi dan misi | `src/content/pengaturan/profil.json` |
 | Layanan (satu file per layanan) | `src/content/layanan/*.md` |
 | Destinasi wisata (satu file per destinasi) | `src/content/destinasi/*.md` |
-| Berita dan pengumuman (satu file per berita) | `src/content/berita/*.md` |
 
 **Aturan penulisan data:**
 
@@ -34,7 +33,7 @@ Semua isi website ada di folder `src/content/`. Untuk mengganti isi, tampilan ti
 - Nomor WhatsApp ditulis dengan kode negara, tanpa `+` dan tanpa spasi, contoh `6281234567890`.
 - Field gambar boleh dikosongkan. Jika kosong, atau fotonya gagal dimuat, otomatis tampil gambar default dengan label "Foto belum tersedia".
 - Teks yang belum ada ditulis di dalam [kurung siku]. Angka yang belum ada diisi `null` (tampil sebagai "Data menyusul").
-- Nama file berita, layanan, dan destinasi menjadi alamat halaman (slug). Tulis dengan huruf kecil dan tanda hubung, dan jangan diubah setelah terbit.
+- Nama file layanan dan destinasi menjadi alamat halaman (slug). Tulis dengan huruf kecil dan tanda hubung, dan jangan diubah setelah terbit.
 
 Setiap isi diperiksa oleh `src/content.config.ts` setiap kali website dibangun. Jika ada data yang tidak sesuai, proses build gagal dengan pesan yang jelas, dan website yang sedang tayang tidak berubah.
 
@@ -54,7 +53,7 @@ Setiap isi diperiksa oleh `src/content.config.ts` setiap kali website dibangun. 
 
 ```
 src/
-├── components/        Potongan tampilan: layout (header, footer), ui (tombol, card), home (section Beranda)
+├── components/        Potongan tampilan: layout (header, footer), ui (tombol, card), home (section Beranda), profil (section Profil)
 ├── content/           Isi website
 ├── content.config.ts  Kontrak bentuk data
 ├── icons/             Ikon SVG

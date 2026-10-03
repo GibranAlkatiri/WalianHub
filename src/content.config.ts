@@ -4,7 +4,6 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
-import { namaKategori } from './lib/kategori-berita';
 import { namaHari } from './lib/jam-layanan';
 import { cekBagan } from './lib/bagan';
 
@@ -182,18 +181,4 @@ const destinasi = defineCollection({
   }),
 });
 
-const berita = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/berita' }),
-  schema: z.object({
-    judul: z.string(),
-    tanggal: z.coerce.date(),
-    kategori: z.enum(namaKategori),
-    ringkasan: z.string().max(200),
-    gambar: z.string().optional(),
-    keteranganGambar: z.string().optional(),
-    penting: z.boolean().default(false),
-    draf: z.boolean().default(false),
-  }),
-});
-
-export const collections = { situs, beranda, profil, layanan, destinasi, berita };
+export const collections = { situs, beranda, profil, layanan, destinasi };

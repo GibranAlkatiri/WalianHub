@@ -1,16 +1,14 @@
 ---
 // Kepala halaman Profil: breadcrumb, judul, ringkasan, dan tautan pil ke setiap section.
-// Di kanan (HP: di bawah, rata tengah): foto Lurah beserta nama dan jabatannya.
+// Foto Lurah tampil di section Profil di Beranda, dan nama Lurah di kotak puncak bagan Struktur Organisasi.
 import Container from '../ui/Container.astro';
-import SmartImage from '../ui/SmartImage.astro';
 import { url } from '../../lib/url';
 
 interface Props {
   ringkasan: string;
-  lurah: { nama: string; foto?: string };
 }
 
-const { ringkasan, lurah } = Astro.props;
+const { ringkasan } = Astro.props;
 
 const tautanSection = [
   { label: 'Struktur Organisasi', anchor: '#struktur-organisasi' },
@@ -20,36 +18,27 @@ const tautanSection = [
 ---
 
 <section class="pt-8 pb-12 sm:pt-10 sm:pb-16 lg:pt-12 lg:pb-20">
-  <Container class="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-16">
-    <div>
-      <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-sm text-ink-subtle">
-        <a href={url('/')} class="hover:text-forest-600 hover:underline">Beranda</a>
-        <span aria-hidden="true">/</span>
-        <span class="text-ink">Profil</span>
-      </nav>
-      <h1 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl">Profil Kelurahan Walian</h1>
-      <p class="mt-4 max-w-2xl text-ink-muted">{ringkasan}</p>
-      <ul class="mt-6 flex flex-wrap gap-2">
-        {
-          tautanSection.map((item) => (
-            <li>
-              <a
-                href={url(item.anchor)}
-                class="inline-flex h-10 items-center rounded-full bg-sage-100 px-4 text-sm font-semibold text-forest-900 transition-colors hover:bg-sage-200"
-              >
-                {item.label}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
-    <figure class="mx-auto w-full max-w-64 lg:mx-0 lg:w-72 lg:max-w-none">
-      <SmartImage src={lurah.foto} alt={lurah.nama} class="aspect-[3/4] rounded-2xl" />
-      <figcaption class="mt-3 text-center">
-        <span class="block font-bold text-ink">{lurah.nama}</span>
-        <span class="block text-sm text-ink-subtle">Lurah Walian</span>
-      </figcaption>
-    </figure>
+  <Container>
+    <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-sm text-ink-subtle">
+      <a href={url('/')} class="hover:text-forest-600 hover:underline">Beranda</a>
+      <span aria-hidden="true">/</span>
+      <span class="text-ink">Profil</span>
+    </nav>
+    <h1 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl">Profil Kelurahan Walian</h1>
+    <p class="mt-4 max-w-2xl text-ink-muted">{ringkasan}</p>
+    <ul class="mt-6 flex flex-wrap gap-2">
+      {
+        tautanSection.map((item) => (
+          <li>
+            <a
+              href={url(item.anchor)}
+              class="inline-flex h-10 items-center rounded-full bg-sage-100 px-4 text-sm font-semibold text-forest-900 transition-colors hover:bg-sage-200"
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
   </Container>
 </section>
