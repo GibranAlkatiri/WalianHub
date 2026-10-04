@@ -78,6 +78,8 @@
     @apply bg-cream-50 font-sans text-ink antialiased;
     font-size: 1rem;
     line-height: 1.7;
+    /* Nama, alamat, dan teks panjang dari CMS tetap muat di dalam kartu dan kotak bagan. */
+    overflow-wrap: anywhere;
   }
 
   /* Focus ring untuk pengguna keyboard */

@@ -47,10 +47,10 @@ const aktif = (href: string) => {
             <li>
               <a
                 href={url(item.href)}
-                aria-current={aktif(item.href) ? 'page' : undefined}
+                aria-current={aktif(item.halaman ?? item.href) ? 'page' : undefined}
                 class:list={[
                   'rounded-full px-3 py-2 text-base font-medium transition-colors hover:text-forest-600 group-data-atas:hover:text-white/80',
-                  aktif(item.href)
+                  aktif(item.halaman ?? item.href)
                     ? 'text-forest-600 underline decoration-2 underline-offset-8 group-data-atas:text-white'
                     : 'text-ink group-data-atas:text-white',
                 ]}

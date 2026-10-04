@@ -7,13 +7,15 @@ Dikembangkan oleh KKT Angkatan 149 Universitas Sam Ratulangi.
 
 ### **https://gibranalkatiri.github.io/WalianHub/**
 
-Ini adalah **versi pratinjau**. Teks yang ditulis di dalam [kurung siku] masih contoh dan akan diganti dengan data resmi dari kelurahan.
+Ini adalah **versi pratinjau**. Teks di dalam [kurung siku] dan data destinasi masih contoh. Data contoh sengaja dipertahankan untuk demo: staf nantinya dapat mengoreksi nama/jenis surat, persyaratan, profil, kontak, dan destinasi melalui CMS. Validasi data resmi dilakukan bersama kelurahan saat demo; CMS belum dihubungkan.
 Website di link ini diperbarui otomatis setiap ada perubahan di branch `main`.
 
 ## Status
 
-- **Beranda, halaman Profil, dan halaman Layanan:** selesai.
-- **Berikutnya:** halaman Wisata.
+- **Beranda, Profil, Layanan, dan Wisata:** tersedia.
+- **Navigasi Wisata otomatis:** sampai 4 destinasi menuju section Beranda; mulai 5 menuju `/wisata`, dengan 4 pilihan di Beranda dan tombol "Semua Wisata".
+- `/wisata` selalu dapat dibuka, termasuk ketika jumlah destinasi turun atau kosong, agar tautan lama tetap berlaku.
+- **Berikutnya:** perencanaan dan integrasi CMS. Bahasa Inggris dan halaman detail destinasi tetap ditunda.
 
 ## Isi website
 
@@ -31,23 +33,31 @@ Semua isi website ada di folder `src/content/`. Untuk mengganti isi, tampilan ti
 **Aturan penulisan data:**
 
 - Tanggal ditulis `YYYY-MM-DD`, contoh `2026-10-01`.
-- Nomor WhatsApp ditulis dengan kode negara, tanpa `+` dan tanpa spasi, contoh `6281234567890`.
+- Nomor WhatsApp ditulis dengan kode negara, tanpa `+` dan tanpa spasi, contoh `6281234567890`. WhatsApp dan email boleh dikosongkan (`""`) atau tidak dicantumkan; tombol/tautannya tidak tampil.
 - Field gambar boleh dikosongkan. Jika kosong, atau fotonya gagal dimuat, otomatis tampil gambar default dengan label "Foto belum tersedia".
 - Teks yang belum ada ditulis di dalam [kurung siku]. Angka yang belum ada diisi `null` (tampil sebagai "Data menyusul").
-- Nama file layanan dan destinasi menjadi alamat halaman (slug). Tulis dengan huruf kecil dan tanda hubung, dan jangan diubah setelah terbit.
+- Nama file layanan menjadi identitas tautan/anchor, misalnya `surat-keterangan-domisili.md` → `/layanan#surat-keterangan-domisili`. Judul atau jenis surat boleh diganti tanpa mengganti nama file, sehingga tautan lama tetap bekerja. Destinasi memakai identitas file, tanpa halaman detail tersendiri.
+- Isian teks wajib tidak boleh kosong atau hanya berisi spasi; teks contoh tetap valid. Persyaratan dan alur boleh berupa daftar kosong (`[]`), lalu tampil pesan "sedang disiapkan".
+- Tanggal harus benar secara kalender. Jam tutup harus setelah jam buka; istirahat harus berurutan dan berada di dalam jam layanan. Hari tutup memakai `buka: null`, `tutup: null`, `istirahat: null`.
+- Koordinat harus berada di rentang geografis; jumlah penduduk dan KK berupa bilangan bulat nonnegatif atau `null`. Tautan terisi memakai alamat HTTP/HTTPS lengkap; email terisi harus valid.
+- Pilih ikon dari nama file di `src/icons/` tanpa `.svg`. Ikon yang tidak tersedia ditolak saat build.
+
+**Urutan dan pilihan Beranda:** layanan memakai `unggulan` (maksimal 4) dan `urutan`. Wisata sampai 4 menampilkan semuanya, termasuk yang tidak unggulan. Mulai 5, empat kartu mengutamakan `unggulan`, lalu dilengkapi dari destinasi lain menurut `urutan`. Halaman Wisata selalu menampilkan semua destinasi menurut `urutan` lalu nama. Koleksi kosong tetap memiliki pesan yang jelas.
 
 Setiap isi diperiksa oleh `src/content.config.ts` setiap kali website dibangun. Jika ada data yang tidak sesuai, proses build gagal dengan pesan yang jelas, dan website yang sedang tayang tidak berubah.
 
 ## Untuk pembuat CMS
 
-`src/content.config.ts` adalah **kontrak data** antara tampilan dan CMS. CMS cukup mengisi atau mengubah file di `src/content/` dengan nama dan jenis field yang sama persis, dan tampilan tidak perlu diubah.
+`src/content.config.ts` adalah **kontrak data** antara tampilan dan CMS. Formulir CMS mengikuti nama field, tipe, daftar pilihan, aturan wajib/kosong, dan validasi tersebut. Isian konten terpisah dari tampilan; label formulir boleh memakai Bahasa Indonesia. Teks antarmuka seperti "Cek Lokasi", tata letak, dan aturan navigasi tetap dikelola frontend.
 
-- **Git-based CMS (disarankan):** CMS mengedit file di `src/content/` langsung di GitHub. Setiap perubahan membangun ulang website secara otomatis. Gratis dan tanpa server.
-- **CMS dengan API:** cukup ganti bagian `loader` di `src/content.config.ts` agar mengambil data dari API dengan bentuk data yang sama.
+- **CMS berbasis Git:** mengedit file konten dan media di repository. Workflow membangun dan menerbitkan website setelah perubahan tersimpan. Login, hak akses, konfigurasi formulir, dan penerbitan tetap perlu dihubungkan; produknya belum dipilih.
+- **CMS dengan API:** loader dan pemetaan konten disesuaikan dengan API, dengan bentuk data yang sama. Pemicu build/deploy dan pengelolaan media juga perlu disiapkan.
+
+Pengubahan nama surat menggunakan field `judul`; CMS sebaiknya mempertahankan identitas file setelah dibuat. Upload foto memakai path dari akar situs, misalnya `/uploads/destinasi/foto.webp`; jangan menambahkan `/WalianHub` pada isian. Frontend menambahkan base path saat merender. `SIAP_DIINDEKS` tetap `false` selama versi demo.
 
 ## Gambar dan ikon
 
-- Tidak memakai foto dari internet. Semua tempat yang membutuhkan gambar memakai gambar default (`public/images/default.svg`) sampai foto resmi dipasang.
+- Hero sudah memakai foto kantor. Foto lain yang kosong atau gagal dimuat memakai gambar default (`public/images/default.svg`) dan label "Foto belum tersedia".
 - Ikon ada di `src/icons/` (Lucide dan Simple Icons, berlisensi terbuka). Untuk menambah ikon, unduh file SVG dari https://lucide.dev dan simpan di folder itu.
 
 ## Struktur folder
@@ -63,8 +73,11 @@ src/
 ├── pages/             Halaman website
 └── styles/global.css  Warna, font, dan gaya dasar
 public/                Gambar default dan favicon
+tests/                 Pengujian aturan Wisata dan validasi konten
 ```
 
 ## Teknologi
 
 Dibangun dengan [Astro](https://astro.build), [Tailwind CSS](https://tailwindcss.com), dan [Bun](https://bun.sh). Hasilnya berupa website statis (file HTML, CSS, dan gambar), sehingga bisa dipasang di hosting mana saja. Proses build dan pemasangan ke GitHub Pages dijalankan oleh GitHub Actions (`.github/workflows/deploy.yml`).
+
+Jalankan `bun test` untuk pemeriksaan logika dan `bun run build` untuk validasi seluruh konten serta hasil website. Perubahan konten baru tampil setelah build dan deploy selesai.

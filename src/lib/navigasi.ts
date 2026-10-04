@@ -1,18 +1,12 @@
-import { HALAMAN_PENDUKUNG_SIAP } from './konfigurasi';
-
-/**
- * Tujuan tautan menu: halaman pendukung jika sudah siap, atau anchor section di Beranda
- * selama Tahap 1 Langkah 1.
- */
-export const tujuan = (halaman: string, anchor: string) => (HALAMAN_PENDUKUNG_SIAP ? halaman : `/#${anchor}`);
+import { wisata } from './data-wisata';
 
 // Menu utama di header, menu HP, dan footer.
-// Profil dan Layanan sudah menjadi halaman sendiri. Wisata masih menggulir ke section di Beranda sampai halamannya siap.
+// Wisata menggulir ke Beranda sampai empat destinasi, lalu membuka halaman daftar mulai lima.
 export const menuUtama = [
   { label: 'Beranda', href: '/' },
   { label: 'Profil', href: '/profil' },
   { label: 'Layanan', href: '/layanan' },
-  { label: 'Wisata', href: tujuan('/wisata', 'wisata') },
+  { label: 'Wisata', href: wisata.href, halaman: '/wisata' },
 ];
 
 /** Tujuan tombol "Hubungi Kami": section Kontak di Beranda. */

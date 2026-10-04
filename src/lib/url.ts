@@ -7,7 +7,7 @@
  * Alamat luar (https://...), mailto:, tel:, dan anchor (#...) dikembalikan apa adanya.
  */
 export function url(path = '/'): string {
-  if (/^(https?:|mailto:|tel:|#)/.test(path) || path.startsWith('//')) return path;
+  if (/^(https?:|mailto:|tel:|#)/i.test(path) || path.startsWith('//')) return path;
   const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   return `${base}${path.startsWith('/') ? path : `/${path}`}`;
 }

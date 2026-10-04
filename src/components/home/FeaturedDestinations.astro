@@ -1,24 +1,15 @@
 ---
 // Section 4 Beranda: destinasi unggulan. Anchor #wisata.
-// Latar hijau muda, judul di tengah, dan 3 card.
+// Sampai empat destinasi: tampilkan semua. Mulai lima: empat pilihan dan tautan halaman daftar.
 // Di HP, card bisa digeser ke samping (carousel) dengan titik penanda di bawahnya.
-import { getCollection } from 'astro:content';
+import { wisata } from '../../lib/data-wisata';
+import { tautanPetaDestinasi } from '../../lib/wisata';
 import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
 import DestinationCard from '../ui/DestinationCard.astro';
 import Button from '../ui/Button.astro';
 
-const semuaDestinasi = await getCollection('destinasi');
-const destinasi = semuaDestinasi
-  .filter((item) => item.data.unggulan)
-  .sort((a, b) => a.data.urutan - b.data.urutan)
-  .slice(0, 3);
-// Tombol "Semua Wisata" hanya tampil jika ada destinasi yang tidak muat di section ini.
-const adaLainnya = semuaDestinasi.length > destinasi.length;
-
-// Tombol "Cek Lokasi" di card membuka Google Maps tepat di titik destinasi.
-const tautanPeta = (lokasi: { lat: number; lng: number }) =>
-  `https://www.google.com/maps/search/?api=1&query=${lokasi.lat},${lokasi.lng}`;
+const destinasi = wisata.pilihan;
 ---
 
 <section id="wisata" class="bg-sage-100 py-12 sm:py-16 lg:py-24">
@@ -30,10 +21,15 @@ const tautanPeta = (lokasi: { lat: number; lng: number }) =>
       description="Tempat-tempat menarik di Kelurahan Walian yang bisa Anda kunjungi."
     />
 
-    <div data-carousel class="mt-8 lg:mt-10">
+    {destinasi.length === 0 ? (
+      <p class="mt-8 rounded-2xl bg-white p-8 text-center text-ink-muted shadow-card">Informasi destinasi wisata sedang disiapkan.</p>
+    ) : <div data-carousel class="mt-8 lg:mt-10">
       <div
         data-carousel-lintasan
-        class="relative -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-4 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 md:py-0 lg:grid-cols-3 lg:gap-6 [&::-webkit-scrollbar]:hidden"
+        class:list={[
+          'relative -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-4 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 md:py-0 lg:gap-6 [&::-webkit-scrollbar]:hidden',
+          destinasi.length === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3',
+        ]}
       >
         {
           destinasi.map((item) => (
@@ -43,7 +39,7 @@ const tautanPeta = (lokasi: { lat: number; lng: number }) =>
                 kategori={item.data.kategori}
                 ringkasan={item.data.ringkasan}
                 gambar={item.data.gambar}
-                href={tautanPeta(item.data.lokasi)}
+                href={tautanPetaDestinasi(item.data.lokasi)}
               />
             </div>
           ))
@@ -56,10 +52,10 @@ const tautanPeta = (lokasi: { lat: number; lng: number }) =>
           ))
         }
       </div>
-    </div>
+    </div>}
 
     {
-      adaLainnya && (
+      wisata.pakaiHalaman && (
         <div class="mt-8 text-center sm:mt-10">
           <Button href="/wisata" variant="outline">Semua Wisata</Button>
         </div>
@@ -94,5 +90,7 @@ const tautanPeta = (lokasi: { lat: number; lng: number }) =>
     };
 
     lintasan.addEventListener('scroll', perbarui, { passive: true });
+    window.addEventListener('resize', perbarui);
+    perbarui();
   });
 </script>

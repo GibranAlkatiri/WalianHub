@@ -24,6 +24,8 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - name: Pasang paket
         run: bun install --frozen-lockfile
+      - name: Periksa aturan konten dan Wisata
+        run: bun test
       - name: Bangun website
         run: bun run build
       - name: Simpan hasil build untuk GitHub Pages

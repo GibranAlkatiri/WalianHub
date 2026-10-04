@@ -30,15 +30,15 @@ const adaCatatan = Boolean(layanan.body?.trim());
     <div class="grid gap-6 md:grid-cols-2">
       <div>
         <h4 class="text-sm font-semibold tracking-widest text-forest-600 uppercase">Persyaratan</h4>
-        <ul class="mt-2 list-disc space-y-1 pl-5 text-ink-muted marker:text-forest-600">
+        {persyaratan.length > 0 ? <ul class="mt-2 list-disc space-y-1 pl-5 text-ink-muted marker:text-forest-600">
           {persyaratan.map((item) => <li>{item}</li>)}
-        </ul>
+        </ul> : <p class="mt-2 text-ink-muted">Informasi persyaratan sedang disiapkan.</p>}
       </div>
       <div>
         <h4 class="text-sm font-semibold tracking-widest text-forest-600 uppercase">Alur pengurusan</h4>
-        <ol class="mt-2 list-decimal space-y-1 pl-5 text-ink-muted marker:font-semibold marker:text-forest-600">
+        {alur.length > 0 ? <ol class="mt-2 list-decimal space-y-1 pl-5 text-ink-muted marker:font-semibold marker:text-forest-600">
           {alur.map((item) => <li>{item}</li>)}
-        </ol>
+        </ol> : <p class="mt-2 text-ink-muted">Informasi alur pengurusan sedang disiapkan.</p>}
       </div>
     </div>
 
@@ -55,7 +55,12 @@ const adaCatatan = Boolean(layanan.body?.trim());
 <script>
   // Layanan yang dibuka lewat anchor (misalnya dari card layanan di Beranda) langsung terbuka.
   function bukaDariAnchor() {
-    const id = decodeURIComponent(location.hash.slice(1));
+    let id: string;
+    try {
+      id = decodeURIComponent(location.hash.slice(1));
+    } catch {
+      return; // Tautan dengan escape yang tidak lengkap tidak boleh menghentikan skrip halaman.
+    }
     const layanan = id ? document.getElementById(id) : null;
     if (layanan instanceof HTMLDetailsElement) layanan.open = true;
   }

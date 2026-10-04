@@ -45,19 +45,26 @@ const { menu, tautanKontak } = Astro.props;
   const tombol = document.querySelector<HTMLButtonElement>('[data-menu-tombol]');
   const panel = document.querySelector<HTMLElement>('[data-menu-panel]');
 
-  function aturMenu(buka: boolean) {
+  function aturMenu(buka: boolean, kembalikanFokus = false) {
     if (!tombol || !panel) return;
     panel.hidden = !buka;
     tombol.setAttribute('aria-expanded', String(buka));
     tombol.setAttribute('aria-label', buka ? 'Tutup menu' : 'Buka menu');
     tombol.querySelector('[data-ikon-buka]')?.classList.toggle('hidden', buka);
     tombol.querySelector('[data-ikon-tutup]')?.classList.toggle('hidden', !buka);
+    if (!buka && kembalikanFokus) tombol.focus();
   }
 
   tombol?.addEventListener('click', () => aturMenu(panel?.hidden ?? false));
   // Menu tertutup otomatis setelah salah satu tautan dipilih, atau saat tombol Escape ditekan.
   panel?.querySelectorAll('a').forEach((tautan) => tautan.addEventListener('click', () => aturMenu(false)));
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') aturMenu(false);
+    if (event.key === 'Escape' && panel && !panel.hidden) aturMenu(false, true);
+  });
+  document.addEventListener('click', (event) => {
+    if (event.target instanceof Node && !panel?.contains(event.target) && !tombol?.contains(event.target)) aturMenu(false);
+  });
+  window.matchMedia('(min-width: 1280px)').addEventListener('change', (event) => {
+    if (event.matches) aturMenu(false);
   });
 </script>

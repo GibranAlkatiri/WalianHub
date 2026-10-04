@@ -19,7 +19,7 @@ interface Props {
 }
 
 const { href, variant = 'primary', size = 'md', icon, iconRight, class: kelas } = Astro.props;
-const tautanLuar = /^https?:\/\//.test(href);
+const tautanLuar = /^https?:\/\//i.test(href);
 
 const gaya = {
   primary: 'bg-forest-600 text-white hover:bg-forest-700',

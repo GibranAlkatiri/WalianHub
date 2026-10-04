@@ -28,6 +28,8 @@ const posisiFoto = {
 
 <section
   aria-labelledby="judul-hero"
+  data-hero-foto
+  data-foto-wadah
   data-hero-slideshow={bergilir ? '' : undefined}
   class="relative isolate flex min-h-svh items-center overflow-hidden"
 >
@@ -72,7 +74,7 @@ const posisiFoto = {
   {/* Kanan bawah hero: label gambar default, atau tombol jeda jika foto lebih dari satu. Keterangan foto tidak ditampilkan. */}
   <div class="absolute inset-x-0 bottom-16 lg:bottom-20">
     <Container class="flex items-center justify-end gap-2">
-      {tanpaFoto && <span class="rounded-2xl bg-ink/80 px-3 py-1 text-center text-sm font-semibold text-white">Foto belum tersedia</span>}
+      <span data-label-foto hidden={!tanpaFoto} class="rounded-2xl bg-ink/80 px-3 py-1 text-center text-sm font-semibold text-white">Foto belum tersedia</span>
       {
         bergilir && (
           <button
@@ -95,9 +97,19 @@ const posisiFoto = {
   // tampilannya diatur oleh kelas yang sudah tertulis di markup.
   const JEDA_MS = 5000;
 
-  const hero = document.querySelector<HTMLElement>('[data-hero-slideshow]');
+  const hero = document.querySelector<HTMLElement>('[data-hero-foto]');
 
-  if (hero) {
+  function perbaruiLabelFoto() {
+    const foto = hero?.querySelector<HTMLImageElement>('[data-slide][data-aktif] img') ?? hero?.querySelector<HTMLImageElement>('img');
+    const label = hero?.querySelector<HTMLElement>('[data-label-foto]');
+    if (foto && label) label.hidden = foto.getAttribute('src') !== foto.dataset.default;
+  }
+
+  // Error dapat terjadi sebelum modul ini dimuat. Periksa saat mulai dan setelah fallback mengganti src.
+  hero?.addEventListener('error', () => queueMicrotask(perbaruiLabelFoto), true);
+  perbaruiLabelFoto();
+
+  if (hero?.hasAttribute('data-hero-slideshow')) {
     const daftarSlide = hero.querySelectorAll<HTMLElement>('[data-slide]');
     const tombol = hero.querySelector<HTMLButtonElement>('[data-hero-jeda]')!;
     let aktif = 0;
@@ -115,6 +127,7 @@ const posisiFoto = {
       tandai(aktif, false);
       aktif = nomor;
       tandai(aktif, true);
+      perbaruiLabelFoto();
     }
 
     // Timer hanya berjalan jika tidak dijeda dan tab sedang dilihat.
