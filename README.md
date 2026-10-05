@@ -15,7 +15,7 @@ Website di link ini diperbarui otomatis setiap ada perubahan di branch `main`.
 - **Beranda, Profil, Layanan, dan Wisata:** tersedia.
 - **Navigasi Wisata otomatis:** sampai 4 destinasi menuju section Beranda; mulai 5 menuju `/wisata`, dengan 4 pilihan di Beranda dan tombol "Semua Wisata".
 - `/wisata` selalu dapat dibuka, termasuk ketika jumlah destinasi turun atau kosong, agar tautan lama tetap berlaku.
-- **Berikutnya:** perencanaan dan integrasi CMS. Bahasa Inggris dan halaman detail destinasi tetap ditunda.
+- **Berikutnya:** implementasi CMS mengikuti [rencana CMS](CMS.md). Bahasa Inggris dan halaman detail destinasi tetap ditunda.
 
 ## Isi website
 
@@ -42,11 +42,13 @@ Semua isi website ada di folder `src/content/`. Untuk mengganti isi, tampilan ti
 - Koordinat harus berada di rentang geografis; jumlah penduduk dan KK berupa bilangan bulat nonnegatif atau `null`. Tautan terisi memakai alamat HTTP/HTTPS lengkap; email terisi harus valid.
 - Pilih ikon dari nama file di `src/icons/` tanpa `.svg`. Ikon yang tidak tersedia ditolak saat build.
 
-**Urutan dan pilihan Beranda:** layanan memakai `unggulan` (maksimal 4) dan `urutan`. Wisata sampai 4 menampilkan semuanya, termasuk yang tidak unggulan. Mulai 5, empat kartu mengutamakan `unggulan`, lalu dilengkapi dari destinasi lain menurut `urutan`. Halaman Wisata selalu menampilkan semua destinasi menurut `urutan` lalu nama. Koleksi kosong tetap memiliki pesan yang jelas.
+**Urutan dan pilihan Beranda:** layanan menampilkan maksimal 4 item yang ditandai `unggulan`, menurut `urutan`. Wisata sampai 4 menampilkan semuanya, termasuk yang tidak unggulan. Mulai 5, empat kartu mengutamakan `unggulan`, lalu dilengkapi dari destinasi lain menurut `urutan`. Halaman Wisata selalu menampilkan semua destinasi menurut `urutan` lalu nama. Koleksi kosong tetap memiliki pesan yang jelas.
 
 Setiap isi diperiksa oleh `src/content.config.ts` setiap kali website dibangun. Jika ada data yang tidak sesuai, proses build gagal dengan pesan yang jelas, dan website yang sedang tayang tidak berubah.
 
 ## Untuk pembuat CMS
+
+Mulai dari [CMS.md — rencana implementasi dan pembagian pull request](CMS.md). Dokumen ini menjelaskan cakupan formulir, kontrak field, login, media, alur publikasi, urutan pekerjaan, dan kriteria penerimaan untuk pembuat CMS.
 
 `src/content.config.ts` adalah **kontrak data** antara tampilan dan CMS. Formulir CMS mengikuti nama field, tipe, daftar pilihan, aturan wajib/kosong, dan validasi tersebut. Isian konten terpisah dari tampilan; label formulir boleh memakai Bahasa Indonesia. Teks antarmuka seperti "Cek Lokasi", tata letak, dan aturan navigasi tetap dikelola frontend.
 
