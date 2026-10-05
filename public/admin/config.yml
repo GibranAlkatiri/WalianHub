@@ -14,8 +14,8 @@ publish_mode: editorial_workflow
 media_folder: public/uploads
 public_folder: /uploads
 
-site_url: https://gibranalkatiri.github.io/WalianHub
-display_url: https://gibranalkatiri.github.io/WalianHub
+site_url: https://walianhub.pages.dev
+display_url: https://walianhub.pages.dev
 
 locale: id
 

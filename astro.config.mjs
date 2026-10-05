@@ -2,13 +2,11 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 
-// Alamat link pratinjau di GitHub Pages: https://gibranalkatiri.github.io/WalianHub/
-// - site: alamat akun GitHub Pages.
-// - base: nama repository, huruf besar-kecilnya harus sama persis ("WalianHub").
-//   Saat pindah ke domain sendiri (misalnya walian.tomohon.go.id), ubah menjadi "/".
+// Deploy ke Cloudflare Pages.
+// - site: URL Cloudflare Pages (ganti setelah project dibuat, atau setelah pakai custom domain).
+// - base: "/" karena Cloudflare Pages melayani dari root.
 export default defineConfig({
-  site: 'https://gibranalkatiri.github.io',
-  base: '/WalianHub',
+  site: 'https://walianhub.pages.dev',
   vite: {
     plugins: [tailwindcss()],
   },

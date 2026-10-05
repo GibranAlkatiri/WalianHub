@@ -4,7 +4,7 @@ Panduan ini untuk **pengelola konten** (staf kelurahan). Tidak perlu coding. Sem
 
 ## 1. Masuk ke panel
 
-1. Buka: **https://gibranalkatiri.github.io/WalianHub/admin/**
+1. Buka: **https://walianhub.pages.dev/admin/**
 2. Klik **Login with GitHub**
 3. Masukkan akun GitHub yang sudah diberi akses
 4. Izinkan aplikasi jika diminta
@@ -115,7 +115,7 @@ Panel CMS menggunakan sistem **draf → terbit**:
 
 ### Memeriksa hasil
 - Setelah terbit, tunggu 1–3 menit
-- Buka website: **https://gibranalkatiri.github.io/WalianHub/**
+- Buka website: **https://walianhub.pages.dev/**
 - Pastikan perubahan sudah tampil
 - Jika belum tampil setelah 5 menit, cek tab **Actions** di GitHub repository
 
@@ -131,7 +131,7 @@ Panel CMS menggunakan sistem **draf → terbit**:
 - Perbaiki field yang bermasalah, simpan ulang
 
 ### Website tidak berubah setelah terbit
-1. Buka: `https://github.com/GibranAlkatiri/WalianHub/actions`
+1. Buka: `https://github.com/GibranAlkatiri/WalianHub/actions` (CI checks)
 2. Lihat status workflow terakhir
 3. Jika ada tanda ❌, deploy gagal — hubungi penanggung jawab teknis
 4. Jika ada tanda ✓ tapi website belum berubah — tunggu beberapa menit (cache)

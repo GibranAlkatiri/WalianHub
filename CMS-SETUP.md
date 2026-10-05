@@ -1,6 +1,6 @@
 # Panduan Setup CMS — Kelurahan Walian
 
-Dokumen ini untuk **penanggung jawab teknis** (maintainer). Berisi langkah instalasi, konfigurasi autentikasi, environment, CI/branch protection, pemeliharaan, dan pemulihan.
+Dokumen ini untuk **penanggung jawab teknis** (maintainer). Berisi langkah instalasi, konfigurasi autentikasi, deploy Cloudflare Pages, CI, pemeliharaan, dan pemulihan.
 
 ## 1. Arsitektur
 
@@ -12,51 +12,80 @@ Dokumen ini untuk **penanggung jawab teknis** (maintainer). Berisi langkah insta
                                                 │
                                           push ke main
                                                 │
-                                         ┌──────▼──────┐
-                                         │ GitHub Pages │
-                                         │ (deploy.yml) │
-                                         └─────────────┘
+                                      ┌─────────▼─────────┐
+                                      │  Cloudflare Pages  │
+                                      │  (auto build)      │
+                                      └───────────────────┘
 ```
 
 - **Panel**: file statis di `public/admin/` — tidak ada server backend.
 - **Backend**: `github` — Decap CMS berkomunikasi langsung dengan GitHub API.
 - **Editorial workflow**: draf disimpan di branch terpisah + PR, bukan langsung ke `main`.
-- **Deploy**: push/merge ke `main` → GitHub Actions (`deploy.yml`) → GitHub Pages.
+- **Deploy**: push/merge ke `main` → Cloudflare Pages otomatis build dan deploy.
+- **Preview**: setiap PR/branch mendapat URL preview otomatis dari Cloudflare.
 
 ## 2. Prasyarat
 
 - Repository: `GibranAlkatiri/WalianHub`
-- GitHub Pages aktif (source: GitHub Actions)
+- Akun Cloudflare (gratis)
 - Akun GitHub untuk setiap pengelola konten
 
-## 3. Autentikasi — GitHub OAuth App
+## 3. Deploy ke Cloudflare Pages
+
+### 3.1 Hubungkan repository
+
+1. Buka [Cloudflare Dashboard](https://dash.cloudflare.com) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**
+2. Pilih repository `GibranAlkatiri/WalianHub`
+3. Konfigurasi build:
+   - **Production branch**: `main`
+   - **Framework preset**: `Astro`
+   - **Build command**: `bun run build`
+   - **Build output directory**: `dist`
+4. Klik **Save and Deploy**
+
+### 3.2 URL
+
+Setelah deploy pertama berhasil:
+- **Production**: `https://walianhub.pages.dev` (atau custom domain nanti)
+- **Preview**: setiap branch/PR mendapat `https://<branch>.walianhub.pages.dev`
+
+> Jika nama project berbeda dari `walianhub`, update `site` di `astro.config.mjs` dan `site_url`/`display_url` di `public/admin/config.yml`.
+
+### 3.3 Custom domain (opsional)
+
+1. Cloudflare Dashboard → Pages project → **Custom domains** → **Set up a custom domain**
+2. Masukkan domain (misal `walian.tomohon.go.id`)
+3. Tambahkan DNS record sesuai petunjuk
+4. Update `site` di `astro.config.mjs` ke domain baru
+
+## 4. Autentikasi — GitHub OAuth App
 
 Decap CMS dengan backend `github` memerlukan OAuth App untuk login.
 
-### 3.1 Buat OAuth App
+### 4.1 Buat OAuth App
 
 1. Buka **GitHub → Settings → Developer settings → OAuth Apps → New OAuth App**
 2. Isi:
    - **Application name**: `Walian CMS`
-   - **Homepage URL**: `https://gibranalkatiri.github.io/WalianHub`
+   - **Homepage URL**: `https://walianhub.pages.dev`
    - **Authorization callback URL**: `https://api.netlify.com/auth/done`
 3. Klik **Register application**
 4. Catat **Client ID**
 5. Generate **Client Secret** — simpan dengan aman, tidak bisa dilihat ulang
 
-### 3.2 Aktifkan Netlify Identity (sebagai OAuth proxy)
+### 4.2 Aktifkan Netlify sebagai OAuth proxy
 
-Decap CMS memakai Netlify sebagai OAuth proxy secara default:
+Meskipun hosting di Cloudflare, Decap CMS tetap bisa memakai Netlify sebagai OAuth proxy (hanya untuk login, bukan hosting):
 
 1. Buat akun di [netlify.com](https://netlify.com) (gratis)
-2. Buat site baru (bisa import repo atau buat site kosong)
+2. Buat site kosong (tidak perlu import repo)
 3. Buka **Site settings → Access & identity → OAuth → Install provider**
-4. Pilih **GitHub**, masukkan Client ID dan Client Secret dari langkah 3.1
+4. Pilih **GitHub**, masukkan Client ID dan Client Secret dari langkah 4.1
 5. Simpan
 
-> **Alternatif tanpa Netlify**: Bisa deploy OAuth proxy sendiri menggunakan [decap-cms-github-oauth-provider](https://github.com/vencax/netlify-cms-github-oauth-provider) atau [decap-oauth-client](https://github.com/sterlingwes/decap-oauth-client), lalu ubah `base_url` di `config.yml`. Untuk tahap awal, Netlify OAuth proxy adalah opsi paling sederhana.
+> **Alternatif tanpa Netlify**: Deploy OAuth proxy sendiri ke Cloudflare Workers menggunakan [decap-oauth-cloudflare-workers](https://github.com/i40west/netlify-cms-cloudflare-pages) atau [decap-oauth-client](https://github.com/sterlingwes/decap-oauth-client), lalu tambahkan `base_url` di `config.yml`. Untuk tahap awal, Netlify proxy paling sederhana.
 
-### 3.3 Environment variables
+### 4.3 Environment variables
 
 | Variable | Lokasi | Keterangan |
 |---|---|---|
@@ -65,7 +94,7 @@ Decap CMS memakai Netlify sebagai OAuth proxy secara default:
 
 **Tidak ada `.env` yang perlu ditambahkan ke repository.** Semua secret tersimpan di Netlify dan GitHub.
 
-## 4. Izin akun pengelola konten
+## 5. Izin akun pengelola konten
 
 Pengelola konten memerlukan **write access** ke repository:
 
@@ -80,7 +109,7 @@ Dengan editorial workflow, pengelola membuat PR — maintainer atau pengelola se
 - Hapus collaborator dari repository settings
 - Revoke akses di OAuth App settings jika diperlukan
 
-## 5. Branch Protection (check wajib)
+## 6. Branch Protection (check wajib)
 
 Agar konten tidak bisa dipublish tanpa validasi:
 
@@ -94,7 +123,7 @@ Agar konten tidak bisa dipublish tanpa validasi:
 
 Ini memastikan setiap PR (termasuk dari CMS) harus pass `bun test` + `bun run build` sebelum merge.
 
-## 6. Workflow CI/CD
+## 7. Workflow CI/CD
 
 ### CI — Pemeriksaan PR (`ci.yml`)
 
@@ -105,20 +134,19 @@ on: pull_request ke main
 
 Berjalan otomatis saat CMS membuat/update PR draf. Jika gagal, konten tidak bisa dipublish.
 
-### Deploy — Build dan pasang (`deploy.yml`)
+### Deploy — Cloudflare Pages (otomatis)
 
-```yaml
-on: push ke main / manual
-→ bun install → bun test → bun run build → upload → deploy Pages
-```
+Cloudflare Pages memantau repository dan otomatis build + deploy saat:
+- Push/merge ke `main` → production deploy
+- Push ke branch lain / PR → preview deploy
 
-Berjalan setelah PR dimerge ke `main`.
+Tidak perlu workflow GitHub Actions untuk deploy.
 
 ### Catatan tentang event trigger
 
-Commit yang dibuat melalui GitHub API menggunakan OAuth token pengguna (bukan `GITHUB_TOKEN`), sehingga akan memicu workflow deploy dengan benar. Jika suatu saat token berubah, verifikasi bahwa push ke `main` memicu workflow di tab **Actions**.
+Commit yang dibuat melalui GitHub API menggunakan OAuth token pengguna (bukan `GITHUB_TOKEN`), sehingga akan memicu Cloudflare Pages build dengan benar karena Cloudflare memantau semua push event.
 
-## 7. Pemeliharaan
+## 8. Pemeliharaan
 
 ### Update Decap CMS
 
@@ -141,7 +169,7 @@ Panel memuat Decap CMS dari CDN (`unpkg.com/decap-cms@^3.0`). Untuk update:
 3. Buat folder/file konten default
 4. Update halaman Astro jika perlu
 
-## 8. Pemulihan (Recovery)
+## 9. Pemulihan (Recovery)
 
 ### Konten rusak setelah publish
 
@@ -149,13 +177,13 @@ Panel memuat Decap CMS dari CDN (`unpkg.com/decap-cms@^3.0`). Untuk update:
 git log --oneline -10               # cari commit bermasalah
 git revert <commit-sha>             # buat revert commit
 bun test && bun run build           # pastikan valid
-git push origin main                # deploy ulang
+git push origin main                # Cloudflare auto-deploy
 ```
 
 ### Deploy gagal
 
-1. Cek tab **Actions** di GitHub untuk error
-2. Website sebelumnya tetap tersedia — tidak ada downtime
+1. Cek **Cloudflare Dashboard → Pages → project → Deployments** untuk error
+2. Website sebelumnya tetap tersedia — Cloudflare melayani deployment terakhir yang berhasil
 3. Perbaiki masalah di commit baru, push ke `main`
 
 ### Konflik edit bersamaan
@@ -176,16 +204,17 @@ Semua konfigurasi CMS ada di repository (tracked):
 Yang di luar repository:
 - OAuth App settings (GitHub)
 - OAuth proxy credentials (Netlify)
+- Cloudflare Pages project settings
 
-Dokumentasikan siapa pemilik akun Netlify dan OAuth App.
+Dokumentasikan siapa pemilik akun Netlify, Cloudflare, dan OAuth App.
 
-## 9. Biaya
+## 10. Biaya
 
 | Layanan | Biaya |
 |---|---|
-| GitHub Pages | Gratis (repo publik) |
-| GitHub Actions | Gratis (2000 menit/bulan) |
-| Netlify (OAuth proxy) | Gratis (tier starter) |
+| Cloudflare Pages | Gratis (500 build/bulan, bandwidth unlimited) |
+| GitHub Actions (CI) | Gratis (2000 menit/bulan) |
+| Netlify (OAuth proxy saja) | Gratis (tier starter) |
 | Decap CMS | Gratis (open source) |
 
 Total biaya pemeliharaan: **Rp 0**.
