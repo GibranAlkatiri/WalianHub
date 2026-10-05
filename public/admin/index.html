@@ -6,12 +6,14 @@
     <meta name="robots" content="noindex" />
     <title>Masuk — Panel Konten Kelurahan Walian</title>
     <style>
-      body { font-family: system-ui, sans-serif; max-width: 22rem; margin: 4rem auto; padding: 0 1rem; }
-      label { display: block; margin-bottom: 1rem; }
-      input { width: 100%; padding: 0.5rem; margin-top: 0.25rem; box-sizing: border-box; }
-      button { padding: 0.5rem 1.5rem; }
-      #galat { color: #b91c1c; }
+      body { font-family: system-ui, sans-serif; margin: 0; }
+      #masuk { max-width: 22rem; margin: 4rem auto; padding: 0 1rem; }
+      #masuk label { display: block; margin-bottom: 1rem; }
+      #masuk input { width: 100%; padding: 0.5rem; margin-top: 0.25rem; box-sizing: border-box; }
+      #masuk button { padding: 0.5rem 1.5rem; }
+      #galat, #status-galat { color: #b91c1c; }
       #panel { display: none; }
+      #panel > p { max-width: 22rem; margin: 4rem auto; padding: 0 1rem; }
     </style>
   </head>
   <body>
@@ -29,26 +31,75 @@
         <button type="submit" id="tombol">Masuk</button>
       </form>
     </div>
-    <div id="panel"></div>
+    <div id="panel">
+      <p id="status">Memuat panel…</p>
+      <p id="status-galat" role="alert" hidden></p>
+      <p id="status-keluar" hidden><button type="button" id="tombol-keluar">Hapus sesi &amp; muat ulang</button></p>
+    </div>
     <script>
       (function () {
-        // Sesi Decap tersimpan di localStorage key ini; jika ada, lewati form.
+        // Sesi Decap tersimpan di localStorage key ini (LocalStorageAuthStore Decap).
         var KUNCI = 'decap-cms-user';
+        var BATAS_TUNGGU_MS = 30000;
         var galat = document.getElementById('galat');
+        var statusGalat = document.getElementById('status-galat');
 
-        function tampilkanPesan(pesan) {
-          galat.textContent = pesan;
-          galat.hidden = false;
+        // Tangkap error JS (mis. Decap gagal boot) agar blank page selalu
+        // menampilkan pesan, bukan putih diam-diam.
+        window.addEventListener('error', function (ev) {
+          try {
+            if (document.getElementById('panel').style.display === 'block') {
+              gagalPanel('Error: ' + (ev.message || 'script gagal dimuat'));
+            }
+          } catch (e) { /* abaikan */ }
+        });
+
+        function gagalPanel(pesan) {
+          document.getElementById('status').hidden = true;
+          statusGalat.textContent = pesan;
+          statusGalat.hidden = false;
+          document.getElementById('status-keluar').hidden = false;
+        }
+
+        // Decap me-render app ke div#nc-root di body (bukan di #panel),
+        // dibuat saat script dievaluasi tapi terisi belakangan (fetch
+        // config.yml + GitHub API). Tunggu sampai ada isi, bukan sekadar ada.
+        function tungguRender() {
+          var mulai = Date.now();
+          var timer = setInterval(function () {
+            var root = document.getElementById('nc-root');
+            if (root && root.childElementCount > 0) {
+              clearInterval(timer);
+              document.getElementById('panel').style.display = 'none';
+              return;
+            }
+            if (Date.now() - mulai > BATAS_TUNGGU_MS) {
+              clearInterval(timer);
+              gagalPanel('Panel tidak merespons dalam 30 detik. Periksa koneksi internet dan token GitHub server, lalu muat ulang.');
+            }
+          }, 500);
         }
 
         function bukaPanel() {
           document.getElementById('masuk').style.display = 'none';
           document.title = 'Panel Konten — Kelurahan Walian';
           document.getElementById('panel').style.display = 'block';
-          var s = document.createElement('script');
-          s.src = 'https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js';
-          document.getElementById('panel').appendChild(s);
+          if (!document.querySelector('script[data-decap]')) {
+            var s = document.createElement('script');
+            s.src = 'https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js';
+            s.setAttribute('data-decap', '1');
+            s.onerror = function () {
+              gagalPanel('Gagal memuat Decap CMS (koneksi ke unpkg). Muat ulang halaman.');
+            };
+            document.getElementById('panel').appendChild(s);
+          }
+          tungguRender();
         }
+
+        document.getElementById('tombol-keluar').addEventListener('click', function () {
+          try { localStorage.removeItem(KUNCI); } catch (e) { /* abaikan */ }
+          location.reload();
+        });
 
         try {
           var sesi = JSON.parse(localStorage.getItem(KUNCI) || 'null');
@@ -59,6 +110,7 @@
           ev.preventDefault();
           var tombol = document.getElementById('tombol');
           tombol.disabled = true;
+          galat.hidden = true;
           fetch('/api/auth', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
@@ -69,11 +121,18 @@
           })
             .then(function (res) { return res.json().then(function (j) { return { ok: res.ok, j: j }; }); })
             .then(function (r) {
-              if (!r.ok || !r.j.token) { tampilkanPesan(r.j.error || 'Username atau password salah.'); return; }
+              if (!r.ok || !r.j.token) {
+                galat.textContent = (r.j && r.j.error) || 'Username atau password salah.';
+                galat.hidden = false;
+                return;
+              }
               localStorage.setItem(KUNCI, JSON.stringify({ token: r.j.token, backendName: 'github' }));
               bukaPanel();
             })
-            .catch(function () { tampilkanPesan('Tidak dapat menghubungi server. Coba lagi.'); })
+            .catch(function () {
+              galat.textContent = 'Tidak dapat menghubungi server. Coba lagi.';
+              galat.hidden = false;
+            })
             .finally(function () { tombol.disabled = false; });
         });
       })();

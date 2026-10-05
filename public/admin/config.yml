@@ -4,7 +4,7 @@
 
 backend:
   name: github
-  repo: GibranAlkatiri/WalianHub
+  repo: gleey/WalianHub
   branch: main
   squash_merges: true
 

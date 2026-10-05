@@ -130,7 +130,7 @@ Panel CMS menggunakan sistem **draf → terbit**:
 - Perbaiki field yang bermasalah, simpan ulang
 
 ### Website tidak berubah setelah terbit
-1. Buka: `https://github.com/GibranAlkatiri/WalianHub/actions` (CI checks)
+1. Buka: `https://github.com/gleey/WalianHub/actions` (CI checks)
 2. Lihat status workflow terakhir
 3. Jika ada tanda ❌, deploy gagal — hubungi penanggung jawab teknis
 4. Jika ada tanda ✓ tapi website belum berubah — tunggu beberapa menit (cache)

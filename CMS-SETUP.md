@@ -26,7 +26,7 @@ Dokumen ini untuk **penanggung jawab teknis** (maintainer). Berisi langkah insta
 
 ## 2. Prasyarat
 
-- Repository: `GibranAlkatiri/WalianHub`
+- Repository: `gleey/WalianHub` (yang terhubung ke Cloudflare Pages — harus sama dengan `repo` di `config.yml`)
 - Akun Cloudflare (gratis)
 - Akun GitHub pemilik repository (hanya untuk membuat token akses server — staf tidak perlu akun GitHub)
 
@@ -35,7 +35,7 @@ Dokumen ini untuk **penanggung jawab teknis** (maintainer). Berisi langkah insta
 ### 3.1 Hubungkan repository
 
 1. Buka [Cloudflare Dashboard](https://dash.cloudflare.com) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**
-2. Pilih repository `GibranAlkatiri/WalianHub`
+2. Pilih repository `gleey/WalianHub`
 3. Konfigurasi build:
    - **Production branch**: `main`
    - **Framework preset**: `Astro`
@@ -77,7 +77,7 @@ Token GitHub tidak pernah masuk repository.
 1. Buka **GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**
 2. Isi:
    - **Token name**: `Walian CMS`
-   - **Repository access**: Only select repositories → `GibranAlkatiri/WalianHub`
+   - **Repository access**: Only select repositories → `gleey/WalianHub`
    - **Permissions → Contents**: **Read and write**
 3. Generate, salin token (hanya tampil sekali).
 
