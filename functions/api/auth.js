@@ -56,10 +56,21 @@ export async function onRequestGet() {
 
 export async function onRequestPost({ request, env }) {
   const { username, password } = await bacaKredensial(request);
-  const userCocok = env.CMS_USERNAME !== undefined && username === env.CMS_USERNAME;
-  const passCocok = sama(await sha256Hex(password), String(env.CMS_PASSWORD_HASH || '').toLowerCase());
-  if (!userCocok || !passCocok || !env.GITHUB_TOKEN) {
+  // Env di-trim: spasi tak sengaja di kolom Value Cloudflare tidak boleh
+  // membuat login selalu gagal.
+  const envUser = String(env.CMS_USERNAME || '').trim();
+  const envHash = String(env.CMS_PASSWORD_HASH || '').trim().toLowerCase();
+  const envToken = String(env.GITHUB_TOKEN || '').trim();
+  if (!envUser || !envHash || !envToken) {
+    return json(
+      { ok: false, error: 'Konfigurasi login di server belum lengkap. Lengkapi env lalu redeploy.' },
+      500,
+    );
+  }
+  const userCocok = username.trim() === envUser;
+  const passCocok = sama(await sha256Hex(password), envHash);
+  if (!userCocok || !passCocok) {
     return json({ ok: false, error: 'Username atau password salah.' }, 401);
   }
-  return json({ ok: true, token: env.GITHUB_TOKEN });
+  return json({ ok: true, token: envToken });
 }

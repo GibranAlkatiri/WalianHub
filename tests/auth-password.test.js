@@ -72,9 +72,21 @@ describe('Login password panel CMS (mode JSON)', () => {
     }
   });
 
-  test('tanpa GITHUB_TOKEN di env login tetap ditolak', async () => {
+  test('env belum lengkap memberi error konfigurasi (500), bukan error kredensial', async () => {
     const { request } = reqPost('walian', PASSWORD);
     const res = await onRequestPost({ request, env: { ...ENV, GITHUB_TOKEN: '' } });
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error).toContain('belum lengkap');
+  });
+
+  test('spasi tak sengaja di env dan username dimaafkan', async () => {
+    const { request } = reqPost('  walian  ', PASSWORD);
+    const res = await onRequestPost({
+      request,
+      env: { ...ENV, CMS_USERNAME: '  walian  ', CMS_PASSWORD_HASH: ` ${ENV.CMS_PASSWORD_HASH}\n` },
+    });
+    expect(res.status).toBe(200);
   });
 });
