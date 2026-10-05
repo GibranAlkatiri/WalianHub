@@ -1,0 +1,742 @@
+/* ═══════════════════════════════════════════════════════════════
+   Tema Panel Konten — Kelurahan Walian
+   ───────────────────────────────────────────────────────────────
+   Tujuan: membuat Decap CMS terasa seperti dashboard admin pada
+   umumnya — navigasi jelas, kartu rapi, target sentuh besar —
+   TANPA mengubah alur kerja Decap (simpan/terbit tetap bawaan).
+
+   Catatan teknis: Decap memakai emotion, jadi nama class-nya berupa
+   hash yang berubah antar versi. Karena itu selektor di sini
+   sengaja memakai struktur (header/aside/main/section/li) dan
+   atribut semantik, bukan nama class dari Decap. Warna tombol
+   primer juga dibiarkan bawaan Decap (biru = terbitkan, hijau =
+   sudah terbit, merah = hapus) karena warna itu adalah pembawa
+   makna yang sudah dihafal staf.
+
+   Palet diambil dari token website:
+     cream-50 #f9f9f1 · ink #1f2a17 · sage-100 #eef3df
+     sage-200 #d8e4c2 · forest-600 #45742f · forest-700 #3a6327
+     forest-800 #2f4f22 · line #d9dfcb · line-strong #748466
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --adm-kertas: #ffffff;
+  --adm-latar: #f9f9f1;
+  --adm-latar-2: #fcfcf7;
+  --adm-garis: #d9dfcb;
+  --adm-garis-kuat: #748466;
+  --adm-teks: #1f2a17;
+  --adm-teks-lunak: #4b5645;
+  --adm-teks-samar: #6b7563;
+  --adm-hijau: #45742f;
+  --adm-hijau-gelap: #3a6327;
+  --adm-hijau-tua: #2f4f22;
+  --adm-hijau-muda: #eef3df;
+  --adm-hijau-muda-2: #d8e4c2;
+  --adm-bahaya: #b42318;
+  --radius-kartu: 20px;
+  --radius-kontrol: 14px;
+  --bayang-kartu: 0 1px 2px rgb(31 51 22 / 0.04), 0 8px 24px rgb(31 51 22 / 0.06);
+}
+
+/* ── 1. Kanvas & tipografi dasar ─────────────────────────────── */
+
+#nc-root {
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif !important;
+  background-color: var(--adm-latar) !important;
+  color: var(--adm-teks) !important;
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+#nc-root h1,
+#nc-root h2,
+#nc-root h3,
+#nc-root h4,
+#nc-root h5,
+#nc-root h6,
+#nc-root p,
+#nc-root span,
+#nc-root label,
+#nc-root li,
+#nc-root small,
+#nc-root strong,
+#nc-root em,
+#nc-root time {
+  color: inherit;
+}
+
+#nc-root a {
+  color: var(--adm-hijau-gelap);
+  text-decoration: none;
+}
+#nc-root a:hover {
+  text-decoration: underline;
+}
+
+#nc-root h1 {
+  font-size: 1.7rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+#nc-root h2 {
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+  line-height: 1.35;
+}
+#nc-root h3 {
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+}
+
+#nc-root ::selection {
+  background: var(--adm-hijau-muda-2);
+  color: var(--adm-hijau-tua);
+}
+
+/* ── 2. Bilah atas (header) ───────────────────────────────────────
+   Penting: Decap merancang header-nya untuk latar GELAP
+   (`background-color: colors.foreground`) dan memberi teksnya warna
+   terangAbu: `#7b8290` untuk label tombol dan `#b3b9c4` untuk ikon.
+   Begitu latar diganti putih (sesuai brand Cream), kedua warna itu
+   nyaris tidak terlihat — inilah sumber kontras yang jelek.
+   Karena itu semua teks & ikon header dipaksa ke tinta gelap
+   eksplisit, bukan warna bawaan Decap. */
+
+#nc-root header {
+  background-color: var(--adm-kertas) !important;
+  border-bottom: 1px solid var(--adm-garis) !important;
+  color: var(--adm-teks) !important;
+  box-shadow: 0 1px 3px rgb(31 51 22 / 0.05);
+  min-height: 4.25rem;
+}
+
+/* Wadah header: lebarkan & tebalkan tinggi supaya sejajar dengan
+   lebar konten (1600px) dan tidak terasa sempit. */
+#nc-root header > div {
+  max-width: 1600px !important;
+  min-height: 4.25rem;
+  align-items: center;
+  padding: 0 1.5rem !important;
+  gap: 1rem;
+}
+
+/* Teks header: tinta pekat (bukan abu redup) agar kontras tinggi. */
+#nc-root header a,
+#nc-root header button,
+#nc-root header li {
+  color: var(--adm-teks) !important;
+}
+
+/* Ikon header: Decap memberi #b3b9c4; di latar putih itu tak
+   terbaca. Dipaksa ke abu kehijauan yang jelas. */
+#nc-root header svg,
+#nc-root header svg * {
+  color: var(--adm-teks-samar) !important;
+}
+
+/* Logo di bar atas: tinggi tetap, tidak mendominasi. */
+#nc-root header img {
+  max-height: 34px !important;
+  max-width: 180px !important;
+  width: auto;
+  padding: 0 !important;
+  border-radius: 10px;
+}
+
+/* Navigasi bar atas jadi pil yang mudah dipindai. */
+#nc-root header nav ul {
+  display: flex !important;
+  align-items: center;
+  gap: 0.3rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#nc-root header nav ul li {
+  margin: 0;
+}
+#nc-root header nav ul li a,
+#nc-root header nav ul li button {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.6rem;
+  padding: 0.3rem 1rem !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  border: 0 !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+#nc-root header nav ul li a:hover,
+#nc-root header nav ul li button:hover {
+  background: var(--adm-hijau-muda) !important;
+  color: var(--adm-hijau-tua) !important;
+  text-decoration: none;
+}
+#nc-root header nav ul li a:hover svg,
+#nc-root header nav ul li button:hover svg {
+  color: var(--adm-hijau) !important;
+}
+
+/* Menu aktif. `.header-link-active` adalah class yang Decap sendiri
+   pasang pada NavLink aktif, jadi tidak bergantung pada hash emotion. */
+#nc-root header nav ul li a.header-link-active,
+#nc-root header nav ul li a[aria-current="page"] {
+  background: var(--adm-hijau) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+#nc-root header nav ul li a.header-link-active svg,
+#nc-root header nav ul li a[aria-current="page"] svg {
+  color: #fff !important;
+}
+
+/* Aksi kanan header: "Tambah Cepat" + akun (avatar).
+   Dropdown "Tambah Cepat" adalah anak pertama baris aksi, sedangkan
+   tombol akun (avatar) selalu punya aria-label — kedua jangkar ini
+   dipakai bersama supaya latar hijau + teks putih SELALU menang atas
+   abu gelap bawaan Decap (buttons.gray), termasuk untuk isi di dalam
+   tombol (teks/panah/ikon). */
+#nc-root header > div > div {
+  gap: 0.5rem;
+  align-items: center;
+}
+#nc-root header > div > div > div:first-child button,
+#nc-root header > div > div button:not([aria-label]) {
+  background-color: var(--adm-hijau) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  min-height: 2.6rem;
+  padding: 0.3rem 1.1rem !important;
+  border-radius: 999px !important;
+  border: 0 !important;
+  box-shadow: 0 2px 8px rgb(69 116 47 / 0.25);
+}
+#nc-root header > div > div > div:first-child button *,
+#nc-root header > div > div button:not([aria-label]) * {
+  color: #fff !important;
+}
+#nc-root header > div > div > div:first-child button:hover,
+#nc-root header > div > div button:not([aria-label]):hover {
+  background-color: var(--adm-hijau-gelap) !important;
+  color: #fff !important;
+}
+/* Panah dropdown "Tambah Cepat" (segitiga dari border) ikut putih. */
+#nc-root header > div > div > div:first-child button::after,
+#nc-root header > div > div button:not([aria-label])::after {
+  border-top-color: #fff !important;
+}
+/* Menu turun header (daftar koleksi + menu akun): kartu putih,
+   teks tinta pekat supaya terbaca. */
+#nc-root header > div > div ul {
+  background-color: #fff !important;
+  border: 1px solid var(--adm-garis) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 32px rgb(31 51 22 / 0.16) !important;
+  padding: 0.4rem !important;
+}
+#nc-root header > div > div ul li button,
+#nc-root header > div > div ul li a {
+  color: var(--adm-teks) !important;
+  background: transparent !important;
+  border-radius: 10px !important;
+  width: 100%;
+}
+#nc-root header > div > div ul li button:hover,
+#nc-root header > div > div ul li a:hover {
+  background: var(--adm-hijau-muda) !important;
+  color: var(--adm-hijau-tua) !important;
+}
+#nc-root header > div > div button[aria-label] {
+  min-height: 2.6rem;
+  padding: 0.25rem !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+}
+#nc-root header > div > div img {
+  border-radius: 999px;
+  border: 1px solid var(--adm-garis);
+}
+
+/* ── 3. Panel kiri (daftar koleksi) ───────────────────────────────
+   Decap membuat <aside> `position: fixed` tanpa `top`, sehingga
+   bisa tersembul ke bawah bar atas yang sticky. Di sini top & tinggi
+   dikunci supaya selalu mulai tepat di bawah header dan ikut
+   menggulir bersama halaman. */
+
+#nc-root aside {
+  background-color: var(--adm-kertas) !important;
+  border: 1px solid var(--adm-garis) !important;
+  border-radius: var(--radius-kartu) !important;
+  box-shadow: var(--bayang-kartu);
+  padding: 1.1rem 0.7rem 1.25rem !important;
+}
+@media (min-width: 800px) {
+  #nc-root aside {
+    top: 5.5rem;
+    max-height: calc(100dvh - 7rem);
+    overflow-y: auto;
+  }
+}
+
+#nc-root aside h2,
+#nc-root aside h3 {
+  color: var(--adm-teks-samar) !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin: 0 0 0.5rem 0.85rem;
+}
+
+#nc-root aside ul {
+  list-style: none !important;
+  margin: 0;
+  padding: 0;
+}
+#nc-root aside li {
+  margin: 0.15rem 0 !important;
+}
+#nc-root aside li a {
+  display: flex !important;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.9rem;
+  padding: 0.5rem 0.85rem !important;
+  border-radius: 12px !important;
+  border-left: 3px solid transparent;
+  color: var(--adm-teks-lunak) !important;
+  font-weight: 600 !important;
+  font-size: 0.98rem !important;
+  line-height: 1.35;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+#nc-root aside li a:hover {
+  background: var(--adm-hijau-muda) !important;
+  color: var(--adm-hijau-tua) !important;
+  text-decoration: none;
+}
+/* Menu aktif tidak boleh ambigu. */
+#nc-root aside li a[aria-current="page"],
+#nc-root aside li a[aria-current="true"],
+#nc-root aside li a.active {
+  background: var(--adm-hijau-muda) !important;
+  color: var(--adm-hijau-tua) !important;
+  border-left-color: var(--adm-hijau) !important;
+  font-weight: 700 !important;
+}
+#nc-root aside li a[aria-current="page"] svg,
+#nc-root aside li a[aria-current="true"] svg,
+#nc-root aside li a.active svg {
+  color: var(--adm-hijau) !important;
+}
+#nc-root aside svg {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+}
+
+/* ── 4. Area konten ───────────────────────────────────────────── */
+
+#nc-root main {
+  background-color: var(--adm-latar) !important;
+  min-height: 60vh;
+}
+
+/* Wadah utama Decap dilebarkan agar konten tidak terasa sempit
+   di monitor besar. */
+#nc-root > div {
+  max-width: 1600px !important;
+}
+/* Jarak antar bagian (judul koleksi → daftar entri) lebih lapang. */
+#nc-root > div > div {
+  gap: 1.5rem !important;
+}
+
+#nc-root main h1 {
+  color: var(--adm-teks) !important;
+}
+#nc-root main p {
+  color: var(--adm-teks-lunak) !important;
+}
+
+/* Kartu judul koleksi (deskripsi + tombol Entri Baru). */
+#nc-root main > div:first-child {
+  background-color: var(--adm-kertas) !important;
+  border: 1px solid var(--adm-garis) !important;
+  border-radius: var(--radius-kartu) !important;
+  box-shadow: var(--bayang-kartu);
+  padding: 1.35rem 1.5rem !important;
+}
+#nc-root main > div:first-child p {
+  margin: 0.35rem 0 0;
+  color: var(--adm-teks-lunak) !important;
+  font-size: 0.97rem;
+}
+/* Tombol "Entri Baru" (bukan <button>, tapi <a>). */
+#nc-root main > div:first-child a {
+  display: inline-flex !important;
+  align-items: center;
+  min-height: 2.9rem;
+  padding: 0 1.4rem !important;
+  border-radius: 999px !important;
+  background-color: var(--adm-hijau) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgb(69 116 47 / 0.22);
+}
+#nc-root main > div:first-child a:hover {
+  background-color: var(--adm-hijau-gelap) !important;
+  color: #fff !important;
+  text-decoration: none;
+}
+
+/* ── 5. Kartu & kelompok entri ────────────────────────────────── */
+
+/* <section> = kelompok Draft / Menunggu / Terbit. */
+#nc-root main section {
+  background-color: var(--adm-kertas) !important;
+  border: 1px solid var(--adm-garis) !important;
+  border-radius: var(--radius-kartu) !important;
+  box-shadow: var(--bayang-kartu);
+  padding: 1.25rem 1.35rem !important;
+}
+#nc-root main section > p,
+#nc-root main section > h2,
+#nc-root main section > h3 {
+  margin: 0 0 0.9rem;
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--adm-teks-samar) !important;
+}
+
+/* Wadah kartu: flex + gap supaya antar kartu ada jarak dan tidak
+   saling menempel. (Decap memakai margin per kartu; di sini margin
+   dinolkan dan diganti gap yang merata.) */
+#nc-root main section ul {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 1rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+/* Kartu entri: dari kaku 335×240 jadi grid yang mengalir. */
+#nc-root main ul li {
+  flex: 1 1 320px !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 8.5rem;
+  max-width: 100% !important;
+  margin: 0 !important;
+  background-color: var(--adm-kertas) !important;
+  border: 1px solid var(--adm-garis) !important;
+  border-radius: var(--radius-kartu) !important;
+  box-shadow: var(--bayang-kartu);
+  overflow: hidden;
+}
+#nc-root main ul li > a {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0.4rem;
+  height: 100% !important;
+  padding: 1.15rem 1.25rem !important;
+  border-radius: var(--radius-kartu) !important;
+  background: var(--adm-kertas) !important;
+  color: var(--adm-teks) !important;
+}
+#nc-root main ul li > a:hover {
+  background: var(--adm-latar-2) !important;
+  text-decoration: none;
+}
+#nc-root main ul li h2 {
+  color: var(--adm-teks) !important;
+  font-weight: 700 !important;
+}
+#nc-root main ul li p {
+  color: var(--adm-teks-lunak) !important;
+  font-size: 0.95rem;
+}
+/* Badge status (Draft / In Review / Ready): satu-satunya span
+   sendirian di dalam kartu. */
+#nc-root main ul li span:only-child {
+  align-self: flex-start;
+  max-width: 100%;
+  border-radius: 999px !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.03em;
+  padding: 0.15rem 0.7rem !important;
+}
+
+/* ── 6. Kontrol formulir ──────────────────────────────────────── */
+
+#nc-root input:not([type="checkbox"]):not([type="radio"]),
+#nc-root textarea,
+#nc-root select {
+  font-family: inherit !important;
+  font-size: 1rem !important;
+  color: var(--adm-teks) !important;
+  background: #fff !important;
+  border: 1.5px solid var(--adm-garis) !important;
+  border-radius: var(--radius-kontrol) !important;
+  min-height: 3rem;
+  padding: 0.65rem 0.9rem !important;
+  box-shadow: none !important;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+#nc-root textarea {
+  min-height: 8rem;
+  line-height: 1.7 !important;
+}
+#nc-root input::placeholder,
+#nc-root textarea::placeholder {
+  color: var(--adm-teks-samar) !important;
+  opacity: 1;
+}
+#nc-root input:hover:not(:disabled),
+#nc-root textarea:hover:not(:disabled),
+#nc-root select:hover:not(:disabled) {
+  border-color: var(--adm-garis-kuat) !important;
+}
+#nc-root input:focus,
+#nc-root textarea:focus,
+#nc-root select:focus {
+  border-color: var(--adm-hijau) !important;
+  box-shadow: 0 0 0 4px var(--adm-hijau-muda) !important;
+}
+
+#nc-root label {
+  color: var(--adm-teks) !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+}
+/* Nama field tetap tegas; keterangan field dibuat lebih ringan. */
+#nc-root label > span,
+#nc-root label > div {
+  font-weight: 500 !important;
+  color: var(--adm-teks-lunak) !important;
+}
+
+#nc-root input[type="checkbox"],
+#nc-root input[type="radio"] {
+  width: 1.35rem !important;
+  height: 1.35rem !important;
+  accent-color: var(--adm-hijau) !important;
+  cursor: pointer;
+}
+
+/* Teks bantuan / deskripsi field. */
+#nc-root small,
+#nc-root p[class*="hint"],
+#nc-root span[class*="hint"],
+#nc-root div[class*="hint"] {
+  color: var(--adm-teks-lunak) !important;
+  font-size: 0.9rem !important;
+  line-height: 1.55;
+}
+
+/* ── 7. Tombol ───────────────────────────────────────────────────
+   Hanya bentuk & ukuran yang diubah. Warna dibiarkan mengikuti
+   Decap karena warna tombol di sini adalah pembawa makna:
+   biru = terbitkan/simpan, hijau = sudah terbit, merah = hapus. */
+
+#nc-root button {
+  font-family: inherit !important;
+  font-size: 0.95rem !important;
+  border-radius: 999px !important;
+  min-height: 2.85rem;
+  font-weight: 700 !important;
+  padding: 0.5rem 1.2rem !important;
+  transition:
+    filter 140ms ease,
+    box-shadow 140ms ease;
+}
+#nc-root button:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+#nc-root button:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+}
+
+/* ── 8. Fokus keyboard ─────────────────────────────────────────── */
+
+#nc-root a:focus-visible,
+#nc-root button:focus-visible,
+#nc-root input:focus-visible,
+#nc-root textarea:focus-visible,
+#nc-root select:focus-visible,
+#nc-root [tabindex]:focus-visible {
+  outline: 3px solid var(--adm-hijau) !important;
+  outline-offset: 2px !important;
+  border-radius: 8px;
+}
+#nc-root main ul li > a:focus-visible {
+  outline-offset: -3px !important;
+}
+
+/* ── 9. Editor: formulir & pratinjau ──────────────────────────── */
+
+#nc-root fieldset {
+  border: 1px solid var(--adm-garis) !important;
+  border-radius: var(--radius-kartu) !important;
+  background: var(--adm-kertas) !important;
+  padding: 1.25rem !important;
+}
+#nc-root legend {
+  font-weight: 800 !important;
+  color: var(--adm-teks) !important;
+  padding: 0 0.5rem !important;
+}
+
+/* ── 9b. Bilah editor (kembali / simpan / terbit / hapus) ─────────
+   Jangkar: bilah ini satu-satunya <div> yang anak langsungnya
+   berupa tautan kembali ke `/collections/<nama>` (prop Decap
+   `editorBackLink`). Tautan kartu entri selalu menunjuk lebih dalam
+   (/entries/… atau /new) sehingga disaring lewat :not(). */
+#nc-root div:has(> a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"])) {
+  background-color: var(--adm-kertas) !important;
+  border-bottom: 1px solid var(--adm-garis) !important;
+  box-shadow: 0 1px 3px rgb(31 51 22 / 0.06) !important;
+  height: auto !important;
+  min-height: 66px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0.5rem 1rem !important;
+  gap: 0.5rem 0.75rem;
+}
+/* Tombol kembali: panah + nama koleksi + status dibuat rapi. */
+#nc-root div:has(> a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"])) > a:first-child {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.8rem 0.4rem 0.3rem !important;
+  border-radius: 12px !important;
+  color: var(--adm-teks) !important;
+  font-weight: 700 !important;
+}
+/* Jarak antar tombol toolbar dibuat merata. Warna tombol SENGAJA
+   tidak diubah: di sini warna = makna (biru simpan/terbit, hijau
+   sudah terbit, merah hapus). */
+#nc-root div:has(> a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"])) button {
+  margin: 0.15rem !important;
+}
+
+/* ── 9c. Panel formulir & pratinjau editor ────────────────────────
+   Kelas .Pane1/.Pane2/.Resizer berasal dari react-split-pane
+   (nama stabil, bukan hash emotion) sehingga aman dipakai. */
+#nc-root .Pane1,
+#nc-root .Pane2 {
+  background-color: var(--adm-latar) !important;
+  padding: 1.25rem 1.5rem 4rem !important;
+}
+#nc-root .Pane2 {
+  background-color: var(--adm-latar-2) !important;
+}
+#nc-root .Resizer.vertical {
+  background-color: var(--adm-garis) !important;
+  width: 8px !important;
+  margin: 0 !important;
+  cursor: col-resize;
+}
+#nc-root .Resizer.vertical:hover {
+  background-color: var(--adm-hijau) !important;
+}
+
+/* ── 9d. Item daftar (Persyaratan / Langkah) ──────────────────────
+   Kait data-testid adalah pengait semantik bawaan Decap untuk bilah
+   tiap item; bila atributnya tidak ada, aturan ini diabaikan begitu
+   saja tanpa merusak apa pun. */
+#nc-root [data-testid^="styled-list-item-top-bar"] {
+  background-color: var(--adm-hijau-muda) !important;
+  border: 1px solid var(--adm-garis) !important;
+  border-radius: 12px !important;
+  padding: 0.3rem 0.45rem !important;
+}
+#nc-root [data-testid^="styled-list-item-top-bar"] + div {
+  background-color: #fff !important;
+  border: 1px solid var(--adm-garis) !important;
+  border-top: 0 !important;
+  border-radius: 0 0 12px 12px !important;
+}
+/* Tombol mungil di bilah item jangan ikut membesar. */
+#nc-root [data-testid^="styled-list-item-top-bar"] button {
+  min-height: 2.1rem !important;
+  padding: 0.15rem 0.55rem !important;
+  font-size: 0.85rem !important;
+}
+/* Tombol yang hanya berisi ikon (ganti tampilan daftar/kotak, panah
+   lipat) dibuat ramping, tidak segemuk tombol teks. */
+#nc-root button:has(> svg:only-child) {
+  min-height: 2.4rem !important;
+  min-width: 2.4rem !important;
+  padding: 0.3rem !important;
+}
+
+#nc-root img {
+  border-radius: 12px;
+}
+#nc-root [class*="media" i] img,
+#nc-root [class*="Card" i] img {
+  border: 1px solid var(--adm-garis);
+}
+
+/* ── 10. Notifikasi & pesan galat ─────────────────────────────── */
+
+#nc-root [role="alert"],
+#nc-root [class*="error" i],
+#nc-root [class*="Error" i] {
+  border-radius: var(--radius-kontrol) !important;
+}
+#nc-root [class*="error" i] {
+  background: #fef2f1 !important;
+  border: 1px solid #f0b8b1 !important;
+  color: var(--adm-bahaya) !important;
+}
+
+/* ── 11. Layar sempit ─────────────────────────────────────────── */
+
+@media (max-width: 52rem) {
+  #nc-root {
+    font-size: 16px !important;
+  }
+  #nc-root main {
+    padding: 0 !important;
+  }
+  #nc-root aside {
+    position: static !important;
+    width: 100% !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--adm-garis) !important;
+  }
+  #nc-root main ul li {
+    flex: 1 1 100% !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #nc-root * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
