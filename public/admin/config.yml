@@ -1,0 +1,515 @@
+# ──────────────────────────────────────────────────────────────
+# Decap CMS — PR2: Pengaturan (Situs, Beranda, Profil) + Layanan
+# ──────────────────────────────────────────────────────────────
+
+backend:
+  name: github
+  repo: GibranAlkatiri/WalianHub
+  branch: main
+  squash_merges: true
+
+publish_mode: editorial_workflow
+
+# Astro base path ditambahkan frontend; field menyimpan /uploads/...
+media_folder: public/uploads
+public_folder: /uploads
+
+site_url: https://walianhub.pages.dev
+display_url: https://walianhub.pages.dev
+
+locale: id
+
+# Slug untuk file baru: huruf kecil, tanda hubung
+slug:
+  encoding: ascii
+  clean_accents: true
+
+collections:
+  # ── Pengaturan (file collection, satu file JSON per form) ──
+  - name: pengaturan
+    label: Pengaturan
+    delete: false
+    files:
+      # ── Situs ──
+      - name: situs
+        label: Identitas Situs
+        file: src/content/pengaturan/situs.json
+        fields:
+          - { label: Nama Kelurahan, name: namaKelurahan, widget: string, required: true }
+          - { label: Kecamatan, name: kecamatan, widget: string, required: true }
+          - { label: Kota, name: kota, widget: string, required: true }
+          - { label: Provinsi, name: provinsi, widget: string, required: true }
+          - { label: Alamat Lengkap, name: alamat, widget: string, required: true }
+
+          - label: Koordinat
+            name: koordinat
+            widget: object
+            fields:
+              - { label: Latitude, name: lat, widget: number, value_type: float, min: -90, max: 90, required: true }
+              - { label: Longitude, name: lng, widget: number, value_type: float, min: -180, max: 180, required: true }
+
+          - label: Google Maps URL
+            name: googleMapsUrl
+            widget: string
+            required: false
+            hint: "URL lengkap ke Google Maps, misalnya https://maps.app.goo.gl/..."
+
+          - label: WhatsApp
+            name: whatsapp
+            widget: string
+            required: false
+            pattern:
+              - "^(\\d{8,15})?$"
+              - "Tulis nomor dengan kode negara tanpa + dan spasi. Contoh: 6281234567890"
+
+          - label: Email
+            name: email
+            widget: string
+            required: false
+            hint: "Kosongkan jika belum ada."
+
+          - label: Jam Layanan
+            name: jamLayanan
+            widget: object
+            fields:
+              - label: Jadwal Mingguan
+                name: jadwal
+                widget: list
+                summary: "{{fields.hari}} — {{fields.buka}} s/d {{fields.tutup}}"
+                allow_add: false
+                min: 7
+                max: 7
+                fields:
+                  - label: Hari
+                    name: hari
+                    widget: select
+                    options: [Senin, Selasa, Rabu, Kamis, Jumat, Sabtu, Minggu]
+                  - label: Jam Buka
+                    name: buka
+                    widget: string
+                    required: false
+                    hint: 'Format "HH.MM", contoh 08.00. Kosongkan untuk hari tutup.'
+                    pattern:
+                      - "^([01]\\d|2[0-3])\\.[0-5]\\d$"
+                      - 'Format jam harus "HH.MM"'
+                  - label: Jam Tutup
+                    name: tutup
+                    widget: string
+                    required: false
+                    hint: 'Format "HH.MM", contoh 16.30. Kosongkan untuk hari tutup.'
+                    pattern:
+                      - "^([01]\\d|2[0-3])\\.[0-5]\\d$"
+                      - 'Format jam harus "HH.MM"'
+                  - label: Istirahat
+                    name: istirahat
+                    widget: object
+                    required: false
+                    collapsed: true
+                    hint: "Kosongkan untuk hari tanpa istirahat."
+                    fields:
+                      - label: Mulai
+                        name: mulai
+                        widget: string
+                        pattern:
+                          - "^([01]\\d|2[0-3])\\.[0-5]\\d$"
+                          - 'Format jam harus "HH.MM"'
+                      - label: Selesai
+                        name: selesai
+                        widget: string
+                        pattern:
+                          - "^([01]\\d|2[0-3])\\.[0-5]\\d$"
+                          - 'Format jam harus "HH.MM"'
+
+              - label: Tanggal Libur
+                name: tanggalLibur
+                widget: list
+                summary: "{{fields.tanggal}} — {{fields.keterangan}}"
+                required: false
+                fields:
+                  - label: Tanggal
+                    name: tanggal
+                    widget: datetime
+                    format: "YYYY-MM-DD"
+                    date_format: "YYYY-MM-DD"
+                    time_format: false
+                    picker_utc: true
+                  - { label: Keterangan, name: keterangan, widget: string, required: true }
+
+          - label: Media Sosial
+            name: mediaSosial
+            widget: list
+            summary: "{{fields.platform}}: {{fields.url}}"
+            required: false
+            fields:
+              - label: Platform
+                name: platform
+                widget: select
+                options:
+                  - { label: Facebook, value: facebook }
+                  - { label: Instagram, value: instagram }
+                  - { label: YouTube, value: youtube }
+                  - { label: TikTok, value: tiktok }
+              - { label: URL, name: url, widget: string, required: true }
+
+          - label: Tautan Penting
+            name: tautanPenting
+            widget: list
+            summary: "{{fields.label}}: {{fields.url}}"
+            required: false
+            fields:
+              - { label: Label, name: label, widget: string, required: true }
+              - { label: URL, name: url, widget: string, required: true }
+
+          - { label: Kredit, name: kredit, widget: string, required: true }
+
+      # ── Beranda ──
+      - name: beranda
+        label: Beranda
+        file: src/content/pengaturan/beranda.json
+        fields:
+          - label: Hero
+            name: hero
+            widget: object
+            fields:
+              - { label: Judul, name: judul, widget: string, required: true }
+              - { label: Subjudul, name: subjudul, widget: string, required: true }
+              - label: Foto Latar
+                name: foto
+                widget: list
+                summary: "{{fields.keterangan}}"
+                max: 5
+                required: false
+                hint: "Maksimal 5 foto. Urutan di sini = urutan tampil. Kosong: gambar default."
+                fields:
+                  - label: Gambar
+                    name: gambar
+                    widget: image
+                    required: false
+                    hint: "Path foto, contoh /uploads/kantor.webp atau /images/beranda/foto.webp"
+                  - { label: Keterangan, name: keterangan, widget: string, required: true, hint: "Deskripsi foto untuk screen reader." }
+                  - label: Posisi Fokus
+                    name: posisi
+                    widget: select
+                    default: tengah
+                    options:
+                      - { label: Kiri, value: kiri }
+                      - { label: Tengah, value: tengah }
+                      - { label: Kanan, value: kanan }
+
+      # ── Profil ──
+      - name: profil
+        label: Profil
+        file: src/content/pengaturan/profil.json
+        fields:
+          - { label: Ringkasan, name: ringkasan, widget: text, required: true, hint: "Ringkasan singkat tentang Kelurahan Walian." }
+
+          - label: Lurah
+            name: lurah
+            widget: object
+            fields:
+              - { label: Nama, name: nama, widget: string, required: true }
+              - label: Foto
+                name: foto
+                widget: image
+                required: false
+                hint: "Foto tegak (rasio 3:4). Kosong: gambar default."
+
+          - label: Struktur Organisasi
+            name: strukturOrganisasi
+            widget: list
+            summary: "{{fields.jabatan}} — atasan: {{fields.atasan}}"
+            required: false
+            hint: "Daftar jabatan di bawah Lurah. Atasan harus 'Lurah' atau jabatan lain yang ada di daftar."
+            fields:
+              - { label: Jabatan, name: jabatan, widget: string, required: true }
+              - label: Nama Pejabat
+                name: nama
+                widget: list
+                field:
+                  label: Nama
+                  name: nama
+                  widget: string
+                required: false
+                hint: "Kosongkan jika jabatan belum terisi."
+              - { label: Atasan, name: atasan, widget: string, required: true, hint: "'Lurah' atau jabatan lain dari daftar ini." }
+              - { label: Garis Samping, name: garisSamping, widget: boolean, default: false, hint: "Hubungan koordinasi (garis putus-putus), bukan garis komando." }
+
+          - label: Sumber Data
+            name: sumberData
+            widget: object
+            fields:
+              - { label: Tahun, name: tahun, widget: string, required: true }
+              - { label: Sumber, name: sumber, widget: string, required: true }
+
+          - label: Lingkungan
+            name: lingkungan
+            widget: list
+            summary: "{{fields.nama}} — Kepala: {{fields.kepala}}"
+            required: false
+            fields:
+              - { label: Nama, name: nama, widget: string, required: true }
+              - { label: Kepala Lingkungan, name: kepala, widget: string, required: false }
+              - { label: Wakil, name: wakil, widget: string, required: false }
+              - label: Jumlah Kepala Keluarga
+                name: kepalaKeluarga
+                widget: number
+                value_type: int
+                min: 0
+                required: false
+                hint: "Kosongkan jika belum diketahui."
+              - label: Jumlah Penduduk
+                name: jumlahPenduduk
+                widget: number
+                value_type: int
+                min: 0
+                required: false
+                hint: "Kosongkan jika belum diketahui."
+              - label: Luas (km²)
+                name: luasKm2
+                widget: number
+                value_type: float
+                min: 0
+                required: false
+                hint: "Kosongkan jika belum diketahui."
+
+          - { label: Visi, name: visi, widget: text, required: true }
+
+          - label: Misi
+            name: misi
+            widget: list
+            field:
+              label: Misi
+              name: misi
+              widget: string
+            required: false
+
+          - label: Program Unggulan
+            name: programUnggulan
+            widget: list
+            field:
+              label: Program
+              name: program
+              widget: string
+            required: false
+
+          - label: Sumber Visi dan Misi
+            name: sumberVisiMisi
+            widget: string
+            required: false
+            hint: "URL sumber, contoh https://tomohon.go.id/visi-dan-misi-kota-tomohon/"
+
+          - label: Diperbarui
+            name: diperbarui
+            widget: datetime
+            format: "YYYY-MM-DD"
+            date_format: "YYYY-MM-DD"
+            time_format: false
+            picker_utc: true
+
+      # ── Pengumuman ──
+      - name: pengumuman
+        label: Pengumuman
+        file: src/content/pengaturan/pengumuman.json
+        fields:
+          - label: Daftar Pengumuman
+            name: daftar
+            widget: list
+            summary: "{{fields.judul}} — {{fields.tanggal}}"
+            required: false
+            hint: "Pengumuman untuk warga. Yang terbaru di atas."
+            fields:
+              - { label: Judul, name: judul, widget: string, required: true }
+              - label: Tanggal
+                name: tanggal
+                widget: datetime
+                format: "YYYY-MM-DD"
+                date_format: "YYYY-MM-DD"
+                time_format: false
+                picker_utc: true
+              - label: Isi
+                name: isi
+                widget: text
+                required: true
+                hint: "Isi singkat pengumuman. Baris baru di sini juga menjadi baris baru di halaman."
+              - label: Penting
+                name: penting
+                widget: boolean
+                default: false
+                hint: "Beri label 'Penting' pada pengumuman ini."
+
+  # ── Layanan (folder collection, satu .md per layanan) ──
+  - name: layanan
+    label: Layanan
+    label_singular: Layanan
+    folder: src/content/layanan
+    create: true
+    delete: true
+    extension: md
+    format: yaml-frontmatter
+    slug: "{{slug}}"
+    identifier_field: judul
+    summary: "{{judul}} — {{ringkasan}}"
+    sortable_fields:
+      fields: [urutan, judul, diperbarui]
+      default:
+        field: urutan
+    fields:
+      - label: Judul
+        name: judul
+        widget: string
+        required: true
+
+      - label: Ringkasan
+        name: ringkasan
+        widget: string
+        required: true
+        pattern:
+          - ".{1,120}"
+          - "Maksimal 120 karakter"
+
+      - label: Ikon
+        name: ikon
+        widget: select
+        default: file-text
+        options:
+          - { label: "Rumah (house)", value: house }
+          - { label: "Kartu identitas (id-card)", value: id-card }
+          - { label: "Dokumen (file-text)", value: file-text }
+          - { label: "Tangan & hati (hand-heart)", value: hand-heart }
+          - { label: "Toko (store)", value: store }
+          - { label: "Pengguna (users)", value: users }
+          - { label: "Lahan (land-plot)", value: land-plot }
+          - { label: "Gedung (landmark)", value: landmark }
+          - { label: "Daun (leaf)", value: leaf }
+          - { label: "Kalender (calendar)", value: calendar }
+          - { label: "Telepon (phone)", value: phone }
+          - { label: "Surat (mail)", value: mail }
+          - { label: "Peta (map)", value: map }
+          - { label: "Pin lokasi (map-pin)", value: map-pin }
+          - { label: "Gunung (mountain)", value: mountain }
+
+      - label: Tampil di Beranda
+        name: unggulan
+        widget: boolean
+        default: false
+        hint: "Maksimal 4 layanan unggulan tampil di Beranda."
+
+      - label: Urutan
+        name: urutan
+        widget: number
+        default: 100
+        value_type: int
+        hint: "Angka lebih kecil tampil lebih awal."
+
+      - label: Persyaratan
+        name: persyaratan
+        widget: list
+        field:
+          label: Syarat
+          name: syarat
+          widget: string
+        required: false
+        hint: "Kosongkan jika belum ada. Tampil sebagai daftar di halaman Layanan."
+
+      - label: Alur Pelayanan
+        name: alur
+        widget: list
+        field:
+          label: Langkah
+          name: langkah
+          widget: string
+        required: false
+        hint: "Kosongkan jika belum ada."
+
+      - label: Diperbarui
+        name: diperbarui
+        widget: datetime
+        format: "YYYY-MM-DD"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+        picker_utc: true
+
+      - label: Catatan tambahan
+        name: body
+        widget: markdown
+        required: false
+        hint: "Catatan opsional, tampil di bawah alur pelayanan."
+
+  # ── Destinasi Wisata (folder collection, satu .md per destinasi) ──
+  - name: destinasi
+    label: Destinasi Wisata
+    label_singular: Destinasi
+    folder: src/content/destinasi
+    create: true
+    delete: true
+    extension: md
+    format: yaml-frontmatter
+    slug: "{{slug}}"
+    identifier_field: nama
+    summary: "{{nama}} ({{kategori}}) — {{ringkasan}}"
+    sortable_fields:
+      fields: [urutan, nama, kategori, diperbarui]
+      default:
+        field: urutan
+    fields:
+      - { label: Nama, name: nama, widget: string, required: true }
+
+      - label: Kategori
+        name: kategori
+        widget: select
+        options:
+          - { label: Alam, value: Alam }
+          - { label: Budaya, value: Budaya }
+          - { label: Kuliner, value: Kuliner }
+          - { label: Religi, value: Religi }
+          - { label: Olahraga, value: Olahraga }
+          - { label: Lainnya, value: Lainnya }
+
+      - label: Ringkasan
+        name: ringkasan
+        widget: string
+        required: true
+        pattern:
+          - ".{1,160}"
+          - "Maksimal 160 karakter"
+
+      - label: Gambar
+        name: gambar
+        widget: image
+        required: false
+        hint: "Foto destinasi. Kosong: gambar default."
+
+      - label: Lokasi
+        name: lokasi
+        widget: object
+        fields:
+          - { label: Alamat, name: alamat, widget: string, required: true }
+          - { label: Latitude, name: lat, widget: number, value_type: float, min: -90, max: 90, required: true }
+          - { label: Longitude, name: lng, widget: number, value_type: float, min: -180, max: 180, required: true }
+
+      - label: Tampil di Beranda
+        name: unggulan
+        widget: boolean
+        default: false
+        hint: "Destinasi unggulan tampil di Beranda."
+
+      - label: Urutan
+        name: urutan
+        widget: number
+        default: 100
+        value_type: int
+        hint: "Angka lebih kecil tampil lebih awal."
+
+      - label: Diperbarui
+        name: diperbarui
+        widget: datetime
+        format: "YYYY-MM-DD"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+        picker_utc: true
+
+      - label: Deskripsi
+        name: body
+        widget: markdown
+        required: false
+        hint: "Deskripsi lengkap destinasi (opsional)."

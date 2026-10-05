@@ -1,9 +1,6 @@
 /**
  * Membuat alamat internal yang mengikuti base path.
- * Contoh saat base = "/WalianHub":
- *   url('/')            → '/WalianHub/'
- *   url('/profil')      → '/WalianHub/profil'
- *   url('/#kontak')     → '/WalianHub/#kontak'
+ * Saat base = "/" (Cloudflare Pages), path dikembalikan apa adanya.
  * Alamat luar (https://...), mailto:, tel:, dan anchor (#...) dikembalikan apa adanya.
  */
 export function url(path = '/'): string {

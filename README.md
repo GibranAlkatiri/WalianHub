@@ -5,10 +5,10 @@ Dikembangkan oleh KKT Angkatan 149 Universitas Sam Ratulangi.
 
 ## Lihat website
 
-### **https://gibranalkatiri.github.io/WalianHub/**
+### **https://walianhub.pages.dev/**
 
 Ini adalah **versi pratinjau**. Teks di dalam [kurung siku] dan data destinasi masih contoh. Data contoh sengaja dipertahankan untuk demo: staf nantinya dapat mengoreksi nama/jenis surat, persyaratan, profil, kontak, dan destinasi melalui CMS. Validasi data resmi dilakukan bersama kelurahan saat demo; CMS belum dihubungkan.
-Website di link ini diperbarui otomatis setiap ada perubahan di branch `main`.
+Website di link ini diperbarui otomatis setiap ada perubahan di branch `main` (Cloudflare Pages).
 
 ## Status
 
@@ -55,7 +55,7 @@ Mulai dari [CMS.md — rencana implementasi dan pembagian pull request](CMS.md).
 - **CMS berbasis Git:** mengedit file konten dan media di repository. Workflow membangun dan menerbitkan website setelah perubahan tersimpan. Login, hak akses, konfigurasi formulir, dan penerbitan tetap perlu dihubungkan; produknya belum dipilih.
 - **CMS dengan API:** loader dan pemetaan konten disesuaikan dengan API, dengan bentuk data yang sama. Pemicu build/deploy dan pengelolaan media juga perlu disiapkan.
 
-Pengubahan nama surat menggunakan field `judul`; CMS sebaiknya mempertahankan identitas file setelah dibuat. Upload foto memakai path dari akar situs, misalnya `/uploads/destinasi/foto.webp`; jangan menambahkan `/WalianHub` pada isian. Frontend menambahkan base path saat merender. `SIAP_DIINDEKS` tetap `false` selama versi demo.
+Pengubahan nama surat menggunakan field `judul`; CMS sebaiknya mempertahankan identitas file setelah dibuat. Upload foto memakai path dari akar situs, misalnya `/uploads/destinasi/foto.webp`. Frontend menambahkan base path saat merender. `SIAP_DIINDEKS` tetap `false` selama versi demo.
 
 ## Gambar dan ikon
 
@@ -80,6 +80,6 @@ tests/                 Pengujian aturan Wisata dan validasi konten
 
 ## Teknologi
 
-Dibangun dengan [Astro](https://astro.build), [Tailwind CSS](https://tailwindcss.com), dan [Bun](https://bun.sh). Hasilnya berupa website statis (file HTML, CSS, dan gambar), sehingga bisa dipasang di hosting mana saja. Proses build dan pemasangan ke GitHub Pages dijalankan oleh GitHub Actions (`.github/workflows/deploy.yml`).
+Dibangun dengan [Astro](https://astro.build), [Tailwind CSS](https://tailwindcss.com), dan [Bun](https://bun.sh). Hasilnya berupa website statis (file HTML, CSS, dan gambar), sehingga bisa dipasang di hosting mana saja. Deploy otomatis ke Cloudflare Pages setiap push ke `main`. CI check berjalan via GitHub Actions (`.github/workflows/ci.yml`).
 
 Jalankan `bun test` untuk pemeriksaan logika dan `bun run build` untuk validasi seluruh konten serta hasil website. Perubahan konten baru tampil setelah build dan deploy selesai.

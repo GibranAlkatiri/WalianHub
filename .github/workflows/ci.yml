@@ -1,0 +1,24 @@
+# Pemeriksaan pull request: install, test, build — tanpa deploy.
+# Dipakai sebagai syarat merge (branch protection) agar konten CMS divalidasi
+# sebelum masuk ke main.
+name: Periksa PR
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+      - name: Pasang paket
+        run: bun install --frozen-lockfile
+      - name: Periksa aturan konten dan Wisata
+        run: bun test
+      - name: Bangun website
+        run: bun run build
