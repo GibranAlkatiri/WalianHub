@@ -349,10 +349,7 @@ collections:
     slug: "{{slug}}"
     identifier_field: judul
     summary: "{{judul}} — {{ringkasan}}"
-    sortable_fields:
-      fields: [urutan, judul, diperbarui]
-      default:
-        field: urutan
+    sortable_fields: [urutan, judul, diperbarui]
     fields:
       - label: Judul
         name: judul
@@ -447,10 +444,7 @@ collections:
     slug: "{{slug}}"
     identifier_field: nama
     summary: "{{nama}} ({{kategori}}) — {{ringkasan}}"
-    sortable_fields:
-      fields: [urutan, nama, kategori, diperbarui]
-      default:
-        field: urutan
+    sortable_fields: [urutan, nama, kategori, diperbarui]
     fields:
       - { label: Nama, name: nama, widget: string, required: true }
 
