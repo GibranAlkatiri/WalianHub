@@ -1,0 +1,126 @@
+# ──────────────────────────────────────────────────────────────
+# Decap CMS — Uji kelayakan (PR1)
+# Hanya koleksi Layanan untuk membuktikan baca-tulis sesuai schema.
+# Koleksi lain ditambahkan di PR berikutnya.
+# ──────────────────────────────────────────────────────────────
+
+backend:
+  name: github
+  repo: GibranAlkatiri/WalianHub
+  branch: main
+  squash_merges: true
+
+publish_mode: editorial_workflow
+
+# Astro base path ditambahkan frontend; field menyimpan /uploads/...
+media_folder: public/uploads
+public_folder: /uploads
+
+site_url: https://gibranalkatiri.github.io/WalianHub
+display_url: https://gibranalkatiri.github.io/WalianHub
+
+locale: id
+
+# Slug untuk file baru: huruf kecil, tanda hubung
+slug:
+  encoding: ascii
+  clean_accents: true
+
+collections:
+  # ── Layanan (folder collection, satu .md per layanan) ──
+  - name: layanan
+    label: Layanan
+    label_singular: Layanan
+    folder: src/content/layanan
+    create: true
+    delete: true
+    extension: md
+    format: yaml-frontmatter
+    slug: "{{slug}}"
+    identifier_field: judul
+    summary: "{{judul}} — {{ringkasan}}"
+    sortable_fields:
+      fields: [urutan, judul, diperbarui]
+      default:
+        field: urutan
+    fields:
+      - label: Judul
+        name: judul
+        widget: string
+        required: true
+
+      - label: Ringkasan
+        name: ringkasan
+        widget: string
+        required: true
+        pattern:
+          - ".{1,120}"
+          - "Maksimal 120 karakter"
+
+      - label: Ikon
+        name: ikon
+        widget: select
+        default: file-text
+        options:
+          - { label: "Rumah (house)", value: house }
+          - { label: "Kartu identitas (id-card)", value: id-card }
+          - { label: "Dokumen (file-text)", value: file-text }
+          - { label: "Tangan & hati (hand-heart)", value: hand-heart }
+          - { label: "Toko (store)", value: store }
+          - { label: "Pengguna (users)", value: users }
+          - { label: "Lahan (land-plot)", value: land-plot }
+          - { label: "Gedung (landmark)", value: landmark }
+          - { label: "Daun (leaf)", value: leaf }
+          - { label: "Kalender (calendar)", value: calendar }
+          - { label: "Telepon (phone)", value: phone }
+          - { label: "Surat (mail)", value: mail }
+          - { label: "Peta (map)", value: map }
+          - { label: "Pin lokasi (map-pin)", value: map-pin }
+          - { label: "Gunung (mountain)", value: mountain }
+
+      - label: Tampil di Beranda
+        name: unggulan
+        widget: boolean
+        default: false
+        hint: "Maksimal 4 layanan unggulan tampil di Beranda."
+
+      - label: Urutan
+        name: urutan
+        widget: number
+        default: 100
+        value_type: int
+        hint: "Angka lebih kecil tampil lebih awal."
+
+      - label: Persyaratan
+        name: persyaratan
+        widget: list
+        field:
+          label: Syarat
+          name: syarat
+          widget: string
+        required: false
+        hint: "Kosongkan jika belum ada. Tampil sebagai daftar di halaman Layanan."
+
+      - label: Alur Pelayanan
+        name: alur
+        widget: list
+        field:
+          label: Langkah
+          name: langkah
+          widget: string
+        required: false
+        hint: "Kosongkan jika belum ada."
+
+      - label: Diperbarui
+        name: diperbarui
+        widget: datetime
+        format: "YYYY-MM-DD"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+        picker_utc: true
+
+      - label: Catatan tambahan
+        name: body
+        widget: markdown
+        required: false
+        hint: "Catatan opsional, tampil di bawah alur pelayanan."
