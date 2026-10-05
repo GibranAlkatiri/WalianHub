@@ -3,10 +3,9 @@
 import type { CollectionEntry } from 'astro:content';
 import Logo from './Logo.astro';
 import Icon from '../ui/Icon.astro';
-import { menuUtama, pesanWhatsapp } from '../../lib/navigasi';
+import { menuUtama } from '../../lib/navigasi';
 import { url } from '../../lib/url';
-import { formatNomorWhatsapp, tautanWhatsapp } from '../../lib/format';
-import Button from '../ui/Button.astro';
+import { formatNomorWhatsapp } from '../../lib/format';
 
 interface Props {
   situs: CollectionEntry<'situs'>['data'];
@@ -54,12 +53,7 @@ const bisaDiemail = situs.email?.includes('@');
           situs.whatsapp && (
             <li class="flex gap-3">
               <Icon name="whatsapp" class="mt-1 size-5 shrink-0" />
-              <div>
-                <span class="block">{formatNomorWhatsapp(situs.whatsapp)}</span>
-                <Button href={tautanWhatsapp(situs.whatsapp, pesanWhatsapp)} variant="light" size="sm" class="mt-3">
-                  Chat WhatsApp
-                </Button>
-              </div>
+              <span>{formatNomorWhatsapp(situs.whatsapp)}</span>
             </li>
           )
         }
