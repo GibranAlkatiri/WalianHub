@@ -6,6 +6,8 @@ backend:
   name: github
   repo: GibranAlkatiri/WalianHub
   branch: main
+  base_url: https://walianhub.pages.dev
+  auth_endpoint: api/auth
   squash_merges: true
 
 publish_mode: editorial_workflow
