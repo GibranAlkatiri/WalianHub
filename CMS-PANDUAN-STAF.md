@@ -5,9 +5,8 @@ Panduan ini untuk **pengelola konten** (staf kelurahan). Tidak perlu coding. Sem
 ## 1. Masuk ke panel
 
 1. Buka: **https://walianhub.pages.dev/admin/**
-2. Klik **Login with GitHub** (nama tombol bawaan sistem — yang diminta tetap username + password kelurahan, bukan akun GitHub)
-3. Di jendela yang terbuka, masukkan **username** dan **password** yang diberikan penanggung jawab teknis
-4. Jendela menutup sendiri, panel terbuka
+2. Isi **username** dan **password** yang diberikan penanggung jawab teknis, klik **Masuk**
+3. Panel terbuka langsung — tidak ada tombol GitHub apa pun
 
 > Username dan password hanya satu untuk semua pengelola. Jangan disebar ke luar kelurahan. Jika tidak bisa login, hubungi penanggung jawab teknis.
 
@@ -138,7 +137,7 @@ Panel CMS menggunakan sistem **draf → terbit**:
 
 ### Tidak bisa login
 - Pastikan username dan password diketik dengan benar (perhatikan huruf besar/kecil)
-- Coba tutup jendela login lalu klik tombol login lagi
+- Muat ulang halaman lalu coba lagi
 - Bersihkan cache browser
 - Hubungi penanggung jawab teknis (mungkin password diganti)
 

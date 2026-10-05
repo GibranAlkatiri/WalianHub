@@ -5,10 +5,10 @@ Dokumen ini untuk **penanggung jawab teknis** (maintainer). Berisi langkah insta
 ## 1. Arsitektur
 
 ```
-┌─────────────┐   popup: username+password   ┌──────────────────┐
-│ Panel Decap  │◀──────────────────────────▶│ Pages Function   │
-│ /admin/      │   handshake token ke Decap   │ /api/auth        │
-└──────┬──────┘                              └──────────────────┘
+┌─────────────┐   POST JSON u+p / balas token   ┌──────────────────┐
+│ Form login   │◀──────────────────────────────▶│ Pages Function   │
+│ /admin/      │   seed sesi lalu boot Decap     │ /api/auth        │
+└──────┬──────┘                                 └──────────────────┘
        │ GitHub API (token milik server)
        ▼
 ┌──────────────┐     push ke main     ┌──────────────────┐
@@ -17,9 +17,9 @@ Dokumen ini untuk **penanggung jawab teknis** (maintainer). Berisi langkah insta
 └──────────────┘                      └──────────────────┘
 ```
 
-- **Panel**: file statis di `public/admin/` — tidak ada server backend.
+- **Panel**: file statis di `public/admin/` — form username+password sendiri, tidak ada layar login GitHub sama sekali.
 - **Login**: `functions/api/auth.js` (Cloudflare Pages Function) — 1 username + password, disimpan sebagai environment variable. Staf tidak perlu akun GitHub.
-- **Backend**: `github` — Decap CMS berkomunikasi langsung dengan GitHub API memakai token milik server (bukan token tiap staf).
+- **Backend**: `github` — Decap CMS berkomunikasi langsung dengan GitHub API memakai token milik server (bukan token tiap staf). Tidak ada `base_url`/`auth_endpoint` karena tidak ada popup OAuth.
 - **Editorial workflow**: draf disimpan di branch terpisah + PR, bukan langsung ke `main`.
 - **Deploy**: push/merge ke `main` → Cloudflare Pages otomatis build dan deploy.
 - **Preview**: setiap PR/branch mendapat URL preview otomatis dari Cloudflare.
@@ -60,16 +60,17 @@ Setelah deploy pertama berhasil:
 
 ## 4. Autentikasi — username + password (1 admin)
 
-Decap CMS tidak punya login password bawaan, jadi panel memakai Pages Function
-`functions/api/auth.js` sebagai pengganti OAuth proxy. Cara kerja:
+Halaman `/admin/` menampilkan form username+password sendiri (bukan layar
+login Decap). Cara kerja:
 
-1. Staf klik **Login with GitHub** di `/admin/` (label tombol bawaan Decap, tidak bisa diganti).
-2. Decap membuka popup ke `/api/auth` — popup menampilkan form **username + password**.
-3. Jika benar, server menyerahkan GitHub token milik server lewat handshake
-   postMessage yang diharapkan Decap, lalu popup menutup sendiri dan panel terbuka.
+1. Staf membuka `/admin/` dan mengisi **username + password**.
+2. Browser mengirim JSON ke `/api/auth`; jika benar, server membalas GitHub
+   token milik server.
+3. Browser menyimpan sesi `{token, backendName: "github"}` di localStorage key
+   `decap-cms-user`, lalu memuat Decap CMS — Decap langsung masuk ke panel
+   tanpa layar login karena sesi valid (restoreUser → authenticate(token)).
 
-Token GitHub tidak pernah tersimpan di browser staf secara permanen selain sesi
-Decap itu sendiri, dan tidak pernah masuk repository.
+Token GitHub tidak pernah masuk repository.
 
 ### 4.1 Buat GitHub token server
 
