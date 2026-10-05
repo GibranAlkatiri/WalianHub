@@ -306,6 +306,37 @@ collections:
             time_format: false
             picker_utc: true
 
+      # ── Pengumuman ──
+      - name: pengumuman
+        label: Pengumuman
+        file: src/content/pengaturan/pengumuman.json
+        fields:
+          - label: Daftar Pengumuman
+            name: daftar
+            widget: list
+            summary: "{{fields.judul}} — {{fields.tanggal}}"
+            required: false
+            hint: "Pengumuman untuk warga. Yang terbaru di atas."
+            fields:
+              - { label: Judul, name: judul, widget: string, required: true }
+              - label: Tanggal
+                name: tanggal
+                widget: datetime
+                format: "YYYY-MM-DD"
+                date_format: "YYYY-MM-DD"
+                time_format: false
+                picker_utc: true
+              - label: Isi
+                name: isi
+                widget: text
+                required: true
+                hint: "Isi singkat pengumuman. Baris baru di sini juga menjadi baris baru di halaman."
+              - label: Penting
+                name: penting
+                widget: boolean
+                default: false
+                hint: "Beri label 'Penting' pada pengumuman ini."
+
   # ── Layanan (folder collection, satu .md per layanan) ──
   - name: layanan
     label: Layanan
@@ -403,3 +434,82 @@ collections:
         widget: markdown
         required: false
         hint: "Catatan opsional, tampil di bawah alur pelayanan."
+
+  # ── Destinasi Wisata (folder collection, satu .md per destinasi) ──
+  - name: destinasi
+    label: Destinasi Wisata
+    label_singular: Destinasi
+    folder: src/content/destinasi
+    create: true
+    delete: true
+    extension: md
+    format: yaml-frontmatter
+    slug: "{{slug}}"
+    identifier_field: nama
+    summary: "{{nama}} ({{kategori}}) — {{ringkasan}}"
+    sortable_fields:
+      fields: [urutan, nama, kategori, diperbarui]
+      default:
+        field: urutan
+    fields:
+      - { label: Nama, name: nama, widget: string, required: true }
+
+      - label: Kategori
+        name: kategori
+        widget: select
+        options:
+          - { label: Alam, value: Alam }
+          - { label: Budaya, value: Budaya }
+          - { label: Kuliner, value: Kuliner }
+          - { label: Religi, value: Religi }
+          - { label: Olahraga, value: Olahraga }
+          - { label: Lainnya, value: Lainnya }
+
+      - label: Ringkasan
+        name: ringkasan
+        widget: string
+        required: true
+        pattern:
+          - ".{1,160}"
+          - "Maksimal 160 karakter"
+
+      - label: Gambar
+        name: gambar
+        widget: image
+        required: false
+        hint: "Foto destinasi. Kosong: gambar default."
+
+      - label: Lokasi
+        name: lokasi
+        widget: object
+        fields:
+          - { label: Alamat, name: alamat, widget: string, required: true }
+          - { label: Latitude, name: lat, widget: number, value_type: float, min: -90, max: 90, required: true }
+          - { label: Longitude, name: lng, widget: number, value_type: float, min: -180, max: 180, required: true }
+
+      - label: Tampil di Beranda
+        name: unggulan
+        widget: boolean
+        default: false
+        hint: "Destinasi unggulan tampil di Beranda."
+
+      - label: Urutan
+        name: urutan
+        widget: number
+        default: 100
+        value_type: int
+        hint: "Angka lebih kecil tampil lebih awal."
+
+      - label: Diperbarui
+        name: diperbarui
+        widget: datetime
+        format: "YYYY-MM-DD"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+        picker_utc: true
+
+      - label: Deskripsi
+        name: body
+        widget: markdown
+        required: false
+        hint: "Deskripsi lengkap destinasi (opsional)."
