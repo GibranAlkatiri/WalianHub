@@ -65,6 +65,19 @@
   min-height: 100vh !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Hapus margin/padding default dari wrapper Emotion Decap */
+#nc-root > div {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#nc-root > div > div {
+  margin: 0 !important;
+  padding-top: 0 !important;
 }
 
 #nc-root *,
@@ -97,6 +110,7 @@
   box-shadow: 0 1px 4px rgba(25, 36, 20, 0.04) !important;
   min-height: 4rem !important;
   height: 4rem !important;
+  margin-top: 0 !important;
 }
 
 #nc-root header > div {
@@ -107,6 +121,14 @@
   align-items: center !important;
   justify-content: space-between !important;
   gap: 1.25rem !important;
+  margin: 0 auto !important;
+}
+
+/* Pastikan tidak ada wrapper yang mendorong header ke bawah */
+#nc-root > div:first-child,
+#nc-root > div:first-child > div:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 /* Brand / Logo di header */
@@ -629,6 +651,7 @@
   justify-content: space-between !important;
   gap: 1rem !important;
   min-height: 3.8rem !important;
+  margin: 0 !important;
 }
 
 /* Tombol kembali ke koleksi */
@@ -670,8 +693,10 @@
 #nc-root div:has(> .Pane1),
 #nc-root div:has(> .Pane2) {
   display: flex !important;
-  min-height: calc(100vh - 8rem) !important;
+  min-height: calc(100vh - 7.8rem) !important;
   align-items: stretch !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 /* Pane 1 (Formulir Pengisian) */

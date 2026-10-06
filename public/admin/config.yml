@@ -94,6 +94,7 @@ collections:
         name: unggulan
         widget: boolean
         default: false
+        required: false
         hint: "Centang untuk menampilkan di halaman utama. Hanya 4 yang muat — pilih yang paling penting."
 
       - label: Urutan
@@ -217,6 +218,7 @@ collections:
         name: unggulan
         widget: boolean
         default: false
+        required: false
         hint: "Centang untuk destinasi andalan halaman utama."
 
       - label: Urutan
@@ -280,6 +282,7 @@ collections:
                 name: penting
                 widget: boolean
                 default: false
+                required: false
                 hint: "Centang untuk memberi label “Penting”."
 
   # ── 4. Pengaturan (jarang diubah; koordinasikan sebelum mengedit) ──
@@ -526,6 +529,7 @@ collections:
                 name: garisSamping
                 widget: boolean
                 default: false
+                required: false
                 hint: "Centang hanya untuk hubungan koordinasi (garis putus-putus), bukan atasan langsung."
 
           - label: Sumber Data
