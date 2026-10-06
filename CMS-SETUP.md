@@ -5,37 +5,37 @@ Dokumen ini untuk **penanggung jawab teknis** (maintainer). Berisi langkah insta
 ## 1. Arsitektur
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌──────────────┐
-│ Panel Decap  │────▶│  GitHub API  │────▶│  Repository  │
-│ /admin/      │     │  (OAuth)     │     │  main branch │
-└─────────────┘     └──────────────┘     └──────────────┘
-                                                │
-                                          push ke main
-                                                │
-                                      ┌─────────▼─────────┐
-                                      │  Cloudflare Pages  │
-                                      │  (auto build)      │
-                                      └───────────────────┘
+┌─────────────┐   POST JSON u+p / balas token   ┌──────────────────┐
+│ Form login   │◀──────────────────────────────▶│ Pages Function   │
+│ /admin/      │   seed sesi lalu boot Decap     │ /api/auth        │
+└──────┬──────┘                                 └──────────────────┘
+       │ GitHub API (token milik server)
+       ▼
+┌──────────────┐     push ke main     ┌──────────────────┐
+│  Repository  │─────────────────────▶│  Cloudflare Pages  │
+│  main branch │                      │  (auto build)      │
+└──────────────┘                      └──────────────────┘
 ```
 
-- **Panel**: file statis di `public/admin/` — tidak ada server backend.
-- **Backend**: `github` — Decap CMS berkomunikasi langsung dengan GitHub API.
+- **Panel**: file statis di `public/admin/` — form username+password sendiri, tidak ada layar login GitHub sama sekali.
+- **Login**: `functions/api/auth.js` (Cloudflare Pages Function) — 1 username + password, disimpan sebagai environment variable. Staf tidak perlu akun GitHub.
+- **Backend**: `github` — Decap CMS berkomunikasi langsung dengan GitHub API memakai token milik server (bukan token tiap staf). Tidak ada `base_url`/`auth_endpoint` karena tidak ada popup OAuth.
 - **Editorial workflow**: draf disimpan di branch terpisah + PR, bukan langsung ke `main`.
 - **Deploy**: push/merge ke `main` → Cloudflare Pages otomatis build dan deploy.
 - **Preview**: setiap PR/branch mendapat URL preview otomatis dari Cloudflare.
 
 ## 2. Prasyarat
 
-- Repository: `GibranAlkatiri/WalianHub`
+- Repository: `gleey/WalianHub` (yang terhubung ke Cloudflare Pages — harus sama dengan `repo` di `config.yml`)
 - Akun Cloudflare (gratis)
-- Akun GitHub untuk setiap pengelola konten
+- Akun GitHub pemilik repository (hanya untuk membuat token akses server — staf tidak perlu akun GitHub)
 
 ## 3. Deploy ke Cloudflare Pages
 
 ### 3.1 Hubungkan repository
 
 1. Buka [Cloudflare Dashboard](https://dash.cloudflare.com) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**
-2. Pilih repository `GibranAlkatiri/WalianHub`
+2. Pilih repository `gleey/WalianHub`
 3. Konfigurasi build:
    - **Production branch**: `main`
    - **Framework preset**: `Astro`
@@ -58,56 +58,67 @@ Setelah deploy pertama berhasil:
 3. Tambahkan DNS record sesuai petunjuk
 4. Update `site` di `astro.config.mjs` ke domain baru
 
-## 4. Autentikasi — GitHub OAuth App
+## 4. Autentikasi — username + password (1 admin)
 
-Decap CMS dengan backend `github` memerlukan OAuth App untuk login.
+Halaman `/admin/` menampilkan form username+password sendiri (bukan layar
+login Decap). Cara kerja:
 
-### 4.1 Buat OAuth App
+1. Staf membuka `/admin/` dan mengisi **username + password**.
+2. Browser mengirim JSON ke `/api/auth`; jika benar, server membalas GitHub
+   token milik server.
+3. Browser menyimpan sesi `{token, backendName: "github"}` di localStorage key
+   `decap-cms-user`, lalu memuat Decap CMS — Decap langsung masuk ke panel
+   tanpa layar login karena sesi valid (restoreUser → authenticate(token)).
 
-1. Buka **GitHub → Settings → Developer settings → OAuth Apps → New OAuth App**
+Token GitHub tidak pernah masuk repository.
+
+### 4.1 Buat GitHub token server
+
+1. Buka **GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**
 2. Isi:
-   - **Application name**: `Walian CMS`
-   - **Homepage URL**: `https://walianhub.pages.dev`
-   - **Authorization callback URL**: `https://api.netlify.com/auth/done`
-3. Klik **Register application**
-4. Catat **Client ID**
-5. Generate **Client Secret** — simpan dengan aman, tidak bisa dilihat ulang
+   - **Token name**: `Walian CMS`
+   - **Repository access**: Only select repositories → `gleey/WalianHub`
+   - **Permissions → Contents**: **Read and write**
+3. Generate, salin token (hanya tampil sekali).
 
-### 4.2 Aktifkan Netlify sebagai OAuth proxy
+> Dibutuhkan karena backend `github` Decap selalu memanggil GitHub API.
+> Satu token ini dipakai untuk semua penulisan konten panel.
 
-Meskipun hosting di Cloudflare, Decap CMS tetap bisa memakai Netlify sebagai OAuth proxy (hanya untuk login, bukan hosting):
+### 4.2 Buat hash password
 
-1. Buat akun di [netlify.com](https://netlify.com) (gratis)
-2. Buat site kosong (tidak perlu import repo)
-3. Buka **Site settings → Access & identity → OAuth → Install provider**
-4. Pilih **GitHub**, masukkan Client ID dan Client Secret dari langkah 4.1
-5. Simpan
+Password tidak disimpan polos — yang disimpan SHA-256 hex-nya:
 
-> **Alternatif tanpa Netlify**: Deploy OAuth proxy sendiri ke Cloudflare Workers menggunakan [decap-oauth-cloudflare-workers](https://github.com/i40west/netlify-cms-cloudflare-pages) atau [decap-oauth-client](https://github.com/sterlingwes/decap-oauth-client), lalu tambahkan `base_url` di `config.yml`. Untuk tahap awal, Netlify proxy paling sederhana.
+```bash
+echo -n 'password-pilihan-anda' | sha256sum   # salin 64 karakter hex
+```
 
 ### 4.3 Environment variables
 
-| Variable | Lokasi | Keterangan |
-|---|---|---|
-| GitHub OAuth Client ID | OAuth App di GitHub | Publik, sudah di Netlify |
-| GitHub OAuth Client Secret | Netlify site settings | Rahasia, jangan commit |
+Cloudflare Dashboard → Pages project → **Settings → Environment variables**
+(isi untuk **Production** dan **Preview**):
 
-**Tidak ada `.env` yang perlu ditambahkan ke repository.** Semua secret tersimpan di Netlify dan GitHub.
+| Variable | Contoh | Keterangan |
+|---|---|---|
+| `CMS_USERNAME` | `walian` | Username login panel (1 user) |
+| `CMS_PASSWORD_HASH` | `64 hex sha256` | Hash password dari langkah 4.2 |
+| `GITHUB_TOKEN` | `github_pat_...` | Token dari langkah 4.1 — rahasia |
+
+**Tidak ada `.env` yang di-commit ke repository.** Semua secret hanya di Cloudflare.
+
+### 4.4 Ganti password / cabut akses
+
+- **Ganti password**: hitung hash baru (langkah 4.2), update `CMS_PASSWORD_HASH`, redeploy.
+- **Cabut akses**: hapus/rotasi `GITHUB_TOKEN` dan update di Cloudflare.
+
+Karena hanya 1 user, tidak ada konsep tambah/hapus akun — cukup ganti passwordnya.
 
 ## 5. Izin akun pengelola konten
 
-Pengelola konten memerlukan **write access** ke repository:
+Tidak perlu menambah collaborator GitHub untuk staf — staf login dengan
+username+password di atas, dan penulisan ke repo memakai token server.
 
-1. Buka **Repository → Settings → Collaborators → Add people**
-2. Tambahkan akun GitHub pengelola
-3. Pilih role **Write** (bukan Admin)
-
-Dengan editorial workflow, pengelola membuat PR — maintainer atau pengelola sendiri bisa merge setelah CI check pass.
-
-### Pencabutan akses
-
-- Hapus collaborator dari repository settings
-- Revoke akses di OAuth App settings jika diperlukan
+Yang perlu akses GitHub hanya **pemegang akun pemilik repository**
+(untuk membuat/merotasi `GITHUB_TOKEN`).
 
 ## 6. Branch Protection (check wajib)
 
@@ -144,7 +155,7 @@ Tidak perlu workflow GitHub Actions untuk deploy.
 
 ### Catatan tentang event trigger
 
-Commit yang dibuat melalui GitHub API menggunakan OAuth token pengguna (bukan `GITHUB_TOKEN`), sehingga akan memicu Cloudflare Pages build dengan benar karena Cloudflare memantau semua push event.
+Commit yang dibuat melalui GitHub API menggunakan token server (bukan `GITHUB_TOKEN`), sehingga akan memicu Cloudflare Pages build dengan benar karena Cloudflare memantau semua push event.
 
 ## 8. Pemeliharaan
 
@@ -200,21 +211,22 @@ Rekomendasi: koordinasikan editing file pengaturan — satu orang selesaikan dul
 Semua konfigurasi CMS ada di repository (tracked):
 - `public/admin/index.html`
 - `public/admin/config.yml`
+- `functions/api/auth.js`
+- `tests/auth-password.test.js`
 
 Yang di luar repository:
-- OAuth App settings (GitHub)
-- OAuth proxy credentials (Netlify)
+- Environment variables Cloudflare (`CMS_USERNAME`, `CMS_PASSWORD_HASH`, `GITHUB_TOKEN`)
+- GitHub fine-grained token (`Walian CMS`)
 - Cloudflare Pages project settings
 
-Dokumentasikan siapa pemilik akun Netlify, Cloudflare, dan OAuth App.
+Dokumentasikan siapa pemegang akun Cloudflare dan GitHub pemilik repository.
 
 ## 10. Biaya
 
 | Layanan | Biaya |
 |---|---|
-| Cloudflare Pages | Gratis (500 build/bulan, bandwidth unlimited) |
+| Cloudflare Pages (hosting + Functions) | Gratis (500 build/bulan, bandwidth unlimited, 100rb request Functions/hari) |
 | GitHub Actions (CI) | Gratis (2000 menit/bulan) |
-| Netlify (OAuth proxy saja) | Gratis (tier starter) |
 | Decap CMS | Gratis (open source) |
 
 Total biaya pemeliharaan: **Rp 0**.

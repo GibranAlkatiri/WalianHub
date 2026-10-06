@@ -5,11 +5,10 @@ Panduan ini untuk **pengelola konten** (staf kelurahan). Tidak perlu coding. Sem
 ## 1. Masuk ke panel
 
 1. Buka: **https://walianhub.pages.dev/admin/**
-2. Klik **Login with GitHub**
-3. Masukkan akun GitHub yang sudah diberi akses
-4. Izinkan aplikasi jika diminta
+2. Isi **username** dan **password** yang diberikan penanggung jawab teknis, klik **Masuk**
+3. Panel terbuka langsung — tidak ada tombol GitHub apa pun
 
-> Jika tidak bisa login, hubungi penanggung jawab teknis untuk memastikan akun sudah ditambahkan sebagai collaborator.
+> Username dan password hanya satu untuk semua pengelola. Jangan disebar ke luar kelurahan. Jika tidak bisa login, hubungi penanggung jawab teknis.
 
 ## 2. Menu utama
 
@@ -131,16 +130,16 @@ Panel CMS menggunakan sistem **draf → terbit**:
 - Perbaiki field yang bermasalah, simpan ulang
 
 ### Website tidak berubah setelah terbit
-1. Buka: `https://github.com/GibranAlkatiri/WalianHub/actions` (CI checks)
+1. Buka: `https://github.com/gleey/WalianHub/actions` (CI checks)
 2. Lihat status workflow terakhir
 3. Jika ada tanda ❌, deploy gagal — hubungi penanggung jawab teknis
 4. Jika ada tanda ✓ tapi website belum berubah — tunggu beberapa menit (cache)
 
 ### Tidak bisa login
-- Pastikan akun GitHub sudah ditambahkan sebagai collaborator
-- Coba logout dan login ulang
+- Pastikan username dan password diketik dengan benar (perhatikan huruf besar/kecil)
+- Muat ulang halaman lalu coba lagi
 - Bersihkan cache browser
-- Hubungi penanggung jawab teknis
+- Hubungi penanggung jawab teknis (mungkin password diganti)
 
 ### Dua orang edit hal yang sama
 - Simpan pekerjaan secepatnya
