@@ -38,8 +38,8 @@
       }
       body {
         font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-        background-color: #f9f9f1;
-        color: #1f2a17;
+        background-color: #f7f8f2;
+        color: #192414;
         font-size: 1rem;
         line-height: 1.7;
         min-height: 100dvh;
@@ -52,11 +52,11 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 1rem;
+        gap: 1.25rem;
         padding: 2.5rem 1rem 3rem;
         background:
-          radial-gradient(52rem 24rem at 50% -10rem, #eef3df 0%, transparent 70%),
-          #f9f9f1;
+          radial-gradient(52rem 24rem at 50% -10rem, #eef4e1 0%, transparent 70%),
+          #f7f8f2;
       }
 
       /* Saat panel Decap aktif, semua cangkang masuk disembunyikan
@@ -422,6 +422,19 @@
           document.getElementById('status-keluar').hidden = false;
         }
 
+        function daftarkanPreviewStyle() {
+          if (window.CMS && typeof window.CMS.registerPreviewStyle === 'function') {
+            try {
+              window.CMS.registerPreviewStyle(
+                'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'
+              );
+              window.CMS.registerPreviewStyle('./preview.css');
+            } catch (e) {
+              /* abaikan bila sudah terdaftar */
+            }
+          }
+        }
+
         // Decap me-render app ke div#nc-root yang ditambahkan ke body
         // (bukan ke #panel), dibuat saat script dievaluasi tapi terisi
         // belakangan (fetch config.yml + GitHub API). Tunggu sampai ada
@@ -429,9 +442,11 @@
         function tungguRender() {
           var mulai = Date.now();
           var timer = setInterval(function () {
+            daftarkanPreviewStyle();
             var root = document.getElementById('nc-root');
             if (root && root.childElementCount > 0) {
               clearInterval(timer);
+              daftarkanPreviewStyle();
               document.getElementById('panel').hidden = true;
               return;
             }
@@ -454,12 +469,17 @@
             var s = document.createElement('script');
             s.src = 'https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js';
             s.setAttribute('data-decap', '1');
+            s.onload = function () {
+              daftarkanPreviewStyle();
+            };
             s.onerror = function () {
               gagalPanel(
                 'Gagal memuat Decap CMS (koneksi ke unpkg). Muat ulang halaman.'
               );
             };
             document.body.appendChild(s);
+          } else {
+            daftarkanPreviewStyle();
           }
           tungguRender();
         }
