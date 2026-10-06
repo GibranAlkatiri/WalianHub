@@ -1,42 +1,4 @@
 {
-  "ringkasan": "Kelurahan Walian berada di Kecamatan Tomohon Selatan, Kota Tomohon, Sulawesi Utara. [Ringkasan singkat tentang Walian: letak, suasana, dan ciri khas wilayah.]",
-  "lurah": { "nama": "Frano R. Rowan, S.Sos.", "foto": "" },
-  "strukturOrganisasi": [
-    { "jabatan": "Sekretaris Lurah", "nama": ["[Nama]"], "atasan": "Lurah", "garisSamping": true },
-    { "jabatan": "Kasie Keuangan", "nama": ["[Nama]"], "atasan": "Lurah" },
-    { "jabatan": "Kasie Pemerintahan", "nama": [], "atasan": "Lurah" },
-    { "jabatan": "Kasie Pembangunan", "nama": [], "atasan": "Lurah" },
-    { "jabatan": "Kasie Kesra", "nama": [], "atasan": "Lurah" },
-    { "jabatan": "Bendahara", "nama": ["[Nama]"], "atasan": "Kasie Keuangan" },
-    { "jabatan": "Staf Keuangan", "nama": ["[Nama]", "[Nama]"], "atasan": "Bendahara" },
-    { "jabatan": "Operator", "nama": ["[Nama]"], "atasan": "Bendahara" },
-    { "jabatan": "Staf Seksi Pemerintahan", "nama": ["[Nama]", "[Nama]", "[Nama]"], "atasan": "Kasie Pemerintahan" },
-    { "jabatan": "Pembantu Kasie Pemerintahan", "nama": ["[Nama]"], "atasan": "Staf Seksi Pemerintahan" },
-    { "jabatan": "Staf Seksi Pembangunan", "nama": ["[Nama]", "[Nama]", "[Nama]"], "atasan": "Kasie Pembangunan" },
-    { "jabatan": "Pembantu Kasie Pembangunan", "nama": ["[Nama]"], "atasan": "Staf Seksi Pembangunan" },
-    { "jabatan": "Staf Seksi Kesra", "nama": ["[Nama]", "[Nama]", "[Nama]"], "atasan": "Kasie Kesra" }
-  ],
-  "sumberData": { "tahun": "[Tahun data]", "sumber": "[Sumber data]" },
-  "lingkungan": [
-    { "nama": "Lingkungan I", "kepala": "[Nama]", "wakil": "[Nama]", "kepalaKeluarga": null, "jumlahPenduduk": null, "luasKm2": null },
-    { "nama": "Lingkungan II", "kepala": "[Nama]", "wakil": "[Nama]", "kepalaKeluarga": null, "jumlahPenduduk": null, "luasKm2": null },
-    { "nama": "Lingkungan III", "kepala": "[Nama]", "wakil": "[Nama]", "kepalaKeluarga": null, "jumlahPenduduk": null, "luasKm2": null },
-    { "nama": "Lingkungan IV", "kepala": "[Nama]", "wakil": "[Nama]", "kepalaKeluarga": null, "jumlahPenduduk": null, "luasKm2": null },
-    { "nama": "Lingkungan V", "kepala": "[Nama]", "wakil": "[Nama]", "kepalaKeluarga": null, "jumlahPenduduk": null, "luasKm2": null },
-    { "nama": "Lingkungan VI", "kepala": "[Nama]", "wakil": "[Nama]", "kepalaKeluarga": null, "jumlahPenduduk": null, "luasKm2": null },
-    { "nama": "Lingkungan VII", "kepala": "[Nama]", "wakil": "[Nama]", "kepalaKeluarga": null, "jumlahPenduduk": null, "luasKm2": null },
-    { "nama": "Lingkungan VIII", "kepala": "[Nama]", "wakil": "[Nama]", "kepalaKeluarga": null, "jumlahPenduduk": null, "luasKm2": null },
-    { "nama": "Lingkungan IX", "kepala": "[Nama]", "wakil": "[Nama]", "kepalaKeluarga": null, "jumlahPenduduk": null, "luasKm2": null },
-    { "nama": "Lingkungan X", "kepala": "[Nama]", "wakil": "[Nama]", "kepalaKeluarga": null, "jumlahPenduduk": null, "luasKm2": null }
-  ],
-  "visi": "TOMOHON MAJU, BERDAYA SAING, DAN SEJAHTERA",
-  "misi": [
-    "Menjaga dan Melestarikan Tomohon sebagai Kota Religius dan Berbudaya",
-    "Mewujudkan Ketahanan Pangan dan Pembangunan Berwawasan Lingkungan",
-    "Mewujudkan Tomohon Kota Wisata Dunia",
-    "Mewujudkan Pemerintahan yang Berintegritas, Adaptif, dan Responsif",
-    "Meningkatkan Kesejahteraan Masyarakat"
-  ],
   "programUnggulan": [
     "Melanjutkan dan meningkatkan insentif bagi rohaniawan.",
     "Peningkatan sarana, prasarana kesenian, kebudayaan, dan olahraga.",
@@ -58,6 +20,200 @@
     "Meningkatkan jumlah penerima beasiswa pendidikan.",
     "Memperkokoh sinergitas pemerintah kota dengan provinsi dan pusat untuk mempercepat pembangunan dan peningkatan pelayanan masyarakat."
   ],
-  "sumberVisiMisi": "https://tomohon.go.id/visi-dan-misi-kota-tomohon/",
-  "diperbarui": "2026-10-03"
+  "strukturOrganisasi": [
+    {
+      "jabatan": "Sekretaris Lurah",
+      "nama": [
+        "[Nama]"
+      ],
+      "atasan": "Lurah",
+      "garisSamping": true
+    },
+    {
+      "jabatan": "Kasie Keuangan",
+      "nama": [
+        "[Nama]"
+      ],
+      "atasan": "Lurah"
+    },
+    {
+      "jabatan": "Kasie Pemerintahan",
+      "nama": [],
+      "atasan": "Lurah"
+    },
+    {
+      "jabatan": "Kasie Pembangunan",
+      "nama": [],
+      "atasan": "Lurah"
+    },
+    {
+      "jabatan": "Kasie Kesra",
+      "nama": [],
+      "atasan": "Lurah"
+    },
+    {
+      "jabatan": "Bendahara",
+      "nama": [
+        "[Nama]"
+      ],
+      "atasan": "Kasie Keuangan"
+    },
+    {
+      "jabatan": "Staf Keuangan",
+      "nama": [
+        "[Nama]",
+        "[Nama]"
+      ],
+      "atasan": "Bendahara"
+    },
+    {
+      "jabatan": "Operator",
+      "nama": [
+        "[Nama]"
+      ],
+      "atasan": "Bendahara"
+    },
+    {
+      "jabatan": "Staf Seksi Pemerintahan",
+      "nama": [
+        "[Nama]",
+        "[Nama]",
+        "[Nama]"
+      ],
+      "atasan": "Kasie Pemerintahan"
+    },
+    {
+      "jabatan": "Pembantu Kasie Pemerintahan",
+      "nama": [
+        "[Nama]"
+      ],
+      "atasan": "Staf Seksi Pemerintahan"
+    },
+    {
+      "jabatan": "Staf Seksi Pembangunan",
+      "nama": [
+        "[Nama]",
+        "[Nama]",
+        "[Nama]"
+      ],
+      "atasan": "Kasie Pembangunan"
+    },
+    {
+      "jabatan": "Pembantu Kasie Pembangunan",
+      "nama": [
+        "[Nama]"
+      ],
+      "atasan": "Staf Seksi Pembangunan"
+    },
+    {
+      "jabatan": "Staf Seksi Kesra",
+      "nama": [
+        "[Nama]",
+        "[Nama]",
+        "[Nama]"
+      ],
+      "atasan": "Kasie Kesra"
+    }
+  ],
+  "lingkungan": [
+    {
+      "nama": "Lingkungan I",
+      "kepala": "Teddy",
+      "wakil": "[Nama]",
+      "kepalaKeluarga": null,
+      "jumlahPenduduk": null,
+      "luasKm2": null
+    },
+    {
+      "nama": "Lingkungan II",
+      "kepala": "[Nama]",
+      "wakil": "[Nama]",
+      "kepalaKeluarga": null,
+      "jumlahPenduduk": null,
+      "luasKm2": null
+    },
+    {
+      "nama": "Lingkungan III",
+      "kepala": "[Nama]",
+      "wakil": "[Nama]",
+      "kepalaKeluarga": null,
+      "jumlahPenduduk": null,
+      "luasKm2": null
+    },
+    {
+      "nama": "Lingkungan IV",
+      "kepala": "[Nama]",
+      "wakil": "[Nama]",
+      "kepalaKeluarga": null,
+      "jumlahPenduduk": null,
+      "luasKm2": null
+    },
+    {
+      "nama": "Lingkungan V",
+      "kepala": "[Nama]",
+      "wakil": "[Nama]",
+      "kepalaKeluarga": null,
+      "jumlahPenduduk": null,
+      "luasKm2": null
+    },
+    {
+      "nama": "Lingkungan VI",
+      "kepala": "[Nama]",
+      "wakil": "[Nama]",
+      "kepalaKeluarga": null,
+      "jumlahPenduduk": null,
+      "luasKm2": null
+    },
+    {
+      "nama": "Lingkungan VII",
+      "kepala": "[Nama]",
+      "wakil": "[Nama]",
+      "kepalaKeluarga": null,
+      "jumlahPenduduk": null,
+      "luasKm2": null
+    },
+    {
+      "nama": "Lingkungan VIII",
+      "kepala": "[Nama]",
+      "wakil": "[Nama]",
+      "kepalaKeluarga": null,
+      "jumlahPenduduk": null,
+      "luasKm2": null
+    },
+    {
+      "nama": "Lingkungan IX",
+      "kepala": "[Nama]",
+      "wakil": "[Nama]",
+      "kepalaKeluarga": null,
+      "jumlahPenduduk": null,
+      "luasKm2": null
+    },
+    {
+      "nama": "Lingkungan X",
+      "kepala": "[Nama]",
+      "wakil": "[Nama]",
+      "kepalaKeluarga": null,
+      "jumlahPenduduk": null,
+      "luasKm2": null
+    }
+  ],
+  "visi": "TOMOHON MAJU, BERDAYA SAING, DAN SEJAHTERA",
+  "sumberData": {
+    "tahun": "[Tahun data]",
+    "sumber": "[Sumber data]"
+  },
+  "diperbarui": "2026-10-03",
+  "lurah": {
+    "nama": "Frano R. Rowan, S.Sos.",
+    "foto": ""
+  },
+  "misi": [
+    "Menjaga dan Melestarikan Tomohon sebagai Kota Religius dan Berbudaya",
+    "Mewujudkan Ketahanan Pangan dan Pembangunan Berwawasan Lingkungan",
+    "Mewujudkan Tomohon Kota Wisata Dunia",
+    "Mewujudkan Pemerintahan yang Berintegritas, Adaptif, dan Responsif",
+    "Meningkatkan Kesejahteraan Masyarakat"
+  ],
+  "ringkasan": "Kelurahan Walian berada di Kecamatan Tomohon Selatan, Kota Tomohon, Sulawesi Utara. [Ringkasan singkat tentang Walian: letak, suasana, dan ciri khas wilayah.]",
+  "sumberVisiMisi": "https://tomohon.go.id/visi-dan-misi-kota-tomohon/"
 }
