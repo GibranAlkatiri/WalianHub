@@ -52,7 +52,7 @@ Snapshot yang diperiksa:
 
 Tidak ada berkas perubahan animasi yang beririsan dengan berkas perubahan kedua snapshot remote tersebut. Gabungan diuji lewat arsip Git dan penyalinan perubahan frontend dalam direktori sementara. Branch animasi dibuat langsung dari main terbaru dengan mempertahankan perubahan frontend. Schema, file JSON/Markdown konten, config CMS, dan pengaturan hosting tidak ditimpa oleh pekerjaan animasi.
 
-**Konfigurasi yang harus disepakati sebelum CMS digabung/publikasikan:** `origin/main` memakai `backend.repo: GibranAlkatiri/WalianHub`, sedangkan `origin/CMS` memakai `backend.repo: gleey/WalianHub`. Fork ini mungkin memang tempat uji teman. Pastikan repo tujuan produksi, branch `main`, token akses repo, dan project Cloudflare mengarah ke tujuan yang sama. Peninjauan animasi tidak mengubah konfigurasi milik teman tersebut.
+**Tujuan CMS dikonfirmasi pengguna pada 7 Oktober 2026:** project Cloudflare `walianhub.pages.dev` terhubung ke `gleey/WalianHub`. Konfigurasi CMS `backend.repo: gleey/WalianHub` sesuai dengan tujuan tersebut dan dipertahankan. `main` pada `GibranAlkatiri/WalianHub` menjadi tempat penggabungan kode bersama; perubahan di sana perlu disinkronkan ke repo `gleey` untuk memperbarui situs Cloudflare. Token server harus mempunyai akses ke repo tujuan CMS yang sama.
 
 Build/tes dan pratinjau memeriksa kompatibilitas frontend serta berkas admin statis. Login Cloudflare dan penyimpanan/publikasi CMS ke GitHub perlu dicoba oleh pemilik CMS pada lingkungan yang sesuai: buat draf, periksa diff file dan repo tujuannya, lalu pastikan gambar/teks yang diubah tampil pada preview. Konfigurasi autentikasi Cloudflare tidak dijalankan oleh server statis lokal ini.
 
@@ -65,4 +65,6 @@ Pengguna mengizinkan commit dan push pada 7 Oktober 2026. Referensi GitHub diper
 3. Sebelum penggabungan, ambil ulang referensi GitHub. Jika main atau CMS berubah, periksa ulang berkas yang beririsan dan uji hasil gabungannya.
 4. Setelah hasil visual dan integrasi cocok, gunakan pull request (permintaan menggabungkan perubahan branch) untuk meninjau dan menggabungkan animasi ke main. Perubahan CMS lanjutan tetap ditinjau melalui branch teman.
 
-Penilaian visual bersama dan penggabungan ke main masih menunggu pemeriksaan pengguna. Pemeriksaan snapshot tidak menjamin pembaruan CMS yang dibuat setelah tanggal ini.
+Pengguna kemudian mengizinkan merge jika aman. Gabungan animasi `d93ab01` dan CMS `6f5d0c9` telah dibuat pada branch lokal `cms-ui-review`, commit `299b60c`, tanpa konflik. Build berhasil, 22/22 tes lulus, dan editor Decap diperiksa dengan backend uji serta salinan konten tanpa menulis ke GitHub. Hasil ini menjadi dasar penggabungan ke main melalui PR.
+
+UI CMS masih perlu diperbaiki: daftar konten turun ke bawah sidebar pada desktop; editor ponsel memakai minimum lebar 800 px; input pencarian dropdown ikon menutupi sebagian label. Pemeriksaan UI tidak membuktikan login produksi atau penyimpanan/publikasi GitHub, yang tetap perlu diuji pada lingkungan Cloudflare milik teman. Pemeriksaan snapshot tidak menjamin pembaruan CMS yang dibuat setelah tanggal ini.
