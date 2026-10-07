@@ -284,29 +284,39 @@
   width: 100% !important;
 }
 
-#nc-root > div > div:has(aside) {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 1.75rem !important;
-  padding: 1.75rem 1.5rem 4rem !important;
-  min-height: calc(100vh - 4rem) !important;
+/* Wadah halaman koleksi yang membungkus aside & main */
+#nc-root div:has(> aside),
+#nc-root div:has(> main),
+#nc-root [class*="CollectionContainer"],
+#nc-root > div > div {
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+  padding: 1.5rem 1.5rem 4rem !important;
+  box-sizing: border-box !important;
 }
 
 /* ── 4. Sidebar Navigasi ───────────────────────────────────── */
 
 #nc-root aside {
-  flex: 0 0 260px !important;
   width: 260px !important;
-  position: sticky !important;
-  top: 5.5rem !important;
+  min-width: 260px !important;
+  max-width: 260px !important;
   max-height: calc(100vh - 7rem) !important;
-  overflow: visible !important;
+  overflow-y: auto !important;
   background: var(--adm-sidebar) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 18px !important;
   box-shadow: 0 10px 30px rgba(25, 36, 20, 0.18) !important;
   padding: 1.25rem 0.85rem !important;
   color: #ffffff !important;
+  z-index: 20 !important;
+}
+
+@media (min-width: 800px) {
+  #nc-root aside {
+    position: fixed !important;
+    top: 5.5rem !important;
+  }
 }
 
 #nc-root aside h2,
@@ -422,59 +432,78 @@
 
 /* ── 5. Area Konten Utama & Header Koleksi ─────────────────── */
 
-#nc-root main {
+#nc-root main,
+#nc-root [class*="CollectionMain"] {
   flex: 1 1 auto !important;
   min-width: 0 !important;
+  max-width: 1040px !important;
+  width: 100% !important;
   background: transparent !important;
+  box-sizing: border-box !important;
 }
 
-/* Kepala Koleksi: Grid 2-kolom kokoh (Mencegah tombol New melompat ke tengah) */
-#nc-root main > div:first-child {
+@media (min-width: 800px) {
+  #nc-root main,
+  #nc-root [class*="CollectionMain"] {
+    padding-left: 290px !important; /* Ruang lega dari sidebar fixed (260px + 30px) */
+  }
+}
+
+/* Kepala Koleksi: Lebar Penuh, Kartu Bersih dengan Aksen Hijau */
+#nc-root main > div:first-child,
+#nc-root main [class*="CollectionTopContainer"] {
+  width: 100% !important;
+  max-width: 100% !important;
   background: var(--adm-kertas) !important;
   border: 1px solid var(--adm-garis) !important;
-  border-left: 3px solid var(--adm-hijau) !important;
+  border-left: 4px solid var(--adm-hijau) !important;
   border-radius: var(--radius-kartu) !important;
   box-shadow: var(--bayang-kartu) !important;
-  padding: 1.15rem 1.5rem !important;
-  display: grid !important;
-  grid-template-columns: 1fr auto !important;
-  grid-template-rows: auto auto !important;
-  align-items: center !important;
-  gap: 0.25rem 1.5rem !important;
+  padding: 1.35rem 1.75rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.5rem !important;
   margin-bottom: 1rem !important;
+  box-sizing: border-box !important;
 }
 
-#nc-root main > div:first-child h1 {
-  grid-column: 1 / 2 !important;
-  grid-row: 1 / 2 !important;
+/* Baris atas header: Judul di kiri, Tombol Tambah di kanan */
+#nc-root main > div:first-child > div:first-child,
+#nc-root main [class*="CollectionTopRow"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  width: 100% !important;
+}
+
+#nc-root main > div:first-child h1,
+#nc-root main [class*="CollectionTopHeading"] {
   margin: 0 !important;
-  font-size: 1.35rem !important;
+  font-size: 1.45rem !important;
   font-weight: 800 !important;
   letter-spacing: -0.02em !important;
   color: var(--adm-teks) !important;
 }
 
-#nc-root main > div:first-child p {
-  grid-column: 1 / 2 !important;
-  grid-row: 2 / 3 !important;
+#nc-root main > div:first-child p,
+#nc-root main [class*="CollectionTopDescription"] {
   margin: 0 !important;
   color: var(--adm-teks-samar) !important;
-  font-size: 0.86rem !important;
-  line-height: 1.45 !important;
-  max-width: 65ch !important;
+  font-size: 0.88rem !important;
+  line-height: 1.5 !important;
+  max-width: 75ch !important;
 }
 
-/* Tombol "+ Layanan" / "Entri Baru" selalu terkunci rapi di kanan atas */
-#nc-root main > div:first-child a {
-  grid-column: 2 / 3 !important;
-  grid-row: 1 / 3 !important;
-  align-self: center !important;
-  justify-self: end !important;
+/* Tombol "+ Layanan" / "Entri Baru" di kanan atas */
+#nc-root main > div:first-child a,
+#nc-root main [class*="CollectionTopNewButton"] {
   display: inline-flex !important;
   align-items: center !important;
+  justify-content: center !important;
   gap: 0.45rem !important;
   min-height: 2.75rem !important;
-  padding: 0.5rem 1.35rem !important;
+  padding: 0.5rem 1.4rem !important;
   border-radius: var(--radius-pil) !important;
   background-color: var(--adm-hijau) !important;
   color: #ffffff !important;
@@ -486,24 +515,30 @@
   transition: all 140ms ease !important;
 }
 
-#nc-root main > div:first-child a:hover {
+#nc-root main > div:first-child a:hover,
+#nc-root main [class*="CollectionTopNewButton"]:hover {
   background-color: var(--adm-hijau-gelap) !important;
   box-shadow: 0 4px 12px rgba(58, 99, 39, 0.35) !important;
   transform: translateY(-1px) !important;
 }
 
 /* Bilah alat daftar (Urutkan / View mode) */
+#nc-root main > div:nth-child(2),
+#nc-root main [class*="CollectionControlsContainer"],
 #nc-root main > div:not(:first-child):has(button[aria-label]),
 #nc-root main > div:not(:first-child):has(select) {
+  width: 100% !important;
+  max-width: 100% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-end !important;
   gap: 0.5rem !important;
-  margin-bottom: 0.75rem !important;
+  margin-bottom: 0.85rem !important;
   padding: 0 0.25rem !important;
   color: var(--adm-teks-samar) !important;
   font-size: 0.84rem !important;
   font-weight: 600 !important;
+  box-sizing: border-box !important;
 }
 
 #nc-root main button:has(> svg:only-child) {
@@ -526,150 +561,139 @@
 
 /* ── 6. Daftar Entri Koleksi (List View & Grid View) ───────── */
 
-#nc-root main section {
-  background-color: var(--adm-kertas) !important;
-  border: 1px solid var(--adm-garis) !important;
-  border-radius: var(--radius-kartu) !important;
-  box-shadow: var(--bayang-kartu) !important;
-  padding: 1rem 0 !important;
-  margin-top: 0.5rem !important;
-  overflow: hidden !important;
-}
-
-#nc-root main section > p,
-#nc-root main section > h2,
-#nc-root main section > h3 {
-  margin: 0 0 0 0 !important;
-  padding: 0.65rem 1.25rem !important;
-  font-size: 0.72rem !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.1em !important;
-  text-transform: uppercase !important;
-  color: var(--adm-teks-samar) !important;
-  background: var(--adm-latar-2) !important;
-  border-bottom: 1px solid var(--adm-garis-lunak) !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.5rem !important;
-}
-
-#nc-root main section > p::after,
-#nc-root main section > h2::after,
-#nc-root main section > h3::after {
-  display: none !important;
-  content: none !important;
-}
-
-/* Wadah List Entri Koleksi (Khusus main section entri, BUKAN form editor) */
-#nc-root main section > ul:has(> li > a) {
+/* Wadah List Entri (Decap CardsGrid) */
+#nc-root main ul,
+#nc-root main ul[class*="CardsGrid"],
+#nc-root main section ul {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 0 !important;
-  list-style: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  gap: 0.65rem !important;
+  box-sizing: border-box !important;
 }
 
-/* Setiap Item Entri: Baris Rata Kiri, Rapi, Mudah di-scan */
-#nc-root main section > ul:has(> li > a) > li {
+/* Setiap Baris Kartu Entri: Lebar Penuh, Rapi, Jelas */
+#nc-root main ul > li,
+#nc-root main li[class*="ListCard"],
+#nc-root main section ul > li {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
   background: #ffffff !important;
-  border: none !important;
-  border-bottom: 1px solid var(--adm-garis-lunak) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  transition: background-color 120ms ease !important;
+  border: 1px solid var(--adm-garis) !important;
+  border-left: 3px solid transparent !important;
+  border-radius: 12px !important;
+  box-shadow: var(--bayang-halus) !important;
+  overflow: hidden !important;
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-sizing: border-box !important;
 }
 
-#nc-root main section > ul:has(> li > a) > li:last-child {
-  border-bottom: none !important;
+#nc-root main ul > li:hover,
+#nc-root main li[class*="ListCard"]:hover,
+#nc-root main section ul > li:hover {
+  background: #fdfdfa !important;
+  border-color: var(--adm-garis-kuat) !important;
+  border-left-color: var(--adm-hijau) !important;
+  border-left-width: 5px !important;
+  box-shadow: 0 4px 14px rgba(25, 36, 20, 0.08) !important;
+  transform: translateY(-2px) !important;
 }
 
-#nc-root main section > ul:has(> li > a) > li:hover {
-  background: var(--adm-hijau-muda) !important;
-  border-color: var(--adm-garis-lunak) !important;
-  box-shadow: none !important;
-}
-
-#nc-root main section > ul:has(> li > a) > li > a {
+/* Link di dalam Kartu Entri */
+#nc-root main ul > li > a,
+#nc-root main li[class*="ListCard"] > a,
+#nc-root main section ul > li > a {
   display: flex !important;
-  flex-direction: row !important;
   align-items: center !important;
-  text-align: left !important;
-  gap: 0.75rem !important;
-  padding: 0.9rem 1.35rem !important;
+  justify-content: space-between !important;
+  padding: 1.1rem 1.4rem !important;
   color: var(--adm-teks) !important;
   text-decoration: none !important;
-  min-height: 3.2rem !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  gap: 1.25rem !important;
+  min-height: 3.5rem !important;
 }
 
-#nc-root main section > ul:has(> li > a) > li > a > div {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  gap: 0.2rem !important;
-  min-width: 0 !important;
-  flex: 1 1 auto !important;
-}
-
-#nc-root main section > ul:has(> li > a) > li h2 {
-  font-size: 0.94rem !important;
-  font-weight: 700 !important;
+/* Judul & Ringkasan Entri di dalam h2 */
+#nc-root main ul > li h2,
+#nc-root main li[class*="ListCard"] h2,
+#nc-root main section ul > li h2 {
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
   color: var(--adm-teks) !important;
+  line-height: 1.5 !important;
   margin: 0 !important;
-  line-height: 1.4 !important;
-  white-space: normal !important;
-  overflow: visible !important;
-  text-overflow: unset !important;
-  word-break: break-word !important;
-}
-
-#nc-root main section > ul:has(> li > a) > li p {
-  font-size: 0.84rem !important;
-  color: var(--adm-teks-samar) !important;
-  margin: 0 !important;
-  line-height: 1.45 !important;
   white-space: normal !important;
   word-break: break-word !important;
-  display: -webkit-box !important;
-  -webkit-line-clamp: 2 !important;
-  -webkit-box-orient: vertical !important;
-  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex: 1 1 auto !important;
+  gap: 0.75rem !important;
 }
 
-/* Ikon chevron di setiap baris entri saat hover */
-#nc-root main section > ul:has(> li > a) > li > a::after {
+/* Ikon Chevron di Ujung Kanan Baris */
+#nc-root main ul > li > a::after,
+#nc-root main li[class*="ListCard"] > a::after,
+#nc-root main section ul > li > a::after {
   content: "›" !important;
   flex: 0 0 auto !important;
-  font-size: 1.4rem !important;
+  font-size: 1.5rem !important;
+  line-height: 1 !important;
   font-weight: 300 !important;
   color: var(--adm-teks-samar) !important;
-  opacity: 0 !important;
-  transform: translateX(-4px) !important;
-  transition: all 150ms ease !important;
-}
-
-#nc-root main section > ul:has(> li > a) > li:hover > a::after {
-  opacity: 1 !important;
+  opacity: 0.4 !important;
+  transition: all 160ms ease !important;
   transform: translateX(0) !important;
-  color: var(--adm-hijau) !important;
 }
 
-/* Badge status draf/terbit di kartu entri */
-#nc-root main section > ul:has(> li > a) > li span[class*="badge"],
-#nc-root main section > ul:has(> li > a) > li span:only-child {
+#nc-root main ul > li:hover > a::after,
+#nc-root main li[class*="ListCard"]:hover > a::after,
+#nc-root main section ul > li:hover > a::after {
+  opacity: 1 !important;
+  color: var(--adm-hijau) !important;
+  transform: translateX(4px) !important;
+}
+
+/* Badge Status (draft / pending_review / ready) */
+#nc-root main ul > li span,
+#nc-root main li[class*="ListCard"] span,
+#nc-root main section ul > li span {
   display: inline-flex !important;
   align-items: center !important;
-  padding: 0.15rem 0.6rem !important;
+  padding: 0.18rem 0.6rem !important;
   border-radius: var(--radius-pil) !important;
   font-size: 0.7rem !important;
   font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
   background: var(--adm-hijau-muda) !important;
   color: var(--adm-hijau-gelap) !important;
   border: 1px solid var(--adm-garis) !important;
   white-space: nowrap !important;
   flex: 0 0 auto !important;
+}
+
+/* Heading bagian untuk pemisah status (drafts/terbit) bila ada */
+#nc-root main [class*="SectionSeparator"],
+#nc-root main section > p,
+#nc-root main section > h2,
+#nc-root main section > h3 {
+  margin: 1.25rem 0 0.5rem !important;
+  padding: 0 !important;
+  font-size: 0.75rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--adm-teks-samar) !important;
+  background: transparent !important;
+  border: none !important;
 }
 
 /* ── 7. Editor: Toolbar Atas & Tombol Tindakan ──────────────── */
