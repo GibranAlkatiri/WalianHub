@@ -7,15 +7,21 @@ Dikembangkan oleh KKT Angkatan 149 Universitas Sam Ratulangi.
 
 ### **https://walianhub.pages.dev/**
 
-Ini adalah **versi pratinjau**. Teks di dalam [kurung siku] dan data destinasi masih contoh. Data contoh sengaja dipertahankan untuk demo: staf nantinya dapat mengoreksi nama/jenis surat, persyaratan, profil, kontak, dan destinasi melalui CMS. Validasi data resmi dilakukan bersama kelurahan saat demo; CMS belum dihubungkan.
-Website di link ini diperbarui otomatis setiap ada perubahan di branch `main` (Cloudflare Pages).
+Ini adalah **versi pratinjau**. Teks di dalam [kurung siku] dan data destinasi masih contoh. Data contoh sengaja dipertahankan untuk demo: staf nantinya dapat mengoreksi nama/jenis surat, persyaratan, profil, kontak, dan destinasi melalui CMS. Validasi data resmi dilakukan bersama kelurahan saat demo. Kode CMS sudah tersedia; login dan publikasi pada lingkungan produksi masih perlu dibuktikan.
+Cloudflare terhubung ke branch `main` pada `gleey/WalianHub`. Perubahan di repository kode bersama `GibranAlkatiri/WalianHub` perlu disinkronkan ke repo tersebut sebelum memperbarui situs.
 
 ## Status
 
 - **Beranda, Profil, Layanan, dan Wisata:** tersedia.
 - **Navigasi Wisata otomatis:** sampai 4 destinasi menuju section Beranda; mulai 5 menuju `/wisata`, dengan 4 pilihan di Beranda dan tombol "Semua Wisata".
 - `/wisata` selalu dapat dibuka, termasuk ketika jumlah destinasi turun atau kosong, agar tautan lama tetap berlaku.
-- **Berikutnya:** implementasi CMS mengikuti [rencana CMS](CMS.md). Bahasa Inggris dan halaman detail destinasi tetap ditunda.
+- **CMS dan animasi:** kode telah digabung ke `main` melalui PR #4. Berikutnya: pemeriksaan fungsi backend dan [perbaikan UI CMS](TAHAPAN-UI-CMS.md). Bahasa Inggris dan halaman detail destinasi tetap ditunda.
+
+## Kerja tim dan asisten AI
+
+Baca [AGENTS.md — pembagian frontend/backend](AGENTS.md) sebelum mengubah berkas. Dokumen ini menentukan area tiap peran, cara mengambil kode dari repo bersama/fork, dan langkah ketika pekerjaan menyentuh area rekan.
+
+Untuk tampilan panel, ikuti [TAHAPAN-UI-CMS.md — rencana perbaikan untuk pengguna awam](TAHAPAN-UI-CMS.md). Untuk login, koneksi GitHub, dan hosting, gunakan [CMS-SETUP.md](CMS-SETUP.md).
 
 ## Isi website
 
@@ -48,12 +54,11 @@ Setiap isi diperiksa oleh `src/content.config.ts` setiap kali website dibangun. 
 
 ## Untuk pembuat CMS
 
-Mulai dari [CMS.md — rencana implementasi dan pembagian pull request](CMS.md). Dokumen ini menjelaskan cakupan formulir, kontrak field, login, media, alur publikasi, urutan pekerjaan, dan kriteria penerimaan untuk pembuat CMS.
+Mulai dari [aturan pembagian kerja](AGENTS.md) dan [CMS-SETUP.md — konfigurasi CMS yang digunakan](CMS-SETUP.md). [CMS.md](CMS.md) menyimpan rencana awal serta rincian kontrak field; keterangan hosting dan status implementasi historisnya tidak menjadi acuan operasional terbaru.
 
 `src/content.config.ts` adalah **kontrak data** antara tampilan dan CMS. Formulir CMS mengikuti nama field, tipe, daftar pilihan, aturan wajib/kosong, dan validasi tersebut. Isian konten terpisah dari tampilan; label formulir boleh memakai Bahasa Indonesia. Teks antarmuka seperti "Cek Lokasi", tata letak, dan aturan navigasi tetap dikelola frontend.
 
-- **CMS berbasis Git:** mengedit file konten dan media di repository. Workflow membangun dan menerbitkan website setelah perubahan tersimpan. Login, hak akses, konfigurasi formulir, dan penerbitan tetap perlu dihubungkan; produknya belum dipilih.
-- **CMS dengan API:** loader dan pemetaan konten disesuaikan dengan API, dengan bentuk data yang sama. Pemicu build/deploy dan pengelolaan media juga perlu disiapkan.
+- **CMS yang digunakan:** Decap CMS berbasis Git. Panel ada di `public/admin/`, login melalui Cloudflare Pages Function `functions/api/auth.js`, dan konfigurasi formulir mengikuti kontrak konten. UI serta login/penyimpanan/publikasi produksi masih perlu diperiksa sesuai pembagian kerja.
 
 Pengubahan nama surat menggunakan field `judul`; CMS sebaiknya mempertahankan identitas file setelah dibuat. Upload foto memakai path dari akar situs, misalnya `/uploads/destinasi/foto.webp`. Frontend menambahkan base path saat merender. `SIAP_DIINDEKS` tetap `false` selama versi demo.
 
@@ -80,6 +85,6 @@ tests/                 Pengujian aturan Wisata dan validasi konten
 
 ## Teknologi
 
-Dibangun dengan [Astro](https://astro.build), [Tailwind CSS](https://tailwindcss.com), dan [Bun](https://bun.sh). Hasilnya berupa website statis (file HTML, CSS, dan gambar), sehingga bisa dipasang di hosting mana saja. Deploy otomatis ke Cloudflare Pages setiap push ke `main`. CI check berjalan via GitHub Actions (`.github/workflows/ci.yml`).
+Dibangun dengan [Astro](https://astro.build), [Tailwind CSS](https://tailwindcss.com), dan [Bun](https://bun.sh). Hasilnya berupa website statis (file HTML, CSS, dan gambar), sehingga bisa dipasang di hosting mana saja; login CMS menggunakan Cloudflare Pages Functions. Deploy Cloudflare mengikuti push ke `main` repo `gleey/WalianHub`. CI untuk PR menuju `main` berjalan via GitHub Actions (`.github/workflows/ci.yml`).
 
 Jalankan `bun test` untuk pemeriksaan logika dan `bun run build` untuk validasi seluruh konten serta hasil website. Perubahan konten baru tampil setelah build dan deploy selesai.

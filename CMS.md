@@ -2,6 +2,8 @@
 
 Tanggal: 5 Oktober 2026. Penanggung jawab implementasi: pembuat CMS (teman pemilik proyek).
 
+> Catatan terkini, 7 Oktober 2026: dokumen di bawah menyimpan rencana awal. Decap CMS, login melalui Cloudflare Pages Function, dan animasi sudah masuk ke `main` kode bersama melalui PR #4. Cloudflare terhubung ke `gleey/WalianHub`. Untuk pekerjaan sekarang, baca [AGENTS.md](AGENTS.md), [CMS-SETUP.md](CMS-SETUP.md), dan [TAHAPAN-UI-CMS.md](TAHAPAN-UI-CMS.md). Pernyataan "belum diimplementasikan", pilihan produk, GitHub Pages, dan workflow deployment lama di bawah merupakan kondisi historis.
+
 Dokumen ini menjadi panduan untuk mengambil kode dari GitHub, membuat CMS, dan mengirim perubahan melalui pull request. CMS belum diimplementasikan. Rencana memakai file konten yang sudah dibaca frontend; produk CMS dan layanan login belum dipilih.
 
 ## 1. Hasil yang harus dicapai
@@ -32,7 +34,7 @@ Website tetap merupakan situs informasi publik. Pengajuan surat online, akun war
 | Base path | `/WalianHub`, diatur dalam [astro.config.mjs](astro.config.mjs) |
 | Kontrak konten | [src/content.config.ts](src/content.config.ts) |
 | Validasi tambahan | [validasi-konten.ts](src/lib/validasi-konten.ts) dan [bagan.ts](src/lib/bagan.ts) |
-| Publikasi saat ini | [.github/workflows/deploy.yml](.github/workflows/deploy.yml): `push` ke `main` atau dijalankan manual |
+| Publikasi saat rencana dibuat | `.github/workflows/deploy.yml` (workflow GitHub Pages lama, kini dihapus): `push` ke `main` atau dijalankan manual |
 | Pemeriksaan saat ini | `bun test`, kemudian `bun run build`; belum ada workflow pemeriksaan `pull_request` |
 | Status demo | [SIAP_DIINDEKS](src/lib/konfigurasi.ts) masih `false` |
 
