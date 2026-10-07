@@ -714,131 +714,349 @@
   background: #ffffff !important;
   border-bottom: 1px solid var(--adm-garis) !important;
   box-shadow: 0 1px 4px rgba(25, 36, 20, 0.05) !important;
-  padding: 0.65rem 1.75rem !important;
+  padding: 0 1.5rem !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 1rem !important;
-  min-height: 4.25rem !important;
+  height: 4.5rem !important;
+  min-height: 4.5rem !important;
   margin: 0 !important;
   box-sizing: border-box !important;
 }
 
-/* Reset sub-div di dalam Toolbar agar tidak menjadi kartu terpisah */
-#nc-root [class*="ToolbarContainer"] > div,
-#nc-root [class*="ToolbarSection"],
-#nc-root div:has(> a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"])) {
-  display: flex !important;
+/* 7.1 Bagian Kiri: Tombol Kembali, Judul Penulisan & Status Simpan */
+#nc-root [class*="ToolbarSectionBackLink"],
+#nc-root [class*="ToolbarContainer"] a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"]) {
+  display: inline-flex !important;
   align-items: center !important;
-  gap: 0.65rem !important;
+  gap: 0.85rem !important;
+  text-decoration: none !important;
+  color: inherit !important;
+  width: auto !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0.4rem 0.85rem 0.4rem 0.4rem !important;
+  border-radius: var(--radius-pil) !important;
+  border: 1px solid transparent !important;
   background: transparent !important;
-  border: none !important;
   box-shadow: none !important;
-  padding: 0 !important;
   margin: 0 !important;
+  flex-shrink: 0 !important;
+  transition: all 140ms ease !important;
+  cursor: pointer !important;
 }
 
-/* Tombol kembali ke koleksi */
-#nc-root a[class*="ToolbarSectionBackLink"],
-#nc-root [class*="ToolbarContainer"] a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"]) {
+#nc-root [class*="ToolbarSectionBackLink"]:hover,
+#nc-root [class*="ToolbarContainer"] a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"]):hover {
+  background: var(--adm-latar-2) !important;
+  border-color: var(--adm-garis) !important;
+}
+
+/* Lingkaran Ikon Panah Kembali (<) */
+#nc-root [class*="ToolbarSectionBackLink"] [class*="BackArrow"],
+#nc-root [class*="BackArrow"] {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   width: 2.25rem !important;
   height: 2.25rem !important;
+  min-width: 2.25rem !important;
   border-radius: var(--radius-pil) !important;
   color: var(--adm-teks) !important;
   font-weight: 800 !important;
-  font-size: 1.1rem !important;
-  text-decoration: none !important;
+  font-size: 1.15rem !important;
   background: var(--adm-latar) !important;
   border: 1px solid var(--adm-garis) !important;
+  margin: 0 !important;
   transition: all 120ms ease !important;
 }
 
-#nc-root a[class*="ToolbarSectionBackLink"]:hover,
-#nc-root [class*="ToolbarContainer"] a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"]):hover {
+#nc-root [class*="ToolbarSectionBackLink"]:hover [class*="BackArrow"] {
   background: var(--adm-hijau-muda) !important;
   border-color: var(--adm-garis-kuat) !important;
   color: var(--adm-hijau-gelap) !important;
   transform: translateX(-2px) !important;
 }
 
-/* Judul status penulisan di toolbar (Writing in Layanan Surat...) */
-#nc-root [class*="ToolbarContainer"] h1,
-#nc-root [class*="ToolbarContainer"] [class*="ToolbarHeading"] {
-  font-size: 0.95rem !important;
-  font-weight: 700 !important;
-  color: var(--adm-teks) !important;
-  margin: 0 0 0 0.25rem !important;
-  line-height: 1.3 !important;
+/* Wadah teks penulisan di dalam link kembali */
+#nc-root [class*="ToolbarSectionBackLink"] > div:not([class*="BackArrow"]) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 0.15rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
 }
 
-/* Badge status simpan di toolbar (CHANGES SAVED / UNSAVED) */
+/* Judul status penulisan: "Writing in Layanan Surat collection" */
+#nc-root [class*="BackCollection"],
+#nc-root [class*="ToolbarContainer"] h1,
+#nc-root [class*="ToolbarContainer"] [class*="ToolbarHeading"] {
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  color: var(--adm-teks-lunak) !important;
+  margin: 0 !important;
+  line-height: 1.25 !important;
+  white-space: nowrap !important;
+}
+
+#nc-root [class*="BackCollection"] strong,
+#nc-root [class*="BackCollection"] b {
+  font-weight: 800 !important;
+  color: var(--adm-teks) !important;
+}
+
+/* Badge status simpan: CHANGES SAVED / UNSAVED */
+#nc-root [class*="BackStatus"],
 #nc-root [class*="ToolbarContainer"] span[class*="Status"],
 #nc-root [class*="ToolbarContainer"] span[class*="status"] {
   display: inline-flex !important;
   align-items: center !important;
-  padding: 0.2rem 0.65rem !important;
+  padding: 0.15rem 0.55rem !important;
   border-radius: var(--radius-pil) !important;
-  font-size: 0.7rem !important;
+  font-size: 0.68rem !important;
   font-weight: 700 !important;
-  letter-spacing: 0.04em !important;
+  letter-spacing: 0.05em !important;
   text-transform: uppercase !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+#nc-root [class*="BackStatusUnchanged"] {
   background: var(--adm-hijau-muda) !important;
   color: var(--adm-hijau-gelap) !important;
   border: 1px solid var(--adm-garis) !important;
-  white-space: nowrap !important;
 }
 
-/* Tombol Aksi Toolbar: Simpan (Save) */
-#nc-root [class*="ToolbarContainer"] button:not([class*="EditorToggle"]):not([aria-label]):not([class*="Dropdown"]) {
-  min-height: 2.5rem !important;
-  padding: 0.45rem 1.25rem !important;
+#nc-root [class*="BackStatusChanged"] {
+  background: var(--adm-bahaya-muda) !important;
+  color: var(--adm-bahaya) !important;
+  border: 1px solid #f0b8b1 !important;
+}
+
+/* 7.2 Bagian Tengah & Utama (ToolbarSectionMain) */
+#nc-root [class*="ToolbarSectionMain"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex: 1 1 auto !important;
+  padding: 0 1.25rem !important;
+  gap: 1rem !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  min-width: 0 !important;
+}
+
+#nc-root [class*="ToolbarSubSectionFirst"] {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+  flex-wrap: nowrap !important;
+}
+
+#nc-root [class*="ToolbarSubSectionLast"] {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  justify-content: flex-end !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Tombol Save (Simpan) */
+#nc-root [class*="SaveButton"],
+#nc-root [class*="ToolbarContainer"] button[class*="Save"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 2.35rem !important;
+  height: 2.35rem !important;
+  padding: 0.4rem 1.15rem !important;
   border-radius: var(--radius-pil) !important;
   font-weight: 700 !important;
-  font-size: 0.88rem !important;
-  cursor: pointer !important;
-  transition: all 140ms ease !important;
+  font-size: 0.86rem !important;
   background: var(--adm-latar-2) !important;
   color: var(--adm-teks) !important;
   border: 1px solid var(--adm-garis) !important;
+  cursor: pointer !important;
+  transition: all 120ms ease !important;
+  white-space: nowrap !important;
 }
 
-#nc-root [class*="ToolbarContainer"] button:not([class*="EditorToggle"]):not([aria-label]):not([class*="Dropdown"]):hover {
+#nc-root [class*="SaveButton"]:hover:not(:disabled),
+#nc-root [class*="ToolbarContainer"] button[class*="Save"]:hover:not(:disabled) {
   background: var(--adm-hijau-muda) !important;
   border-color: var(--adm-garis-kuat) !important;
   color: var(--adm-hijau-gelap) !important;
 }
 
-/* Tombol Terbitkan / Publish */
+#nc-root [class*="SaveButton"]:disabled,
+#nc-root [class*="ToolbarContainer"] button[class*="Save"]:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+}
+
+/* Tombol Status Alur Kerja (STATUS: READY / DRAFT / IN REVIEW) */
+#nc-root [class*="StatusButton"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 2.35rem !important;
+  height: 2.35rem !important;
+  padding: 0.35rem 0.95rem !important;
+  border-radius: var(--radius-pil) !important;
+  font-weight: 700 !important;
+  font-size: 0.76rem !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  background: #eaf3de !important;
+  color: var(--adm-hijau-gelap) !important;
+  border: 1px solid var(--adm-garis) !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: all 120ms ease !important;
+}
+
+#nc-root [class*="StatusButton"]:hover {
+  background: #deeed0 !important;
+  border-color: var(--adm-garis-kuat) !important;
+}
+
+/* Tombol Publish / Terbitkan */
+#nc-root [class*="PublishButton"],
+#nc-root [class*="PublishedButton"],
+#nc-root [class*="publishedButton"],
 #nc-root [class*="ToolbarContainer"] button[class*="Publish"],
-#nc-root [class*="ToolbarContainer"] [class*="DropdownButton"],
-#nc-root [class*="ToolbarContainer"] button[class*="publishedButton"] {
+#nc-root [class*="ToolbarContainer"] [class*="DropdownButton"]:has(> [class*="Publish"]),
+#nc-root [class*="ToolbarContainer"] [class*="DropdownButton"]:not([class*="Delete"]) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 2.35rem !important;
+  height: 2.35rem !important;
+  padding: 0.4rem 1.25rem !important;
+  border-radius: var(--radius-pil) !important;
+  font-weight: 700 !important;
+  font-size: 0.86rem !important;
   background: var(--adm-hijau) !important;
   color: #ffffff !important;
   border: 0 !important;
-  box-shadow: 0 2px 8px rgba(58, 99, 39, 0.25) !important;
+  box-shadow: 0 2px 8px rgba(58, 99, 39, 0.22) !important;
+  cursor: pointer !important;
+  transition: all 120ms ease !important;
+  white-space: nowrap !important;
 }
 
+#nc-root [class*="PublishButton"]:hover,
+#nc-root [class*="PublishedButton"]:hover,
+#nc-root [class*="publishedButton"]:hover,
 #nc-root [class*="ToolbarContainer"] button[class*="Publish"]:hover,
-#nc-root [class*="ToolbarContainer"] [class*="DropdownButton"]:hover,
-#nc-root [class*="ToolbarContainer"] button[class*="publishedButton"]:hover {
+#nc-root [class*="ToolbarContainer"] [class*="DropdownButton"]:hover {
   background: var(--adm-hijau-gelap) !important;
+  box-shadow: 0 4px 12px rgba(58, 99, 39, 0.32) !important;
 }
 
 /* Tombol Hapus Entri (Delete) */
+#nc-root [class*="DeleteButton"],
 #nc-root [class*="ToolbarContainer"] button[class*="Delete"],
 #nc-root [class*="ToolbarContainer"] button[class*="delete"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 2.35rem !important;
+  height: 2.35rem !important;
+  padding: 0.4rem 0.95rem !important;
+  border-radius: var(--radius-pil) !important;
+  font-weight: 600 !important;
+  font-size: 0.82rem !important;
   background: transparent !important;
   color: var(--adm-bahaya) !important;
   border: 1px solid transparent !important;
+  cursor: pointer !important;
+  transition: all 120ms ease !important;
+  white-space: nowrap !important;
 }
 
+#nc-root [class*="DeleteButton"]:hover,
 #nc-root [class*="ToolbarContainer"] button[class*="Delete"]:hover,
 #nc-root [class*="ToolbarContainer"] button[class*="delete"]:hover {
   background: var(--adm-bahaya-muda) !important;
   border-color: #f0b8b1 !important;
+}
+
+/* Tombol / Tautan Pratinjau (Check for Preview) */
+#nc-root [class*="PreviewButtonContainer"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  color: var(--adm-teks-lunak) !important;
+}
+
+#nc-root [class*="PreviewButtonContainer"] a,
+#nc-root [class*="PreviewButtonContainer"] button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  padding: 0.35rem 0.85rem !important;
+  border-radius: var(--radius-pil) !important;
+  background: var(--adm-latar-2) !important;
+  border: 1px solid var(--adm-garis) !important;
+  color: var(--adm-teks) !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  transition: all 120ms ease !important;
+}
+
+#nc-root [class*="PreviewButtonContainer"] a:hover,
+#nc-root [class*="PreviewButtonContainer"] button:hover {
+  background: var(--adm-hijau-muda) !important;
+  color: var(--adm-hijau-gelap) !important;
+  border-color: var(--adm-garis-kuat) !important;
+}
+
+/* 7.3 Bagian Kanan Metadata (Situs Web & Avatar Pengguna) */
+#nc-root [class*="ToolbarSectionMeta"] {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.85rem !important;
+  padding-left: 1.25rem !important;
+  border-left: 1px solid var(--adm-garis) !important;
+  flex-shrink: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*="ToolbarSectionMeta"] a {
+  color: var(--adm-teks-lunak) !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  padding: 0.35rem 0.75rem !important;
+  border-radius: var(--radius-pil) !important;
+  transition: all 120ms ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+#nc-root [class*="ToolbarSectionMeta"] a:hover {
+  color: var(--adm-hijau-gelap) !important;
+  background: var(--adm-latar-2) !important;
+}
+
+#nc-root [class*="ToolbarSectionMeta"] img {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  border: 1.5px solid var(--adm-garis) !important;
+  object-fit: cover !important;
 }
 
 /* ── 8. SplitPane Editor (Pane1 & Pane2): Lebar Penuh (100%) ── */
