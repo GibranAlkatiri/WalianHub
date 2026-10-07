@@ -4,10 +4,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Container from '../components/ui/Container.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
 import DestinationCard from '../components/ui/DestinationCard.astro';
+import TeksKetik from '../components/ui/TeksKetik.astro';
 import { wisata } from '../lib/data-wisata';
 import { tautanPetaDestinasi } from '../lib/wisata';
 import { url } from '../lib/url';
 import { formatTanggal } from '../lib/format';
+import { JEDA_HURUF_SUBJUDUL, jedaSubjudulKetik } from '../lib/teks-ketik';
+
+const judulHalaman = 'Wisata Walian';
+const pengantar = 'Kenali tempat-tempat menarik di Kelurahan Walian. Tekan "Cek Lokasi" untuk melihat titik destinasi di Google Maps.';
 
 const diperbarui = wisata.semua.length > 0
   ? new Date(Math.max(...wisata.semua.map((item) => item.data.diperbarui.getTime())))
@@ -22,8 +27,12 @@ const diperbarui = wisata.semua.length > 0
         <span aria-hidden="true">/</span>
         <span class="text-ink" aria-current="page">Wisata</span>
       </nav>
-      <h1 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl">Wisata Walian</h1>
-      <p class="mt-4 max-w-2xl text-ink-muted">Kenali tempat-tempat menarik di Kelurahan Walian. Tekan "Cek Lokasi" untuk melihat titik destinasi di Google Maps.</p>
+      <h1 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl">
+        <TeksKetik teks={judulHalaman} />
+      </h1>
+      <p class="mt-4 max-w-2xl text-ink-muted">
+        <TeksKetik teks={pengantar} jedaAwal={jedaSubjudulKetik(judulHalaman)} jedaHuruf={JEDA_HURUF_SUBJUDUL} />
+      </p>
     </Container>
   </section>
 
@@ -31,7 +40,7 @@ const diperbarui = wisata.semua.length > 0
     <Container>
       <SectionHeading overline="Wisata" title="Daftar destinasi" />
       {wisata.semua.length > 0 ? (
-        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+        <div data-motion-group class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {wisata.semua.map((item) => (
             <DestinationCard
               nama={item.data.nama}

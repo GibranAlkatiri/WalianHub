@@ -37,7 +37,7 @@ const ukuran = {
   target={tautanLuar ? '_blank' : undefined}
   rel={tautanLuar ? 'noopener' : undefined}
   class:list={[
-    'inline-flex items-center justify-center gap-2 rounded-full text-base font-semibold whitespace-nowrap transition-colors',
+    'inline-flex items-center justify-center gap-2 rounded-full text-base font-semibold whitespace-nowrap transition-[background-color,color,scale] duration-250 motion-safe:active:scale-[0.98] motion-reduce:transition-none',
     gaya[variant],
     ukuran[size],
     kelas,

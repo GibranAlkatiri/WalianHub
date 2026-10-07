@@ -10,13 +10,14 @@ interface Props {
   puncak?: boolean;
   /** Kotak di cabang samping: rata kiri, menempel ke garis datar dari garis tengah. */
   samping?: boolean;
+  tingkat?: number;
 }
 
-const { simpul, puncak = false, samping = false } = Astro.props;
+const { simpul, puncak = false, samping = false, tingkat = 0 } = Astro.props;
 ---
 
 <li>
-  <div class:list={['rounded-2xl p-3 text-center shadow-card', puncak ? 'mx-auto w-52 bg-forest-600' : 'w-42 bg-white', !puncak && !samping && 'mx-auto']}>
+  <div data-motion="node" data-motion-card data-motion-delay={200 + Math.min(tingkat, 3) * 180} class:list={['rounded-2xl p-3 text-center shadow-card', puncak ? 'mx-auto w-52 bg-forest-600' : 'w-42 bg-white', !puncak && !samping && 'mx-auto']}>
     <p class:list={['text-sm leading-snug font-semibold', puncak ? 'text-white' : 'text-forest-600']}>{simpul.jabatan}</p>
     {
       simpul.nama.length > 0 ? (
@@ -34,7 +35,7 @@ const { simpul, puncak = false, samping = false } = Astro.props;
     simpul.samping.length > 0 && (
       <ul class="bagan-samping">
         {simpul.samping.map((item) => (
-          <Astro.self simpul={item} samping />
+          <Astro.self simpul={item} samping tingkat={tingkat + 1} />
         ))}
       </ul>
     )
@@ -43,7 +44,7 @@ const { simpul, puncak = false, samping = false } = Astro.props;
     simpul.bawahan.length > 0 && (
       <ul class="bagan-cabang">
         {simpul.bawahan.map((item) => (
-          <Astro.self simpul={item} />
+          <Astro.self simpul={item} tingkat={tingkat + 1} />
         ))}
       </ul>
     )

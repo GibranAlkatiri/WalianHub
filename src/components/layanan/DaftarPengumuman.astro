@@ -18,10 +18,10 @@ const { pengumuman } = Astro.props;
 <section id="pengumuman" class="bg-white py-12 sm:py-16 lg:py-20">
   <Container>
     <SectionHeading overline="Pengumuman" title="Pengumuman untuk warga" />
-    <ul class="mt-8 grid gap-4 md:grid-cols-2 lg:gap-6">
+    <ul data-motion-group class="mt-8 grid gap-4 md:grid-cols-2 lg:gap-6">
       {
         pengumuman.map((item) => (
-          <li class="rounded-2xl bg-cream-50 p-5 ring-1 ring-line sm:p-6">
+          <li data-motion="card" data-motion-card class="rounded-2xl bg-cream-50 p-5 ring-1 ring-line sm:p-6">
             <div class="flex min-h-7 flex-wrap items-center gap-3">
               <span class="inline-flex items-center gap-1.5 text-sm text-ink-subtle">
                 <Icon name="calendar" class="size-4" />

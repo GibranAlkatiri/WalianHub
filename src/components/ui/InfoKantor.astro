@@ -16,7 +16,7 @@ interface Props {
 const { situs, class: kelas } = Astro.props;
 ---
 
-<ul class:list={['space-y-5', kelas]}>
+<ul data-motion="content" class:list={['space-y-5', kelas]}>
   <li class="flex gap-4">
     <span class="grid size-11 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600"><Icon name="map-pin" /></span>
     <div>

@@ -9,13 +9,16 @@ interface Props {
   ringkasan: string;
   ikon: string;
   href: string;
+  motion?: 'fade' | 'card';
 }
 
-const { judul, ringkasan, ikon, href } = Astro.props;
+const { judul, ringkasan, ikon, href, motion = 'card' } = Astro.props;
 ---
 
 <article
-  class="group relative flex h-full flex-col rounded-2xl bg-white p-4 shadow-card sm:p-5 transition duration-200 hover:-translate-y-1 hover:shadow-float has-[a:focus-visible]:outline-3 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-forest-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0 lg:p-6"
+  data-motion={motion === 'card' ? 'card' : ''}
+  data-motion-card
+  class="group relative flex h-full flex-col rounded-2xl bg-white p-4 shadow-card sm:p-5 transition-[translate,box-shadow] duration-[437.5ms] ease-in-out hover:-translate-y-0.5 hover:shadow-float focus-within:shadow-float has-[a:focus-visible]:outline-3 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-forest-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0 lg:p-6"
 >
   <span class="grid size-12 place-items-center rounded-full bg-sage-100 text-forest-600">
     <Icon name={ikon} class="size-6" />
@@ -26,6 +29,6 @@ const { judul, ringkasan, ikon, href } = Astro.props;
   <p class="mt-2 line-clamp-3 text-base text-ink-muted">{ringkasan}</p>
   <span class="mt-auto inline-flex items-center gap-1 pt-4 text-base font-semibold text-forest-600" aria-hidden="true">
     Lihat syarat
-    <Icon name="arrow-right" class="size-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" />
+    <Icon name="arrow-right" class="size-4 transition-transform motion-safe:group-hover:translate-x-1 motion-safe:group-focus-within:translate-x-1 motion-reduce:transition-none" />
   </span>
 </article>

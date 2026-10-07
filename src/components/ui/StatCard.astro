@@ -13,7 +13,7 @@ interface Props {
 const { angka, label, ikon, satuan } = Astro.props;
 ---
 
-<div class="rounded-2xl bg-white p-4 shadow-card sm:p-5 lg:p-6">
+<div data-motion="card" data-motion-card class="rounded-2xl bg-white p-4 shadow-card sm:p-5 lg:p-6">
   <span class="grid size-10 place-items-center rounded-full bg-sage-100 text-forest-600 sm:size-11">
     <Icon name={ikon} class="size-5" />
   </span>

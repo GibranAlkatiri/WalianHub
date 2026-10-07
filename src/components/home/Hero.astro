@@ -8,6 +8,8 @@ import type { CollectionEntry } from 'astro:content';
 import Container from '../ui/Container.astro';
 import SmartImage from '../ui/SmartImage.astro';
 import Icon from '../ui/Icon.astro';
+import TeksKetik from '../ui/TeksKetik.astro';
+import { JEDA_HURUF_SUBJUDUL, jedaSubjudulKetik } from '../../lib/teks-ketik';
 
 interface Props {
   hero: CollectionEntry<'beranda'>['data']['hero'];
@@ -17,6 +19,9 @@ const { hero } = Astro.props;
 const daftarFoto = hero.foto.filter((foto) => foto.gambar.trim());
 const tanpaFoto = daftarFoto.length === 0;
 const bergilir = daftarFoto.length > 1;
+const durasiPergantian = 600;
+const intervalFoto = 2000;
+const jedaSubjudul = jedaSubjudulKetik(hero.judul);
 
 // Bagian foto yang tetap terlihat saat foto terpotong di layar sempit.
 const posisiFoto = {
@@ -31,6 +36,9 @@ const posisiFoto = {
   data-hero-foto
   data-foto-wadah
   data-hero-slideshow={bergilir ? '' : undefined}
+  data-durasi-pergantian={durasiPergantian}
+  data-interval-foto={intervalFoto}
+  style={`--durasi-pergantian: ${durasiPergantian}ms; --durasi-zoom: ${intervalFoto + durasiPergantian}ms`}
   class="relative isolate flex min-h-svh items-center overflow-hidden"
 >
   {/* Latar: foto (atau gambar default), lapisan hijau, lalu gradasi atas dan bawah. Latar hijau tua mencegah kilatan terang saat foto berganti. */}
@@ -41,10 +49,11 @@ const posisiFoto = {
       ) : (
         daftarFoto.map((foto, i) => (
           <div
+            id={`hero-foto-${i}`}
             data-slide
             data-aktif={i === 0 ? '' : undefined}
             aria-hidden={i === 0 ? undefined : 'true'}
-            class="absolute inset-0 opacity-0 saturate-60 transition-opacity duration-1000 data-aktif:opacity-100 motion-safe:data-aktif:animate-hero-zoom"
+            class="absolute inset-0 saturate-60 motion-safe:data-aktif:animate-hero-zoom motion-safe:data-keluar:animate-hero-zoom"
           >
             <SmartImage src={foto.gambar} alt={foto.keterangan} fill priority={i === 0} showLabel={false} class={posisiFoto[foto.posisi]} />
           </div>
@@ -52,106 +61,94 @@ const posisiFoto = {
       )
     }
     {/* Lapisan hijau rata di seluruh foto, agar warnanya menyatu dengan website dan teks putih di tengah tetap terbaca */}
-    <div aria-hidden="true" class="absolute inset-0 bg-forest-900/70"></div>
+    <div aria-hidden="true" class="absolute inset-0 z-10 bg-forest-900/70"></div>
     {/* Gradasi gelap tambahan di atas, supaya menu navbar putih tetap terbaca di atas foto terang */}
-    <div aria-hidden="true" class="absolute inset-x-0 top-0 h-40 bg-linear-to-b from-forest-900/60 to-transparent"></div>
+    <div aria-hidden="true" class="absolute inset-x-0 top-0 z-10 h-40 bg-linear-to-b from-forest-900/60 to-transparent"></div>
     {/* Gradasi bawah: foto melebur ke warna latar halaman. Dibuat pendek, supaya foto tetap terlihat utuh. */}
-    <div aria-hidden="true" class="absolute inset-x-0 bottom-0 h-12 bg-linear-to-b from-cream-50/0 to-cream-50 lg:h-16"></div>
+    <div aria-hidden="true" class="absolute inset-x-0 bottom-0 z-10 h-12 bg-linear-to-b from-cream-50/0 to-cream-50 lg:h-16"></div>
   </div>
 
   <Container class="py-28 text-center lg:py-32">
     <h1
       id="judul-hero"
-      class="mx-auto max-w-2xl text-3xl leading-[1.1] font-extrabold text-balance text-white motion-safe:animate-hero-muncul-1 sm:text-4xl lg:text-6xl"
+      class="mx-auto max-w-2xl text-3xl leading-[1.1] font-extrabold text-balance text-white sm:text-4xl lg:text-6xl"
     >
-      {hero.judul}
+      <TeksKetik teks={hero.judul} />
     </h1>
-    <p class="mx-auto mt-4 max-w-xl text-base text-pretty text-white/90 motion-safe:animate-hero-muncul-2 sm:mt-5 sm:text-lg lg:text-xl">
-      {hero.subjudul}
+    <p class="mx-auto mt-4 max-w-xl text-base text-pretty text-white/90 sm:mt-5 sm:text-lg lg:text-xl">
+      <TeksKetik teks={hero.subjudul} jedaAwal={jedaSubjudul} jedaHuruf={JEDA_HURUF_SUBJUDUL} />
     </p>
   </Container>
 
-  {/* Kanan bawah hero: label gambar default, atau tombol jeda jika foto lebih dari satu. Keterangan foto tidak ditampilkan. */}
+  {/* Kanan bawah hero: label gambar default serta kontrol foto dan jeda. */}
   <div class="absolute inset-x-0 bottom-16 lg:bottom-20">
-    <Container class="flex items-center justify-end gap-2">
+    <Container class="flex flex-wrap items-center justify-end gap-2">
       <span data-label-foto hidden={!tanpaFoto} class="rounded-2xl bg-ink/80 px-3 py-1 text-center text-sm font-semibold text-white">Foto belum tersedia</span>
       {
         bergilir && (
-          <button
-            type="button"
-            data-hero-jeda
-            aria-label="Jeda pergantian foto"
-            class="group/jeda grid size-10 shrink-0 place-items-center rounded-full bg-ink/80 text-white transition-colors hover:bg-ink focus-visible:outline-sun-400"
-          >
-            <Icon name="pause" class="size-4 group-data-[berhenti]/jeda:hidden" />
-            <Icon name="play" class="hidden size-4 group-data-[berhenti]/jeda:block" />
-          </button>
+          <div data-hero-kontrol hidden role="group" aria-label="Kontrol foto latar" class="flex min-w-0 items-center gap-2">
+            <div class="flex min-w-0 gap-1 overflow-x-auto rounded-full bg-ink/80 px-1">
+              {daftarFoto.map((foto, i) => (
+                <button
+                  type="button"
+                  data-hero-pilih={i}
+                  data-aktif={i === 0 ? '' : undefined}
+                  aria-current={i === 0 ? 'true' : undefined}
+                  aria-controls={`hero-foto-${i}`}
+                  aria-label={`Tampilkan foto ${i + 1}: ${foto.keterangan}`}
+                  class="group/foto grid size-10 shrink-0 place-items-center rounded-full focus-visible:outline-sun-400"
+                >
+                  <span class="size-2.5 rounded-full bg-white/40 transition-colors group-data-[aktif]/foto:bg-white"></span>
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              data-hero-jeda
+              aria-label="Jeda pergantian foto"
+              class="group/jeda grid size-10 shrink-0 place-items-center rounded-full bg-ink/80 text-white transition-colors hover:bg-ink focus-visible:outline-sun-400"
+            >
+              <Icon name="pause" class="size-4 group-data-[berhenti]/jeda:hidden" />
+              <Icon name="play" class="hidden size-4 group-data-[berhenti]/jeda:block" />
+            </button>
+            <span data-hero-status aria-live="off" aria-atomic="true" class="sr-only">Foto 1 dari {daftarFoto.length}: {daftarFoto[0].keterangan}</span>
+          </div>
         )
       }
     </Container>
   </div>
 </section>
 
+<style>
+  [data-slide] {
+    opacity: 0;
+    z-index: 0;
+  }
+
+  /* Foto lama tetap utuh di bawah foto baru; latar tidak menggelap di tengah fade. */
+  [data-slide][data-keluar] {
+    opacity: 1;
+    z-index: 1;
+  }
+
+  [data-slide][data-aktif] {
+    opacity: 1;
+    z-index: 2;
+    transition: opacity var(--durasi-pergantian) ease-in-out;
+  }
+
+  [data-jeda-gerakan] [data-slide] {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-slide][data-aktif] {
+      transition: none;
+    }
+  }
+</style>
+
 <script>
-  // Pergantian foto hero. Skrip hanya mengubah atribut data dan aria;
-  // tampilannya diatur oleh kelas yang sudah tertulis di markup.
-  const JEDA_MS = 5000;
-
-  const hero = document.querySelector<HTMLElement>('[data-hero-foto]');
-
-  function perbaruiLabelFoto() {
-    const foto = hero?.querySelector<HTMLImageElement>('[data-slide][data-aktif] img') ?? hero?.querySelector<HTMLImageElement>('img');
-    const label = hero?.querySelector<HTMLElement>('[data-label-foto]');
-    if (foto && label) label.hidden = foto.getAttribute('src') !== foto.dataset.default;
-  }
-
-  // Error dapat terjadi sebelum modul ini dimuat. Periksa saat mulai dan setelah fallback mengganti src.
-  hero?.addEventListener('error', () => queueMicrotask(perbaruiLabelFoto), true);
-  perbaruiLabelFoto();
-
-  if (hero?.hasAttribute('data-hero-slideshow')) {
-    const daftarSlide = hero.querySelectorAll<HTMLElement>('[data-slide]');
-    const tombol = hero.querySelector<HTMLButtonElement>('[data-hero-jeda]')!;
-    let aktif = 0;
-    let timer: ReturnType<typeof setInterval> | undefined;
-    // Pengunjung yang mematikan animasi: foto tidak berganti sendiri, tetapi tetap bisa diputar lewat tombol.
-    let berhenti = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    function tandai(nomor: number, nyala: boolean) {
-      daftarSlide[nomor].toggleAttribute('data-aktif', nyala);
-      if (nyala) daftarSlide[nomor].removeAttribute('aria-hidden');
-      else daftarSlide[nomor].setAttribute('aria-hidden', 'true');
-    }
-
-    function tampilkan(nomor: number) {
-      tandai(aktif, false);
-      aktif = nomor;
-      tandai(aktif, true);
-      perbaruiLabelFoto();
-    }
-
-    // Timer hanya berjalan jika tidak dijeda dan tab sedang dilihat.
-    function aturTimer() {
-      clearInterval(timer);
-      timer = undefined;
-      if (!berhenti && !document.hidden) {
-        timer = setInterval(() => tampilkan((aktif + 1) % daftarSlide.length), JEDA_MS);
-      }
-    }
-
-    function perbaruiTombol() {
-      tombol.toggleAttribute('data-berhenti', berhenti);
-      tombol.setAttribute('aria-label', berhenti ? 'Putar pergantian foto' : 'Jeda pergantian foto');
-    }
-
-    tombol.addEventListener('click', () => {
-      berhenti = !berhenti;
-      perbaruiTombol();
-      aturTimer();
-    });
-    document.addEventListener('visibilitychange', aturTimer);
-
-    perbaruiTombol();
-    aturTimer();
-  }
+  import { mulaiSlideshow } from '../../lib/slideshow';
+  document.querySelectorAll<HTMLElement>('[data-hero-foto]').forEach(mulaiSlideshow);
 </script>
