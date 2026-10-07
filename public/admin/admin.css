@@ -698,91 +698,202 @@
 
 /* ── 7. Editor: Toolbar Atas & Tombol Tindakan ──────────────── */
 
-#nc-root div:has(> a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"])),
-#nc-root div[class*="ToolbarContainer"] {
+/* ── 7. Editor: Toolbar Atas & Tombol Tindakan ──────────────── */
+
+/* Wadah Toolbar Editor Utama: Lebar Penuh (100%), Melekat Rapi di Atas */
+#nc-root [class*="ToolbarContainer"],
+#nc-root div[class*="EditorContainer"] > div:first-child,
+#nc-root [class*="EditorToolbar"] {
   position: sticky !important;
-  top: 4rem !important;
-  z-index: 30 !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  z-index: 40 !important;
+  background: #ffffff !important;
   border-bottom: 1px solid var(--adm-garis) !important;
-  box-shadow: 0 1px 3px rgba(25, 36, 20, 0.04) !important;
-  padding: 0.65rem 1.5rem !important;
+  box-shadow: 0 1px 4px rgba(25, 36, 20, 0.05) !important;
+  padding: 0.65rem 1.75rem !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   gap: 1rem !important;
-  min-height: 3.8rem !important;
+  min-height: 4.25rem !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Reset sub-div di dalam Toolbar agar tidak menjadi kartu terpisah */
+#nc-root [class*="ToolbarContainer"] > div,
+#nc-root [class*="ToolbarSection"],
+#nc-root div:has(> a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"])) {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
   margin: 0 !important;
 }
 
 /* Tombol kembali ke koleksi */
-#nc-root div:has(> a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"])) > a:first-child,
-#nc-root a[class*="ToolbarSectionBackLink"] {
+#nc-root a[class*="ToolbarSectionBackLink"],
+#nc-root [class*="ToolbarContainer"] a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"]) {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 0.5rem !important;
-  padding: 0.45rem 0.9rem !important;
-  border-radius: 10px !important;
+  justify-content: center !important;
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  border-radius: var(--radius-pil) !important;
   color: var(--adm-teks) !important;
-  font-weight: 700 !important;
-  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+  font-size: 1.1rem !important;
   text-decoration: none !important;
   background: var(--adm-latar) !important;
   border: 1px solid var(--adm-garis) !important;
   transition: all 120ms ease !important;
 }
 
-#nc-root div:has(> a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"])) > a:first-child:hover,
-#nc-root a[class*="ToolbarSectionBackLink"]:hover {
+#nc-root a[class*="ToolbarSectionBackLink"]:hover,
+#nc-root [class*="ToolbarContainer"] a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"]):hover {
+  background: var(--adm-hijau-muda) !important;
+  border-color: var(--adm-garis-kuat) !important;
+  color: var(--adm-hijau-gelap) !important;
+  transform: translateX(-2px) !important;
+}
+
+/* Judul status penulisan di toolbar (Writing in Layanan Surat...) */
+#nc-root [class*="ToolbarContainer"] h1,
+#nc-root [class*="ToolbarContainer"] [class*="ToolbarHeading"] {
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  color: var(--adm-teks) !important;
+  margin: 0 0 0 0.25rem !important;
+  line-height: 1.3 !important;
+}
+
+/* Badge status simpan di toolbar (CHANGES SAVED / UNSAVED) */
+#nc-root [class*="ToolbarContainer"] span[class*="Status"],
+#nc-root [class*="ToolbarContainer"] span[class*="status"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0.2rem 0.65rem !important;
+  border-radius: var(--radius-pil) !important;
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  background: var(--adm-hijau-muda) !important;
+  color: var(--adm-hijau-gelap) !important;
+  border: 1px solid var(--adm-garis) !important;
+  white-space: nowrap !important;
+}
+
+/* Tombol Aksi Toolbar: Simpan (Save) */
+#nc-root [class*="ToolbarContainer"] button:not([class*="EditorToggle"]):not([aria-label]):not([class*="Dropdown"]) {
+  min-height: 2.5rem !important;
+  padding: 0.45rem 1.25rem !important;
+  border-radius: var(--radius-pil) !important;
+  font-weight: 700 !important;
+  font-size: 0.88rem !important;
+  cursor: pointer !important;
+  transition: all 140ms ease !important;
+  background: var(--adm-latar-2) !important;
+  color: var(--adm-teks) !important;
+  border: 1px solid var(--adm-garis) !important;
+}
+
+#nc-root [class*="ToolbarContainer"] button:not([class*="EditorToggle"]):not([aria-label]):not([class*="Dropdown"]):hover {
   background: var(--adm-hijau-muda) !important;
   border-color: var(--adm-garis-kuat) !important;
   color: var(--adm-hijau-gelap) !important;
 }
 
-/* Tombol-tombol di toolbar editor (Simpan, Terbitkan, Hapus) */
-#nc-root div:has(> a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"])) button {
-  min-height: 2.5rem !important;
-  padding: 0.4rem 1.15rem !important;
-  border-radius: var(--radius-pil) !important;
-  font-weight: 700 !important;
-  font-size: 0.88rem !important;
-  cursor: pointer !important;
+/* Tombol Terbitkan / Publish */
+#nc-root [class*="ToolbarContainer"] button[class*="Publish"],
+#nc-root [class*="ToolbarContainer"] [class*="DropdownButton"],
+#nc-root [class*="ToolbarContainer"] button[class*="publishedButton"] {
+  background: var(--adm-hijau) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: 0 2px 8px rgba(58, 99, 39, 0.25) !important;
 }
 
-/* ── 8. SplitPane Editor (Pane1 & Pane2) Tanpa Celah Kosong ── */
+#nc-root [class*="ToolbarContainer"] button[class*="Publish"]:hover,
+#nc-root [class*="ToolbarContainer"] [class*="DropdownButton"]:hover,
+#nc-root [class*="ToolbarContainer"] button[class*="publishedButton"]:hover {
+  background: var(--adm-hijau-gelap) !important;
+}
 
+/* Tombol Hapus Entri (Delete) */
+#nc-root [class*="ToolbarContainer"] button[class*="Delete"],
+#nc-root [class*="ToolbarContainer"] button[class*="delete"] {
+  background: transparent !important;
+  color: var(--adm-bahaya) !important;
+  border: 1px solid transparent !important;
+}
+
+#nc-root [class*="ToolbarContainer"] button[class*="Delete"]:hover,
+#nc-root [class*="ToolbarContainer"] button[class*="delete"]:hover {
+  background: var(--adm-bahaya-muda) !important;
+  border-color: #f0b8b1 !important;
+}
+
+/* ── 8. SplitPane Editor (Pane1 & Pane2): Lebar Penuh (100%) ── */
+
+/* Hilangkan kunci 680px dari Emotion Decap pada SplitPane */
+#nc-root [class*="EditorContainer"],
+#nc-root [class*="EditorContainer"] > div,
+#nc-root [class*="EditorContent"],
+#nc-root .SplitPane,
+#nc-root [class*="StyledSplitPane"],
 #nc-root div:has(> .Pane1),
 #nc-root div:has(> .Pane2) {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  margin: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+#nc-root .SplitPane {
   display: flex !important;
-  min-height: calc(100vh - 7.8rem) !important;
+  position: absolute !important;
+  top: 4.25rem !important;
+  bottom: 0 !important;
+  height: calc(100vh - 4.25rem) !important;
+  min-height: calc(100vh - 4.25rem) !important;
   align-items: stretch !important;
-  margin-top: 0 !important;
-  padding-top: 0 !important;
 }
 
 /* Pane 1 (Formulir Pengisian) */
 #nc-root .Pane1 {
   background-color: var(--adm-latar) !important;
-  padding: 1.75rem 2rem 5rem !important;
+  padding: 2rem 2.5rem 6rem !important;
   overflow-y: auto !important;
   overscroll-behavior: contain !important;
-  min-width: 320px !important;
+  min-width: 360px !important;
+  box-sizing: border-box !important;
 }
 
 /* Wadah fieldset di dalam Pane 1 agar proporsional di layar lebar */
 #nc-root .Pane1 > form,
-#nc-root .Pane1 > div {
+#nc-root .Pane1 > div,
+#nc-root [class*="ControlPaneContainer"] {
   max-width: 780px !important;
   margin-inline: auto !important;
+  width: 100% !important;
 }
 
 /* Resizer Pemisah yang Halus & Responsif */
 #nc-root .Resizer.vertical {
   background: transparent !important;
-  width: 10px !important;
-  margin: 0 -5px !important;
+  width: 12px !important;
+  margin: 0 -6px !important;
   z-index: 25 !important;
   cursor: col-resize !important;
   position: relative !important;
@@ -794,7 +905,7 @@
   position: absolute !important;
   top: 0 !important;
   bottom: 0 !important;
-  left: 4px !important;
+  left: 5px !important;
   width: 2px !important;
   background: var(--adm-garis) !important;
   transition: background 150ms ease !important;
@@ -802,32 +913,39 @@
 
 #nc-root .Resizer.vertical:hover::after {
   background: var(--adm-hijau) !important;
-  width: 3px !important;
+  width: 4px !important;
+  left: 4px !important;
 }
 
 /* Pane 2 (Panel Pratinjau / Preview) */
 #nc-root .Pane2 {
   background-color: var(--adm-latar-2) !important;
   border-left: 1px solid var(--adm-garis) !important;
-  padding: 1.5rem !important;
+  padding: 1.5rem 2rem !important;
   overflow-y: auto !important;
   position: relative !important;
-  min-width: 320px !important;
+  min-width: 360px !important;
+  box-sizing: border-box !important;
 }
 
 #nc-root .Pane2 iframe {
   width: 100% !important;
   height: 100% !important;
-  min-height: calc(100vh - 12rem) !important;
+  min-height: calc(100vh - 8rem) !important;
   border: 1px solid var(--adm-garis) !important;
   border-radius: var(--radius-kartu) !important;
   background: #ffffff !important;
-  box-shadow: var(--bayang-kartu) !important;
+  box-shadow: 0 4px 16px rgba(25, 36, 20, 0.06) !important;
 }
 
 /* Tombol Toggle Tampilan (Split / Editor Saja / Preview Saja) */
 #nc-root [class*="EditorToggleContainer"],
+#nc-root [class*="ViewControls"],
 #nc-root div:has(> button[class*="EditorToggle"]) {
+  position: absolute !important;
+  top: 1rem !important;
+  right: 1.5rem !important;
+  z-index: 35 !important;
   background: rgba(255, 255, 255, 0.95) !important;
   backdrop-filter: blur(8px) !important;
   border: 1px solid var(--adm-garis) !important;
@@ -1065,18 +1183,28 @@
 #nc-root [class*="ControlContainer"]:has([class*="ToggleBackground"]) {
   display: flex !important;
   flex-direction: column !important;
-  gap: 0.45rem !important;
+  gap: 0.4rem !important;
+  padding: 1rem 1.35rem !important;
 }
 
-/* Baris label dan toggle switch yang ringkas & menyatu */
-#nc-root [class*="ControlContainer"]:has([class*="ToggleContainer"]) > label,
-#nc-root [class*="ControlContainer"]:has([class*="BooleanControl"]) > label {
+/* Hilangkan kotak input default Decap di sekeliling tombol toggle boolean */
+#nc-root [class*="ControlContainer"]:has([class*="ToggleContainer"]) > div:not([class*="ControlTopbar"]):not([class*="ControlHint"]),
+#nc-root [class*="ControlContainer"]:has([class*="BooleanControl"]) > div:not([class*="ControlTopbar"]):not([class*="ControlHint"]),
+#nc-root div[class*="BooleanControl"] {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0.25rem 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+#nc-root [class*="ControlContainer"]:has([class*="ToggleContainer"]) [class*="ControlTopbar"],
+#nc-root [class*="ControlContainer"]:has([class*="BooleanControl"]) [class*="ControlTopbar"] {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   width: 100% !important;
-  margin-bottom: 0 !important;
-  cursor: pointer !important;
 }
 
 #nc-root button[class*="ToggleContainer"] {
@@ -1090,12 +1218,13 @@
   display: inline-flex !important;
   align-items: center !important;
   outline: none !important;
+  margin: 0.25rem 0 !important;
 }
 
 #nc-root [class*="ToggleBackground"] {
   display: inline-block !important;
-  width: 3rem !important;
-  height: 1.7rem !important;
+  width: 46px !important;
+  height: 26px !important;
   border-radius: var(--radius-pil) !important;
   background-color: #cbd5be !important;
   position: relative !important;
@@ -1105,8 +1234,8 @@
 
 #nc-root [class*="ToggleHandle"] {
   display: block !important;
-  width: 1.3rem !important;
-  height: 1.3rem !important;
+  width: 20px !important;
+  height: 20px !important;
   border-radius: var(--radius-pil) !important;
   background-color: #ffffff !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
@@ -1124,7 +1253,7 @@
 
 #nc-root button[class*="ToggleContainer"][aria-checked="true"] [class*="ToggleHandle"],
 #nc-root [class*="ToggleBackground"][class*="active"] [class*="ToggleHandle"] {
-  transform: translateX(1.3rem) !important;
+  transform: translateX(20px) !important;
 }
 
 /* ── 13. Perbaikan Widget List (`PERSYARATAN` & `ALUR`) ────── */
@@ -1273,7 +1402,8 @@
 
 /* ── 14. Widget Markdown & Visual Editor ───────────────────── */
 
-#nc-root [class*="ToolbarContainer"],
+#nc-root [class*="MarkdownControl"] [class*="ToolbarContainer"],
+#nc-root [class*="MarkdownControl"] [class*="EditorControlBar"],
 #nc-root [class*="EditorControlBar"] {
   background: var(--adm-latar-2) !important;
   border: 1.5px solid var(--adm-garis) !important;
@@ -1283,9 +1413,13 @@
   display: flex !important;
   flex-wrap: wrap !important;
   gap: 0.25rem !important;
+  position: static !important;
+  min-height: auto !important;
+  width: auto !important;
 }
 
-#nc-root [class*="ToolbarContainer"] button,
+#nc-root [class*="MarkdownControl"] [class*="ToolbarContainer"] button,
+#nc-root [class*="MarkdownControl"] [class*="EditorControlBar"] button,
 #nc-root [class*="EditorControlBar"] button {
   min-height: 2rem !important;
   height: 2rem !important;
@@ -1298,15 +1432,16 @@
   cursor: pointer !important;
 }
 
-#nc-root [class*="ToolbarContainer"] button:hover,
+#nc-root [class*="MarkdownControl"] [class*="ToolbarContainer"] button:hover,
+#nc-root [class*="MarkdownControl"] [class*="EditorControlBar"] button:hover,
 #nc-root [class*="EditorControlBar"] button:hover {
   background: #ffffff !important;
   color: var(--adm-hijau-gelap) !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
-#nc-root [class*="ToolbarContainer"] + [class*="VisualEditor"],
-#nc-root [class*="ToolbarContainer"] + textarea,
+#nc-root [class*="MarkdownControl"] [class*="ToolbarContainer"] + [class*="VisualEditor"],
+#nc-root [class*="MarkdownControl"] [class*="ToolbarContainer"] + textarea,
 #nc-root [class*="EditorControlBar"] + div {
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
