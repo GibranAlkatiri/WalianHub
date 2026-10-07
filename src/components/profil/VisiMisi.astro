@@ -16,7 +16,7 @@ interface Props {
 const { visi, misi, programUnggulan, sumber } = Astro.props;
 ---
 
-<section id="visi-misi" class="bg-sage-100 py-12 sm:py-16 lg:py-24">
+<section id="visi-misi" class="overflow-x-clip bg-sage-100 py-12 sm:py-16 lg:py-24">
   <Container>
     <SectionHeading
       overline="Visi dan Misi"
@@ -24,11 +24,11 @@ const { visi, misi, programUnggulan, sumber } = Astro.props;
       description="Kelurahan Walian mengikuti visi dan misi Pemerintah Kota Tomohon."
     />
     <div class="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-12">
-      <div class="rounded-2xl bg-white p-6 shadow-card sm:p-8 lg:self-start">
+      <div data-motion="content" class="rounded-2xl bg-white p-6 shadow-card sm:p-8 lg:self-start">
         <p class="text-sm font-semibold tracking-widest text-forest-600 uppercase">Visi</p>
         <p class="mt-3 text-lg font-semibold text-balance text-ink sm:text-xl">{visi}</p>
       </div>
-      <ol class="space-y-4">
+      <ol data-motion="content" class="space-y-4">
         {
           misi.map((item, i) => (
             <li class="flex gap-4">
@@ -42,10 +42,11 @@ const { visi, misi, programUnggulan, sumber } = Astro.props;
 
     {
       programUnggulan.length > 0 && (
-        <div class="mt-8 rounded-2xl bg-white p-6 shadow-card sm:p-8 lg:mt-12">
+        <div data-motion="content" class="mt-8 rounded-2xl bg-white p-6 shadow-card sm:p-8 lg:mt-12">
           <h3 class="text-sm font-semibold tracking-widest text-forest-600 uppercase">Program unggulan</h3>
           <p class="mt-2 text-ink-muted">{programUnggulan.length} program unggulan Pemerintah Kota Tomohon.</p>
-          <ol id="program-unggulan" data-program-isi class="mt-4 lg:columns-2 lg:gap-10">
+          <div id="program-unggulan" data-program-isi class="overflow-hidden">
+          <ol class="mt-4 lg:columns-2 lg:gap-10">
             {programUnggulan.map((item, i) => (
               <li class="flex break-inside-avoid gap-3 pb-3">
                 <span class="w-7 shrink-0 text-right font-bold text-forest-600 tabular-nums">{i + 1}.</span>
@@ -53,6 +54,7 @@ const { visi, misi, programUnggulan, sumber } = Astro.props;
               </li>
             ))}
           </ol>
+          </div>
           <button
             type="button"
             data-program-tombol
@@ -70,7 +72,7 @@ const { visi, misi, programUnggulan, sumber } = Astro.props;
 
     {
       sumber && (
-        <p class="mt-6 text-sm text-ink-subtle">
+        <p data-motion="content" class="mt-6 text-sm text-ink-subtle">
           Sumber:{' '}
           <a href={sumber} target="_blank" rel="noopener" class="font-semibold text-forest-600 underline-offset-4 hover:underline">
             situs Pemerintah Kota Tomohon<span class="sr-only"> (membuka tab baru)</span>
@@ -82,21 +84,6 @@ const { visi, misi, programUnggulan, sumber } = Astro.props;
 </section>
 
 <script>
-  // Dengan skrip, daftar program unggulan ditutup, lalu tombol "Selengkapnya" dimunculkan.
-  const tombol = document.querySelector<HTMLButtonElement>('[data-program-tombol]');
-  const isi = document.querySelector<HTMLElement>('[data-program-isi]');
-  const label = tombol?.querySelector<HTMLElement>('[data-program-label]');
-
-  if (tombol && isi && label) {
-    isi.hidden = true;
-    tombol.hidden = false;
-    tombol.addEventListener('click', () => {
-      const buka = tombol.getAttribute('aria-expanded') !== 'true';
-      tombol.setAttribute('aria-expanded', String(buka));
-      isi.hidden = !buka;
-      label.textContent = buka ? 'Tutup' : 'Selengkapnya';
-      // Setelah ditutup, tombol tetap terlihat walaupun daftar di atasnya menghilang.
-      if (!buka) tombol.scrollIntoView({ block: 'nearest' });
-    });
-  }
+  import { mulaiPanelProgram } from '../../lib/panel-program';
+  mulaiPanelProgram();
 </script>

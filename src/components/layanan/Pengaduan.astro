@@ -16,14 +16,14 @@ const { whatsapp } = Astro.props;
 const tautanLapor = 'https://www.lapor.go.id';
 ---
 
-<section id="pengaduan" class="bg-white py-12 sm:py-16 lg:py-20">
+<section id="pengaduan" class="overflow-x-clip bg-white py-12 sm:py-16 lg:py-20">
   <Container class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
     <SectionHeading
       overline="Pengaduan"
       title="Ada keluhan atau masukan?"
       description="Sampaikan langsung ke kantor kelurahan lewat WhatsApp, atau lewat LAPOR!, layanan pengaduan resmi pemerintah."
     />
-    <div class="flex flex-wrap gap-3 lg:shrink-0">
+    <div data-motion="content" class="flex flex-wrap gap-3 lg:shrink-0">
       {
         whatsapp && (
           <Button href={tautanWhatsapp(whatsapp, pesanPengaduan)} icon="whatsapp">

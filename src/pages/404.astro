@@ -9,16 +9,16 @@ import { tautanKontak } from '../lib/navigasi';
 
 <BaseLayout title="Halaman sedang disiapkan" description="Halaman yang Anda buka belum tersedia.">
   <Container class="flex min-h-[60vh] flex-col items-center justify-center pb-20 text-center lg:pb-28">
-    <span class="grid size-16 place-items-center rounded-full bg-sage-100 text-forest-600">
+    <span data-motion class="grid size-16 place-items-center rounded-full bg-sage-100 text-forest-600">
       <Icon name="mountain" class="size-8" />
     </span>
     <p class="mt-6 text-sm font-semibold tracking-widest text-forest-600 uppercase">Halaman belum tersedia</p>
-    <h1 class="mt-2 max-w-xl text-3xl leading-tight font-bold text-balance text-ink lg:text-4xl">Halaman ini sedang disiapkan</h1>
-    <p class="mt-4 max-w-md text-ink-muted">
+    <h1 data-motion data-motion-delay="70" class="mt-2 max-w-xl text-3xl leading-tight font-bold text-balance text-ink lg:text-4xl">Halaman ini sedang disiapkan</h1>
+    <p data-motion data-motion-delay="140" class="mt-4 max-w-md text-ink-muted">
       Halaman yang Anda buka belum tersedia atau alamatnya tidak ditemukan. Silakan kembali ke Beranda untuk melihat
       informasi Kelurahan Walian.
     </p>
-    <div class="mt-8 flex flex-wrap justify-center gap-3">
+    <div data-motion data-motion-delay="210" class="mt-8 flex flex-wrap justify-center gap-3">
       <Button href="/" icon="house">Kembali ke Beranda</Button>
       <Button href={tautanKontak} variant="outline">Hubungi Kami</Button>
     </div>

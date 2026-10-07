@@ -18,16 +18,16 @@ const tahun = new Date().getFullYear();
 const bisaDiemail = situs.email?.includes('@');
 ---
 
-<footer class="bg-forest-800 text-sage-200">
+<footer class="overflow-x-clip bg-forest-800 text-sage-200">
   <div class="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-4 lg:px-8 lg:py-16">
-    <div>
+    <div data-motion="content">
       <Logo nama={situs.namaKelurahan} kecamatan={situs.kecamatan} kota={situs.kota} terang />
       <p class="mt-4 text-base">
         {situs.namaKelurahan}, Kecamatan {situs.kecamatan}, Kota {situs.kota}, {situs.provinsi}.
       </p>
     </div>
 
-    <div>
+    <div data-motion="content">
       <h2 class="text-base font-bold text-white">Menu</h2>
       <ul class="mt-4 space-y-2 text-base">
         {
@@ -42,7 +42,7 @@ const bisaDiemail = situs.email?.includes('@');
       </ul>
     </div>
 
-    <div>
+    <div data-motion="content">
       <h2 class="text-base font-bold text-white">Kontak</h2>
       <ul class="mt-4 space-y-3 text-base">
         <li class="flex gap-3">
@@ -74,7 +74,7 @@ const bisaDiemail = situs.email?.includes('@');
       </ul>
     </div>
 
-    <div>
+    <div data-motion="content">
       <h2 class="text-base font-bold text-white">Tautan penting</h2>
       <ul class="mt-4 space-y-2 text-base">
         {

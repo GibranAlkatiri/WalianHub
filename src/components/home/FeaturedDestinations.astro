@@ -8,6 +8,7 @@ import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
 import DestinationCard from '../ui/DestinationCard.astro';
 import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
 
 const destinasi = wisata.pilihan;
 ---
@@ -26,6 +27,8 @@ const destinasi = wisata.pilihan;
     ) : <div data-carousel class="mt-8 lg:mt-10">
       <div
         data-carousel-lintasan
+        id="carousel-destinasi"
+        data-motion-group
         class:list={[
           'relative -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-4 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 md:py-0 lg:gap-6 [&::-webkit-scrollbar]:hidden',
           destinasi.length === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3',
@@ -45,12 +48,21 @@ const destinasi = wisata.pilihan;
           ))
         }
       </div>
-      <div aria-hidden="true" class="mt-2 flex justify-center gap-2 md:hidden">
+      <div data-carousel-kontrol hidden role="group" aria-label="Kontrol destinasi wisata" class="mt-2 flex items-center justify-center gap-1 md:hidden">
+        <button type="button" data-carousel-sebelumnya aria-label="Destinasi sebelumnya" aria-controls="carousel-destinasi" class="grid size-10 place-items-center rounded-full border border-line bg-white text-forest-700 transition-colors hover:bg-sage-200 disabled:cursor-default disabled:opacity-40">
+          <Icon name="arrow-right" class="size-4 rotate-180" />
+        </button>
         {
-          destinasi.map((_, i) => (
-            <span data-carousel-titik class:list={['size-2.5 rounded-full transition-colors', i === 0 ? 'bg-forest-600' : 'bg-line']} />
+          destinasi.map((item, i) => (
+            <button type="button" data-carousel-titik={i} data-aktif={i === 0 ? '' : undefined} aria-label={`Tampilkan destinasi ${i + 1}: ${item.data.nama}`} aria-current={i === 0 ? 'true' : undefined} aria-controls="carousel-destinasi" class="group/titik grid size-10 place-items-center rounded-full">
+              <span class="size-2.5 rounded-full bg-line transition-colors group-data-[aktif]/titik:bg-forest-600"></span>
+            </button>
           ))
         }
+        <button type="button" data-carousel-berikutnya aria-label="Destinasi berikutnya" aria-controls="carousel-destinasi" class="grid size-10 place-items-center rounded-full border border-line bg-white text-forest-700 transition-colors hover:bg-sage-200 disabled:cursor-default disabled:opacity-40">
+          <Icon name="arrow-right" class="size-4" />
+        </button>
+        <span data-carousel-status aria-live="polite" aria-atomic="true" class="sr-only">Destinasi 1 dari {destinasi.length}</span>
       </div>
     </div>}
 
@@ -65,32 +77,6 @@ const destinasi = wisata.pilihan;
 </section>
 
 <script>
-  // Titik penanda carousel di HP: menandai card yang paling dekat ke tengah layar.
-  document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((carousel) => {
-    const lintasan = carousel.querySelector<HTMLElement>('[data-carousel-lintasan]');
-    const titik = carousel.querySelectorAll<HTMLElement>('[data-carousel-titik]');
-    if (!lintasan || titik.length === 0) return;
-
-    const perbarui = () => {
-      const tengah = lintasan.scrollLeft + lintasan.clientWidth / 2;
-      let aktif = 0;
-      let jarakTerdekat = Infinity;
-      Array.from(lintasan.children).forEach((kartu, i) => {
-        const el = kartu as HTMLElement;
-        const jarak = Math.abs(el.offsetLeft + el.offsetWidth / 2 - tengah);
-        if (jarak < jarakTerdekat) {
-          jarakTerdekat = jarak;
-          aktif = i;
-        }
-      });
-      titik.forEach((t, i) => {
-        t.classList.toggle('bg-forest-600', i === aktif);
-        t.classList.toggle('bg-line', i !== aktif);
-      });
-    };
-
-    lintasan.addEventListener('scroll', perbarui, { passive: true });
-    window.addEventListener('resize', perbarui);
-    perbarui();
-  });
+  import { mulaiCarousel } from '../../lib/carousel';
+  document.querySelectorAll<HTMLElement>('[data-carousel]').forEach(mulaiCarousel);
 </script>

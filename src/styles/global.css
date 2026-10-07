@@ -41,29 +41,42 @@
   --shadow-card: 0 8px 24px rgb(31 51 22 / 0.08);
   --shadow-float: 0 12px 32px rgb(31 51 22 / 0.14);
 
-  /* Animasi hero: zoom pelan pada foto dan teks yang muncul bertahap */
-  --animate-hero-zoom: hero-zoom 5s ease-out both;
-  --animate-hero-muncul-1: hero-muncul 0.8s ease-out both;
-  --animate-hero-muncul-2: hero-muncul 0.8s ease-out 150ms both;
+  /* Animasi foto hero. Teks mengetik diatur terpisah di bawah. */
+  --animate-hero-zoom: hero-zoom var(--durasi-zoom, 2.6s) linear both;
+  --animate-status-lampu: status-lampu 2s ease-out infinite;
+
+  /* Tempo interaksi dan lampu status diperlambat 25%, termasuk utilitas default. */
+  --default-transition-duration: 187.5ms;
+  --animate-ping: ping 1.25s cubic-bezier(0, 0, 0.2, 1) infinite;
 
   @keyframes hero-zoom {
     from {
-      transform: scale(1.06);
+      transform: scale(1.03);
     }
     to {
       transform: scale(1);
     }
   }
 
-  @keyframes hero-muncul {
-    from {
-      opacity: 0;
-      transform: translateY(1rem);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  @keyframes status-lampu {
+    from { transform: scale(1); opacity: 0.45; }
+    to { transform: scale(1.65); opacity: 0; }
+  }
+
+}
+
+/* Huruf hanya disembunyikan selama menunggu gilirannya. Setelah selesai,
+   gaya normal mengambil alih; hindari fill forwards pada animasi step-end
+   yang sangat singkat karena pembulatan waktu bisa menahan frame tersembunyi.
+   Tanpa animasi, termasuk reduced motion, teks langsung terlihat seluruhnya. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-huruf {
+    animation: hero-ketik 1ms step-end var(--jeda-huruf, 0ms) backwards;
+  }
+
+  @keyframes hero-ketik {
+    from { visibility: hidden; }
+    to { visibility: visible; }
   }
 }
 
@@ -98,6 +111,113 @@
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
+  }
+}
+
+/* Accordion tetap native: name, anchor, dan keyboard ditangani browser.
+   Browser lama membuka langsung; browser pendukung memuluskan tinggi otomatis. */
+@media (prefers-reduced-motion: no-preference) {
+  /* Hanya elemen di luar layar yang disiapkan, selalu masih terbaca.
+     Titik awal sama dengan animasinya, sehingga tidak ada kilatan saat scroll. */
+  [data-motion-state="menunggu"] {
+    opacity: 0.6;
+  }
+
+  [data-motion-card][data-motion-state="menunggu"] {
+    transform: scale(0.985);
+  }
+
+  /* Pembesaran bertumpu pada sisi kiri agar judul tetap terasa rata kiri. */
+  [data-motion="heading"] {
+    transform-origin: left center;
+  }
+
+  [data-motion="heading"][data-motion-align="center"] {
+    transform-origin: center;
+  }
+
+  /* Posisi awal sama dengan frame pertama animasi judul section. */
+  [data-motion="heading"][data-motion-state="menunggu"] {
+    opacity: 0.2;
+    transform: translateX(-32px) scale(0.94);
+  }
+
+  /* Percobaan isi section: posisi awal selaras dengan frame pertama. */
+  [data-motion="content"][data-motion-state="menunggu"] {
+    opacity: 0.4;
+    transform: translateX(20px);
+  }
+
+  /* Percobaan kartu: posisi menunggu sama dengan frame pertama animasi. */
+  [data-motion="card"][data-motion-state="menunggu"] {
+    opacity: 0.35;
+    transform: translateY(16px) scale(0.96);
+    transition: none;
+  }
+
+  [data-motion="node"][data-motion-state="menunggu"] {
+    opacity: 0.35;
+    transform: translateY(6px) scale(0.98);
+    transition: none;
+  }
+
+  [data-motion-instant] {
+    transition: none !important;
+  }
+
+  [data-motion]:focus-within {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none;
+  }
+
+  @supports selector(::details-content) {
+    [data-layanan]::details-content {
+      opacity: 0;
+      transition: opacity 400ms ease-in-out, content-visibility 400ms allow-discrete;
+    }
+
+    [data-layanan][open]::details-content {
+      opacity: 1;
+    }
+
+    @supports (interpolate-size: allow-keywords) {
+      [data-layanan] {
+        interpolate-size: allow-keywords;
+      }
+
+      [data-layanan]::details-content {
+        block-size: 0;
+        overflow: clip;
+        transition:
+          block-size 450ms cubic-bezier(0.4, 0, 0.2, 1),
+          opacity 350ms ease-in-out,
+          content-visibility 450ms allow-discrete;
+      }
+
+      [data-layanan][open]::details-content {
+        block-size: auto;
+      }
+
+      [data-layanan]:not([open])::details-content {
+        transition-duration: 320ms, 250ms, 320ms;
+      }
+    }
+  }
+}
+
+/* Hanya foto asli yang membesar, pada perangkat dengan kursor. */
+[data-layanan-langsung]::details-content {
+  transition: none !important;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  [data-destinasi] img {
+    transition: transform 1000ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  [data-destinasi]:is(:hover, :focus-within) img:not([src$="/images/default.svg"]) {
+    transform: scale(1.03);
   }
 }
 

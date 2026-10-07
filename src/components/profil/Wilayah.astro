@@ -45,7 +45,7 @@ const nama = (isi: string) => isi.trim() || '[kosong]';
     <SectionHeading overline="Wilayah" title="Wilayah dan penduduk" />
 
     <h3 class="mt-8 text-lg font-bold text-ink">Ringkasan kelurahan</h3>
-    <div class="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
+    <div data-motion-group class="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
       <StatCard ikon="map" label="Lingkungan" angka={lingkungan.length > 0 ? String(lingkungan.length) : null} />
       <StatCard ikon="house" label="Kepala keluarga" angka={formatAngka(total.kepalaKeluarga)} />
       <StatCard ikon="users" label="Jumlah penduduk" angka={formatAngka(total.jumlahPenduduk)} satuan="jiwa" />
@@ -61,7 +61,7 @@ const nama = (isi: string) => isi.trim() || '[kosong]';
           <h3 class="mt-12 text-lg font-bold text-ink lg:mt-16">Data lingkungan</h3>
 
           {/* Mulai 768px: tabel */}
-          <div class="mt-4 hidden overflow-x-auto rounded-2xl bg-white shadow-card md:block">
+          <div data-motion="card" data-motion-card class="mt-4 hidden overflow-x-auto rounded-2xl bg-white shadow-card md:block">
             <table class="w-full text-left">
               <caption class="sr-only">Kepala lingkungan, wakil, jumlah kepala keluarga, jumlah penduduk, dan luas setiap lingkungan</caption>
               <thead class="bg-sage-100 text-sm text-forest-900">
@@ -100,9 +100,9 @@ const nama = (isi: string) => isi.trim() || '[kosong]';
           </div>
 
           {/* HP: satu kartu untuk setiap lingkungan. Total ada di ringkasan kelurahan di atas. */}
-          <ul class="mt-4 grid gap-3 sm:grid-cols-2 sm:gap-4 md:hidden">
+          <ul data-motion-group class="mt-4 grid gap-3 sm:grid-cols-2 sm:gap-4 md:hidden">
             {lingkungan.map((item) => (
-              <li class="rounded-2xl bg-white p-4 shadow-card">
+              <li data-motion="card" data-motion-card class="rounded-2xl bg-white p-4 shadow-card">
                 <h4 class="font-bold text-ink">{item.nama}</h4>
                 <dl class="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
                   <dt class="text-ink-subtle">Kepala</dt>

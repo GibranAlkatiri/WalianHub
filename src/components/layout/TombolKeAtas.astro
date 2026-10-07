@@ -8,7 +8,7 @@ import Icon from '../ui/Icon.astro';
   type="button"
   data-ke-atas
   aria-label="Kembali ke atas"
-  class="invisible fixed right-4 bottom-4 z-40 grid size-12 translate-y-4 place-items-center rounded-full bg-forest-600 text-white opacity-0 shadow-float ring-2 ring-white transition-[opacity,translate,visibility,background-color] duration-300 hover:bg-forest-700 data-tampil:visible data-tampil:translate-y-0 data-tampil:opacity-100 motion-reduce:transition-none sm:right-6 sm:bottom-6"
+  class="invisible fixed right-4 bottom-4 z-40 grid size-12 translate-y-4 place-items-center rounded-full bg-forest-600 text-white opacity-0 shadow-float ring-2 ring-white transition-[opacity,translate,scale,visibility,background-color] duration-375 hover:bg-forest-700 motion-safe:active:scale-[0.96] data-tampil:visible data-tampil:translate-y-0 data-tampil:opacity-100 motion-reduce:transition-none sm:right-6 sm:bottom-6"
 >
   <Icon name="arrow-up" class="size-5" />
 </button>
@@ -17,14 +17,20 @@ import Icon from '../ui/Icon.astro';
   const tombol = document.querySelector<HTMLButtonElement>('[data-ke-atas]');
 
   if (tombol) {
-    const atur = () => tombol.toggleAttribute('data-tampil', window.scrollY > window.innerHeight);
+    const gerakan = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const atur = () => {
+      const tampil = window.scrollY > window.innerHeight - (tombol.hasAttribute('data-tampil') ? 64 : 0);
+      tombol.toggleAttribute('data-tampil', tampil);
+      tombol.disabled = !tampil;
+    };
     atur();
     window.addEventListener('scroll', atur, { passive: true });
+    window.addEventListener('resize', atur);
 
     tombol.addEventListener('click', () => {
       // Gulir ke atas (halus, kecuali pengunjung mematikan animasi), lalu fokus pindah ke tombol pertama yang terlihat
       // di header: hamburger di bawah 1280px, atau logo di layar lebar. Pengguna keyboard melanjutkan dari awal halaman.
-      window.scrollTo({ top: 0 });
+      window.scrollTo({ top: 0, behavior: gerakan.matches ? 'instant' : 'smooth' });
       const awalHeader = Array.from(
         document.querySelectorAll<HTMLElement>('[data-header] [data-menu-tombol], [data-header] [data-logo]'),
       ).find((el) => el.offsetParent !== null);

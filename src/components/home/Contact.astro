@@ -20,7 +20,7 @@ const petaEmbed = `https://www.google.com/maps/embed?origin=mfe&pb=!1m3!2m1!1s${
 const petunjukArah = situs.googleMapsUrl || `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 ---
 
-<section id="kontak" class="bg-white py-12 sm:py-16 lg:py-24">
+<section id="kontak" class="overflow-x-clip bg-white py-12 sm:py-16 lg:py-24">
   <Container class="grid gap-10 lg:grid-cols-2 lg:gap-16">
     <div>
       <SectionHeading
@@ -31,7 +31,7 @@ const petunjukArah = situs.googleMapsUrl || `https://www.google.com/maps/dir/?ap
       <InfoKantor situs={situs} class="mt-8" />
     </div>
 
-    <div class="flex flex-col gap-4">
+    <div data-motion="content" class="flex flex-col gap-4">
       <div class="overflow-hidden rounded-3xl bg-sage-100 shadow-card">
         <iframe
           title="Peta lokasi Kelurahan Walian"

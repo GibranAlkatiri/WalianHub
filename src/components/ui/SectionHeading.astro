@@ -1,18 +1,20 @@
 ---
 // Judul section: overline, judul, dan deskripsi singkat.
 // Rata tengah untuk section berisi card, rata kiri untuk section berisi teks.
+// Pola default: masuk dari kiri dengan pop ringan saat pertama masuk layar.
 interface Props {
   overline?: string;
   title: string;
   description?: string;
   align?: 'left' | 'center';
+  motion?: 'fade' | 'heading';
   class?: string;
 }
 
-const { overline, title, description, align = 'left', class: kelas } = Astro.props;
+const { overline, title, description, align = 'left', motion = 'heading', class: kelas } = Astro.props;
 ---
 
-<div class:list={[align === 'center' ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl', kelas]}>
+<div data-motion={motion === 'heading' ? 'heading' : ''} data-motion-align={align} class:list={[align === 'center' ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl', kelas]}>
   {overline && <p class="text-sm font-semibold tracking-widest text-forest-600 uppercase">{overline}</p>}
   <h2 class="mt-2 text-2xl leading-tight font-bold text-balance text-ink sm:text-3xl">{title}</h2>
   {description && <p class="mt-3 text-ink-muted">{description}</p>}
