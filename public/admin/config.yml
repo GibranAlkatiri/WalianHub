@@ -107,6 +107,8 @@ collections:
       - label: Persyaratan
         name: persyaratan
         widget: list
+        summary: "{{fields.syarat}}"
+        collapsed: false
         field:
           label: Syarat
           name: syarat
@@ -117,6 +119,8 @@ collections:
       - label: Alur Pelayanan
         name: alur
         widget: list
+        summary: "{{fields.langkah}}"
+        collapsed: false
         field:
           label: Langkah
           name: langkah
@@ -257,6 +261,7 @@ collections:
             name: daftar
             widget: list
             summary: "{{fields.judul}} — {{fields.tanggal}}"
+            collapsed: false
             required: false
             hint: "Pengumuman untuk warga. Yang terbaru di atas."
             fields:
@@ -392,6 +397,7 @@ collections:
                 name: tanggalLibur
                 widget: list
                 summary: "{{fields.tanggal}} — {{fields.keterangan}}"
+                collapsed: false
                 required: false
                 hint: "Hari libur khusus (tanggal merah). Tambah satu baris per hari libur."
                 fields:
@@ -412,6 +418,7 @@ collections:
             name: mediaSosial
             widget: list
             summary: "{{fields.platform}}: {{fields.url}}"
+            collapsed: false
             required: false
             hint: "Akun resmi kelurahan. Kosongkan jika belum punya."
             fields:
@@ -429,6 +436,7 @@ collections:
             name: tautanPenting
             widget: list
             summary: "{{fields.label}}: {{fields.url}}"
+            collapsed: false
             required: false
             hint: "Link ke website pemerintah lain, tampil di bagian bawah website."
             fields:
@@ -457,6 +465,7 @@ collections:
                 name: foto
                 widget: list
                 summary: "{{fields.keterangan}}"
+                collapsed: false
                 max: 5
                 required: false
                 hint: "Maksimal 5 foto, berganti otomatis. Urutan di sini = urutan tampil. Tanpa foto: tampil gambar bawaan."
@@ -514,6 +523,8 @@ collections:
               - label: Nama Pejabat
                 name: nama
                 widget: list
+                summary: "{{fields.nama}}"
+                collapsed: false
                 field:
                   label: Nama
                   name: nama
@@ -577,6 +588,8 @@ collections:
           - label: Misi
             name: misi
             widget: list
+            summary: "{{fields.misi}}"
+            collapsed: false
             field:
               label: Misi
               name: misi
@@ -587,6 +600,8 @@ collections:
           - label: Program Unggulan
             name: programUnggulan
             widget: list
+            summary: "{{fields.program}}"
+            collapsed: false
             field:
               label: Program
               name: program

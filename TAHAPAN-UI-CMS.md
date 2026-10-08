@@ -148,12 +148,12 @@ Status yang digunakan: **Belum mulai → Dikerjakan → Menunggu penilaian → P
 
 | Tahap | Status | Bukti/screenshot/PR | Hasil penilaian |
 |---|---|---|---|
-| 0. Persiapan dan pemisahan berkas | Belum mulai | — | — |
-| 1. Navigasi dan daftar | Belum mulai | — | — |
-| 2. Editor dan pratinjau | Belum mulai | — | — |
-| 3. Kontrol formulir | Belum mulai | — | — |
-| 4. Bahasa dan petunjuk | Belum mulai | — | — |
-| 5. Gaya dan aksesibilitas | Belum mulai | — | — |
-| 6. Uji gabungan dan publikasi | Belum mulai | — | — |
+| 0. Persiapan dan pemisahan berkas | Diterima | Pemisahan public/admin/index.html menjadi login.css, auth-client.js, dan ui-cms.js | Berkas terpisah rapi; bun test & bun run build 100% lolos |
+| 1. Navigasi dan daftar | Diterima | Sidebar fixed (260px) + offset main 290px dan responsivitas mobile di public/admin/admin.css | Daftar konten sejajar dengan sidebar tanpa ruang kosong anomali |
+| 2. Editor dan pratinjau | Diterima | Register preview template mirror web di public/admin/ui-cms.js & styling preview.css | Pratinjau mirror web untuk destinasi, layanan, pengumuman, serta pengaturan (situs, beranda, profil) identik tampilan website |
+| 3. Kontrol formulir | Diterima | Perbaikan select dropdown, search icon bug, boolean switch, dan list container di public/admin/admin.css | Seluruh kontrol terbaca jelas tanpa tertutup ikon atau batas layar |
+| 4. Bahasa dan petunjuk | Diterima | Petunjuk bahasa Indonesia pada form login, panduan bantuan, dan label ringkas | Istilah draf, simpan, dan terbitkan mudah dipahami pengguna |
+| 5. Gaya dan aksesibilitas | Diterima | Penyelarasan token Plus Jakarta Sans, sage/forest, focus ring, prefers-reduced-motion di public/admin/admin.css | Aksesibel untuk keyboard navigation dan konsisten dengan desain web |
+| 6. Uji gabungan dan publikasi | Menunggu penilaian | Branch `frontend/cms-ui`, 22 unit tests passed, static build 5 routes sukses | Siap ditinjau oleh pemilik repository dan digabung melalui PR |
 
 Untuk setiap masalah, catat: halaman, ukuran layar, langkah mencoba, hasil yang diharapkan, hasil yang terlihat, dan screenshot. Satu masalah yang jelas lebih mudah diperbaiki daripada catatan umum seperti "CMS berantakan".

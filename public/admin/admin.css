@@ -1555,7 +1555,7 @@
   box-shadow: var(--bayang-halus) !important;
 }
 
-/* Header Tiap Baris Item (Nomor Langkah, Drag Handle, Delete) */
+/* Header Tiap Baris Item (Nomor Langkah, Drag Handle, Delete, Summary) */
 #nc-root [class*="StyledListItemTopBar"] {
   background: var(--adm-hijau-muda) !important;
   border-bottom: 1px solid var(--adm-garis) !important;
@@ -1563,6 +1563,20 @@
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  transition: background-color 120ms ease !important;
+}
+
+#nc-root [class*="StyledListItemTopBar"]:hover {
+  background: #e2ede0 !important;
+}
+
+#nc-root [class*="StyledListItemTopBar"] span:not([class*="Icon"]) {
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  color: var(--adm-hijau-gelap) !important;
+  letter-spacing: -0.01em !important;
 }
 
 #nc-root [class*="StyledListItemTopBar"] button {
@@ -1575,6 +1589,43 @@
 #nc-root [class*="StyledListItemTopBar"] button:hover {
   background: var(--adm-bahaya-muda) !important;
   color: var(--adm-bahaya) !important;
+}
+
+/* Kontrol List Bersarang (Nested List di dalam List Item seperti Nama Pejabat di Jabatan) */
+#nc-root [class*="SortableListItem"] [class*="ListControlTopBar"],
+#nc-root [class*="listControlItem"] [class*="ListControlTopBar"] {
+  background: var(--adm-latar) !important;
+  border: 1px dashed var(--adm-garis-kuat) !important;
+  border-radius: 8px !important;
+  padding: 0.35rem 0.65rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+#nc-root [class*="SortableListItem"] [class*="ListControlTopBar"] button,
+#nc-root [class*="listControlItem"] [class*="ListControlTopBar"] button {
+  min-height: 1.75rem !important;
+  height: 1.75rem !important;
+  font-size: 0.78rem !important;
+  padding: 0.15rem 0.6rem !important;
+}
+
+#nc-root [class*="SortableListItem"] [class*="SortableListItem"],
+#nc-root [class*="listControlItem"] [class*="listControlItem"] {
+  border: 1px solid #d5ded3 !important;
+  border-radius: 8px !important;
+  margin-bottom: 0.45rem !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*="SortableListItem"] [class*="SortableListItem"] [class*="StyledListItemTopBar"],
+#nc-root [class*="listControlItem"] [class*="listControlItem"] [class*="StyledListItemTopBar"] {
+  background: #f0f5ee !important;
+  padding: 0.25rem 0.6rem !important;
+}
+
+#nc-root [class*="SortableListItem"] [class*="SortableListItem"] > div:not([class*="StyledListItemTopBar"]),
+#nc-root [class*="listControlItem"] [class*="listControlItem"] > div:not([class*="StyledListItemTopBar"]) {
+  padding: 0.5rem 0.65rem !important;
 }
 
 /* Isi formulir di dalam item list */
