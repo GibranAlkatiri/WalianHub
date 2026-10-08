@@ -34,23 +34,41 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Wadah konten pratinjau yang proporsional */
+/* Wadah konten pratinjau yang proporsional & rapi seperti kartu website */
 body > div,
 .nc-preview-content {
   max-width: 760px;
   margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid var(--color-line);
+  border-radius: 20px;
+  padding: 2.25rem 2.5rem;
+  box-shadow: 0 4px 24px rgba(25, 36, 20, 0.05);
 }
 
-/* Tipografi judul */
+/* Tipografi judul utama (elemen pertama di pratinjau Decap CMS) */
+body > div > div:first-child,
+.nc-preview-content > div:first-child,
 h1 {
-  font-size: 1.85rem;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  line-height: 1.25;
-  color: var(--color-ink);
-  margin: 0 0 1rem 0;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid var(--color-sage-100);
+  font-size: 1.85rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.025em !important;
+  line-height: 1.25 !important;
+  color: var(--color-ink) !important;
+  margin: 0 0 1rem 0 !important;
+  padding-bottom: 0.75rem !important;
+  border-bottom: 2.5px solid var(--color-sage-100) !important;
+  display: block !important;
+}
+
+/* Ringkasan / Deskripsi pengantar (elemen kedua di pratinjau Decap CMS) */
+body > div > div:nth-child(2),
+.nc-preview-content > div:nth-child(2) {
+  font-size: 1.05rem !important;
+  color: var(--color-ink-muted) !important;
+  line-height: 1.65 !important;
+  margin-bottom: 1.5rem !important;
+  display: block !important;
 }
 
 h2 {

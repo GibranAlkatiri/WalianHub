@@ -284,29 +284,39 @@
   width: 100% !important;
 }
 
-#nc-root > div > div:has(aside) {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 1.75rem !important;
-  padding: 1.75rem 1.5rem 4rem !important;
-  min-height: calc(100vh - 4rem) !important;
+/* Wadah halaman koleksi yang membungkus aside & main */
+#nc-root div:has(> aside),
+#nc-root div:has(> main),
+#nc-root [class*="CollectionContainer"],
+#nc-root > div > div {
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+  padding: 1.5rem 1.5rem 4rem !important;
+  box-sizing: border-box !important;
 }
 
 /* ── 4. Sidebar Navigasi ───────────────────────────────────── */
 
 #nc-root aside {
-  flex: 0 0 260px !important;
   width: 260px !important;
-  position: sticky !important;
-  top: 5.5rem !important;
+  min-width: 260px !important;
+  max-width: 260px !important;
   max-height: calc(100vh - 7rem) !important;
-  overflow: visible !important;
+  overflow-y: auto !important;
   background: var(--adm-sidebar) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 18px !important;
   box-shadow: 0 10px 30px rgba(25, 36, 20, 0.18) !important;
   padding: 1.25rem 0.85rem !important;
   color: #ffffff !important;
+  z-index: 20 !important;
+}
+
+@media (min-width: 800px) {
+  #nc-root aside {
+    position: fixed !important;
+    top: 5.5rem !important;
+  }
 }
 
 #nc-root aside h2,
@@ -422,30 +432,53 @@
 
 /* ── 5. Area Konten Utama & Header Koleksi ─────────────────── */
 
-#nc-root main {
+#nc-root main,
+#nc-root [class*="CollectionMain"] {
   flex: 1 1 auto !important;
   min-width: 0 !important;
+  max-width: 1040px !important;
+  width: 100% !important;
   background: transparent !important;
+  box-sizing: border-box !important;
 }
 
-/* Kepala Koleksi: Grid 2-kolom kokoh (Mencegah tombol New melompat ke tengah) */
-#nc-root main > div:first-child {
+@media (min-width: 800px) {
+  #nc-root main,
+  #nc-root [class*="CollectionMain"] {
+    padding-left: 290px !important; /* Ruang lega dari sidebar fixed (260px + 30px) */
+  }
+}
+
+/* Kepala Koleksi: Lebar Penuh, Kartu Bersih dengan Aksen Hijau */
+#nc-root main > div:first-child,
+#nc-root main [class*="CollectionTopContainer"] {
+  width: 100% !important;
+  max-width: 100% !important;
   background: var(--adm-kertas) !important;
   border: 1px solid var(--adm-garis) !important;
+  border-left: 4px solid var(--adm-hijau) !important;
   border-radius: var(--radius-kartu) !important;
   box-shadow: var(--bayang-kartu) !important;
-  padding: 1.4rem 1.75rem !important;
-  display: grid !important;
-  grid-template-columns: 1fr auto !important;
-  grid-template-rows: auto auto !important;
-  align-items: center !important;
-  gap: 0.35rem 1.5rem !important;
-  margin-bottom: 1.25rem !important;
+  padding: 1.35rem 1.75rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.5rem !important;
+  margin-bottom: 1rem !important;
+  box-sizing: border-box !important;
 }
 
-#nc-root main > div:first-child h1 {
-  grid-column: 1 / 2 !important;
-  grid-row: 1 / 2 !important;
+/* Baris atas header: Judul di kiri, Tombol Tambah di kanan */
+#nc-root main > div:first-child > div:first-child,
+#nc-root main [class*="CollectionTopRow"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  width: 100% !important;
+}
+
+#nc-root main > div:first-child h1,
+#nc-root main [class*="CollectionTopHeading"] {
   margin: 0 !important;
   font-size: 1.45rem !important;
   font-weight: 800 !important;
@@ -453,27 +486,24 @@
   color: var(--adm-teks) !important;
 }
 
-#nc-root main > div:first-child p {
-  grid-column: 1 / 2 !important;
-  grid-row: 2 / 3 !important;
+#nc-root main > div:first-child p,
+#nc-root main [class*="CollectionTopDescription"] {
   margin: 0 !important;
-  color: var(--adm-teks-lunak) !important;
-  font-size: 0.92rem !important;
+  color: var(--adm-teks-samar) !important;
+  font-size: 0.88rem !important;
   line-height: 1.5 !important;
-  max-width: 70ch !important;
+  max-width: 75ch !important;
 }
 
-/* Tombol "+ Layanan" / "Entri Baru" selalu terkunci rapi di kanan atas */
-#nc-root main > div:first-child a {
-  grid-column: 2 / 3 !important;
-  grid-row: 1 / 3 !important;
-  align-self: center !important;
-  justify-self: end !important;
+/* Tombol "+ Layanan" / "Entri Baru" di kanan atas */
+#nc-root main > div:first-child a,
+#nc-root main [class*="CollectionTopNewButton"] {
   display: inline-flex !important;
   align-items: center !important;
+  justify-content: center !important;
   gap: 0.45rem !important;
   min-height: 2.75rem !important;
-  padding: 0.5rem 1.35rem !important;
+  padding: 0.5rem 1.4rem !important;
   border-radius: var(--radius-pil) !important;
   background-color: var(--adm-hijau) !important;
   color: #ffffff !important;
@@ -485,29 +515,40 @@
   transition: all 140ms ease !important;
 }
 
-#nc-root main > div:first-child a:hover {
+#nc-root main > div:first-child a:hover,
+#nc-root main [class*="CollectionTopNewButton"]:hover {
   background-color: var(--adm-hijau-gelap) !important;
   box-shadow: 0 4px 12px rgba(58, 99, 39, 0.35) !important;
   transform: translateY(-1px) !important;
 }
 
 /* Bilah alat daftar (Urutkan / View mode) */
+#nc-root main > div:nth-child(2),
+#nc-root main [class*="CollectionControlsContainer"],
 #nc-root main > div:not(:first-child):has(button[aria-label]),
 #nc-root main > div:not(:first-child):has(select) {
+  width: 100% !important;
+  max-width: 100% !important;
   display: flex !important;
   align-items: center !important;
-  gap: 0.75rem !important;
-  margin-bottom: 1rem !important;
+  justify-content: flex-end !important;
+  gap: 0.5rem !important;
+  margin-bottom: 0.85rem !important;
+  padding: 0 0.25rem !important;
+  color: var(--adm-teks-samar) !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  box-sizing: border-box !important;
 }
 
 #nc-root main button:has(> svg:only-child) {
-  min-height: 2.35rem !important;
-  min-width: 2.35rem !important;
-  padding: 0.3rem !important;
-  border-radius: 10px !important;
-  background: #ffffff !important;
+  min-height: 2.15rem !important;
+  min-width: 2.15rem !important;
+  padding: 0.25rem !important;
+  border-radius: 8px !important;
+  background: var(--adm-latar-2) !important;
   border: 1px solid var(--adm-garis) !important;
-  color: var(--adm-teks-lunak) !important;
+  color: var(--adm-teks-samar) !important;
   cursor: pointer !important;
   transition: all 120ms ease !important;
 }
@@ -520,206 +561,557 @@
 
 /* ── 6. Daftar Entri Koleksi (List View & Grid View) ───────── */
 
-#nc-root main section {
-  background-color: var(--adm-kertas) !important;
-  border: 1px solid var(--adm-garis) !important;
-  border-radius: var(--radius-kartu) !important;
-  box-shadow: var(--bayang-kartu) !important;
-  padding: 1.25rem 1.5rem !important;
-  margin-top: 1rem !important;
+/* Wadah List Entri (Decap CardsGrid) */
+#nc-root main ul,
+#nc-root main ul[class*="CardsGrid"],
+#nc-root main section ul {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.65rem !important;
+  box-sizing: border-box !important;
 }
 
+/* Setiap Baris Kartu Entri: Lebar Penuh, Rapi, Jelas */
+#nc-root main ul > li,
+#nc-root main li[class*="ListCard"],
+#nc-root main section ul > li {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  background: #ffffff !important;
+  border: 1px solid var(--adm-garis) !important;
+  border-left: 3px solid transparent !important;
+  border-radius: 12px !important;
+  box-shadow: var(--bayang-halus) !important;
+  overflow: hidden !important;
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-sizing: border-box !important;
+}
+
+#nc-root main ul > li:hover,
+#nc-root main li[class*="ListCard"]:hover,
+#nc-root main section ul > li:hover {
+  background: #fdfdfa !important;
+  border-color: var(--adm-garis-kuat) !important;
+  border-left-color: var(--adm-hijau) !important;
+  border-left-width: 5px !important;
+  box-shadow: 0 4px 14px rgba(25, 36, 20, 0.08) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Link di dalam Kartu Entri */
+#nc-root main ul > li > a,
+#nc-root main li[class*="ListCard"] > a,
+#nc-root main section ul > li > a {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 1.1rem 1.4rem !important;
+  color: var(--adm-teks) !important;
+  text-decoration: none !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  gap: 1.25rem !important;
+  min-height: 3.5rem !important;
+}
+
+/* Judul & Ringkasan Entri di dalam h2 */
+#nc-root main ul > li h2,
+#nc-root main li[class*="ListCard"] h2,
+#nc-root main section ul > li h2 {
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  color: var(--adm-teks) !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex: 1 1 auto !important;
+  gap: 0.75rem !important;
+}
+
+/* Ikon Chevron di Ujung Kanan Baris */
+#nc-root main ul > li > a::after,
+#nc-root main li[class*="ListCard"] > a::after,
+#nc-root main section ul > li > a::after {
+  content: "›" !important;
+  flex: 0 0 auto !important;
+  font-size: 1.5rem !important;
+  line-height: 1 !important;
+  font-weight: 300 !important;
+  color: var(--adm-teks-samar) !important;
+  opacity: 0.4 !important;
+  transition: all 160ms ease !important;
+  transform: translateX(0) !important;
+}
+
+#nc-root main ul > li:hover > a::after,
+#nc-root main li[class*="ListCard"]:hover > a::after,
+#nc-root main section ul > li:hover > a::after {
+  opacity: 1 !important;
+  color: var(--adm-hijau) !important;
+  transform: translateX(4px) !important;
+}
+
+/* Badge Status (draft / pending_review / ready) */
+#nc-root main ul > li span,
+#nc-root main li[class*="ListCard"] span,
+#nc-root main section ul > li span {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0.18rem 0.6rem !important;
+  border-radius: var(--radius-pil) !important;
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  background: var(--adm-hijau-muda) !important;
+  color: var(--adm-hijau-gelap) !important;
+  border: 1px solid var(--adm-garis) !important;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+}
+
+/* Heading bagian untuk pemisah status (drafts/terbit) bila ada */
+#nc-root main [class*="SectionSeparator"],
 #nc-root main section > p,
 #nc-root main section > h2,
 #nc-root main section > h3 {
-  margin: 0 0 1rem 0 !important;
-  font-size: 0.76rem !important;
+  margin: 1.25rem 0 0.5rem !important;
+  padding: 0 !important;
+  font-size: 0.75rem !important;
   font-weight: 800 !important;
   letter-spacing: 0.08em !important;
   text-transform: uppercase !important;
   color: var(--adm-teks-samar) !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.5rem !important;
-}
-
-#nc-root main section > p::after,
-#nc-root main section > h2::after,
-#nc-root main section > h3::after {
-  content: "" !important;
-  flex: 1 !important;
-  height: 1px !important;
-  background: var(--adm-garis-lunak) !important;
-}
-
-/* Wadah List Entri Koleksi (Khusus main section entri, BUKAN form editor) */
-#nc-root main section > ul:has(> li > a) {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 0.5rem !important;
-  list-style: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* Setiap Item Entri: Kartu Baris Ramping & Rapi */
-#nc-root main section > ul:has(> li > a) > li {
-  background: #ffffff !important;
-  border: 1px solid var(--adm-garis) !important;
-  border-radius: 10px !important;
-  box-shadow: var(--bayang-halus) !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  transition: all 150ms ease !important;
-}
-
-#nc-root main section > ul:has(> li > a) > li:hover {
-  border-color: var(--adm-garis-kuat) !important;
-  box-shadow: var(--bayang-angkat) !important;
-}
-
-#nc-root main section > ul:has(> li > a) > li > a {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  text-align: center !important;
-  gap: 0.4rem !important;
-  padding: 0.85rem 1rem !important;
-  color: var(--adm-teks) !important;
-  text-decoration: none !important;
-}
-
-#nc-root main section > ul:has(> li > a) > li > a > div {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  gap: 0.15rem !important;
-  min-width: 0 !important;
-}
-
-#nc-root main section > ul:has(> li > a) > li h2 {
-  font-size: 0.95rem !important;
-  font-weight: 700 !important;
-  color: var(--adm-teks) !important;
-  margin: 0 !important;
-  line-height: 1.35 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-#nc-root main section > ul:has(> li > a) > li p {
-  font-size: 0.82rem !important;
-  color: var(--adm-teks-samar) !important;
-  margin: 0 !important;
-  line-height: 1.4 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-/* Badge status draf/terbit di kartu entri */
-#nc-root main section > ul:has(> li > a) > li span[class*="badge"],
-#nc-root main section > ul:has(> li > a) > li span:only-child {
-  display: inline-flex !important;
-  align-items: center !important;
-  padding: 0.2rem 0.7rem !important;
-  border-radius: var(--radius-pil) !important;
-  font-size: 0.72rem !important;
-  font-weight: 700 !important;
-  background: var(--adm-hijau-muda) !important;
-  color: var(--adm-hijau-gelap) !important;
-  border: 1px solid var(--adm-garis) !important;
-  white-space: nowrap !important;
+  background: transparent !important;
+  border: none !important;
 }
 
 /* ── 7. Editor: Toolbar Atas & Tombol Tindakan ──────────────── */
 
-#nc-root div:has(> a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"])),
-#nc-root div[class*="ToolbarContainer"] {
+/* ── 7. Editor: Toolbar Atas & Tombol Tindakan ──────────────── */
+
+/* Wadah Toolbar Editor Utama: Lebar Penuh (100%), Melekat Rapi di Atas */
+#nc-root [class*="ToolbarContainer"],
+#nc-root div[class*="EditorContainer"] > div:first-child,
+#nc-root [class*="EditorToolbar"] {
   position: sticky !important;
-  top: 4rem !important;
-  z-index: 30 !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  z-index: 40 !important;
+  background: #ffffff !important;
   border-bottom: 1px solid var(--adm-garis) !important;
-  box-shadow: 0 1px 3px rgba(25, 36, 20, 0.04) !important;
-  padding: 0.65rem 1.5rem !important;
+  box-shadow: 0 1px 4px rgba(25, 36, 20, 0.05) !important;
+  padding: 0 1.5rem !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 1rem !important;
-  min-height: 3.8rem !important;
+  height: 4.5rem !important;
+  min-height: 4.5rem !important;
   margin: 0 !important;
+  box-sizing: border-box !important;
 }
 
-/* Tombol kembali ke koleksi */
-#nc-root div:has(> a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"])) > a:first-child,
-#nc-root a[class*="ToolbarSectionBackLink"] {
+/* 7.1 Bagian Kiri: Tombol Kembali, Judul Penulisan & Status Simpan */
+#nc-root [class*="ToolbarSectionBackLink"],
+#nc-root [class*="ToolbarContainer"] a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"]) {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 0.5rem !important;
-  padding: 0.45rem 0.9rem !important;
-  border-radius: 10px !important;
-  color: var(--adm-teks) !important;
-  font-weight: 700 !important;
-  font-size: 0.92rem !important;
+  gap: 0.85rem !important;
   text-decoration: none !important;
+  color: inherit !important;
+  width: auto !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0.4rem 0.85rem 0.4rem 0.4rem !important;
+  border-radius: var(--radius-pil) !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+  transition: all 140ms ease !important;
+  cursor: pointer !important;
+}
+
+#nc-root [class*="ToolbarSectionBackLink"]:hover,
+#nc-root [class*="ToolbarContainer"] a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"]):hover {
+  background: var(--adm-latar-2) !important;
+  border-color: var(--adm-garis) !important;
+}
+
+/* Lingkaran Ikon Panah Kembali (<) */
+#nc-root [class*="ToolbarSectionBackLink"] [class*="BackArrow"],
+#nc-root [class*="BackArrow"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  min-width: 2.25rem !important;
+  border-radius: var(--radius-pil) !important;
+  color: var(--adm-teks) !important;
+  font-weight: 800 !important;
+  font-size: 1.15rem !important;
   background: var(--adm-latar) !important;
   border: 1px solid var(--adm-garis) !important;
+  margin: 0 !important;
   transition: all 120ms ease !important;
 }
 
-#nc-root div:has(> a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"])) > a:first-child:hover,
-#nc-root a[class*="ToolbarSectionBackLink"]:hover {
+#nc-root [class*="ToolbarSectionBackLink"]:hover [class*="BackArrow"] {
+  background: var(--adm-hijau-muda) !important;
+  border-color: var(--adm-garis-kuat) !important;
+  color: var(--adm-hijau-gelap) !important;
+  transform: translateX(-2px) !important;
+}
+
+/* Wadah teks penulisan di dalam link kembali */
+#nc-root [class*="ToolbarSectionBackLink"] > div:not([class*="BackArrow"]) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 0.15rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Judul status penulisan: "Writing in Layanan Surat collection" */
+#nc-root [class*="BackCollection"],
+#nc-root [class*="ToolbarContainer"] h1,
+#nc-root [class*="ToolbarContainer"] [class*="ToolbarHeading"] {
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  color: var(--adm-teks-lunak) !important;
+  margin: 0 !important;
+  line-height: 1.25 !important;
+  white-space: nowrap !important;
+}
+
+#nc-root [class*="BackCollection"] strong,
+#nc-root [class*="BackCollection"] b {
+  font-weight: 800 !important;
+  color: var(--adm-teks) !important;
+}
+
+/* Badge status simpan: CHANGES SAVED / UNSAVED */
+#nc-root [class*="BackStatus"],
+#nc-root [class*="ToolbarContainer"] span[class*="Status"],
+#nc-root [class*="ToolbarContainer"] span[class*="status"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0.15rem 0.55rem !important;
+  border-radius: var(--radius-pil) !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+#nc-root [class*="BackStatusUnchanged"] {
+  background: var(--adm-hijau-muda) !important;
+  color: var(--adm-hijau-gelap) !important;
+  border: 1px solid var(--adm-garis) !important;
+}
+
+#nc-root [class*="BackStatusChanged"] {
+  background: var(--adm-bahaya-muda) !important;
+  color: var(--adm-bahaya) !important;
+  border: 1px solid #f0b8b1 !important;
+}
+
+/* 7.2 Bagian Tengah & Utama (ToolbarSectionMain) */
+#nc-root [class*="ToolbarSectionMain"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex: 1 1 auto !important;
+  padding: 0 1.25rem !important;
+  gap: 1rem !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  min-width: 0 !important;
+}
+
+#nc-root [class*="ToolbarSubSectionFirst"] {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+  flex-wrap: nowrap !important;
+}
+
+#nc-root [class*="ToolbarSubSectionLast"] {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  justify-content: flex-end !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Tombol Save (Simpan) */
+#nc-root [class*="SaveButton"],
+#nc-root [class*="ToolbarContainer"] button[class*="Save"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 2.35rem !important;
+  height: 2.35rem !important;
+  padding: 0.4rem 1.15rem !important;
+  border-radius: var(--radius-pil) !important;
+  font-weight: 700 !important;
+  font-size: 0.86rem !important;
+  background: var(--adm-latar-2) !important;
+  color: var(--adm-teks) !important;
+  border: 1px solid var(--adm-garis) !important;
+  cursor: pointer !important;
+  transition: all 120ms ease !important;
+  white-space: nowrap !important;
+}
+
+#nc-root [class*="SaveButton"]:hover:not(:disabled),
+#nc-root [class*="ToolbarContainer"] button[class*="Save"]:hover:not(:disabled) {
   background: var(--adm-hijau-muda) !important;
   border-color: var(--adm-garis-kuat) !important;
   color: var(--adm-hijau-gelap) !important;
 }
 
-/* Tombol-tombol di toolbar editor (Simpan, Terbitkan, Hapus) */
-#nc-root div:has(> a[href*="/collections/"]:not([href*="/entries"]):not([href*="/new"])) button {
-  min-height: 2.5rem !important;
-  padding: 0.4rem 1.15rem !important;
-  border-radius: var(--radius-pil) !important;
-  font-weight: 700 !important;
-  font-size: 0.88rem !important;
-  cursor: pointer !important;
+#nc-root [class*="SaveButton"]:disabled,
+#nc-root [class*="ToolbarContainer"] button[class*="Save"]:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
 }
 
-/* ── 8. SplitPane Editor (Pane1 & Pane2) Tanpa Celah Kosong ── */
+/* Tombol Status Alur Kerja (STATUS: READY / DRAFT / IN REVIEW) */
+#nc-root [class*="StatusButton"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 2.35rem !important;
+  height: 2.35rem !important;
+  padding: 0.35rem 0.95rem !important;
+  border-radius: var(--radius-pil) !important;
+  font-weight: 700 !important;
+  font-size: 0.76rem !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  background: #eaf3de !important;
+  color: var(--adm-hijau-gelap) !important;
+  border: 1px solid var(--adm-garis) !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: all 120ms ease !important;
+}
 
+#nc-root [class*="StatusButton"]:hover {
+  background: #deeed0 !important;
+  border-color: var(--adm-garis-kuat) !important;
+}
+
+/* Tombol Publish / Terbitkan */
+#nc-root [class*="PublishButton"],
+#nc-root [class*="PublishedButton"],
+#nc-root [class*="publishedButton"],
+#nc-root [class*="ToolbarContainer"] button[class*="Publish"],
+#nc-root [class*="ToolbarContainer"] [class*="DropdownButton"]:has(> [class*="Publish"]),
+#nc-root [class*="ToolbarContainer"] [class*="DropdownButton"]:not([class*="Delete"]) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 2.35rem !important;
+  height: 2.35rem !important;
+  padding: 0.4rem 1.25rem !important;
+  border-radius: var(--radius-pil) !important;
+  font-weight: 700 !important;
+  font-size: 0.86rem !important;
+  background: var(--adm-hijau) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: 0 2px 8px rgba(58, 99, 39, 0.22) !important;
+  cursor: pointer !important;
+  transition: all 120ms ease !important;
+  white-space: nowrap !important;
+}
+
+#nc-root [class*="PublishButton"]:hover,
+#nc-root [class*="PublishedButton"]:hover,
+#nc-root [class*="publishedButton"]:hover,
+#nc-root [class*="ToolbarContainer"] button[class*="Publish"]:hover,
+#nc-root [class*="ToolbarContainer"] [class*="DropdownButton"]:hover {
+  background: var(--adm-hijau-gelap) !important;
+  box-shadow: 0 4px 12px rgba(58, 99, 39, 0.32) !important;
+}
+
+/* Tombol Hapus Entri (Delete) */
+#nc-root [class*="DeleteButton"],
+#nc-root [class*="ToolbarContainer"] button[class*="Delete"],
+#nc-root [class*="ToolbarContainer"] button[class*="delete"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 2.35rem !important;
+  height: 2.35rem !important;
+  padding: 0.4rem 0.95rem !important;
+  border-radius: var(--radius-pil) !important;
+  font-weight: 600 !important;
+  font-size: 0.82rem !important;
+  background: transparent !important;
+  color: var(--adm-bahaya) !important;
+  border: 1px solid transparent !important;
+  cursor: pointer !important;
+  transition: all 120ms ease !important;
+  white-space: nowrap !important;
+}
+
+#nc-root [class*="DeleteButton"]:hover,
+#nc-root [class*="ToolbarContainer"] button[class*="Delete"]:hover,
+#nc-root [class*="ToolbarContainer"] button[class*="delete"]:hover {
+  background: var(--adm-bahaya-muda) !important;
+  border-color: #f0b8b1 !important;
+}
+
+/* Tombol / Tautan Pratinjau (Check for Preview) */
+#nc-root [class*="PreviewButtonContainer"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  color: var(--adm-teks-lunak) !important;
+}
+
+#nc-root [class*="PreviewButtonContainer"] a,
+#nc-root [class*="PreviewButtonContainer"] button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  padding: 0.35rem 0.85rem !important;
+  border-radius: var(--radius-pil) !important;
+  background: var(--adm-latar-2) !important;
+  border: 1px solid var(--adm-garis) !important;
+  color: var(--adm-teks) !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  transition: all 120ms ease !important;
+}
+
+#nc-root [class*="PreviewButtonContainer"] a:hover,
+#nc-root [class*="PreviewButtonContainer"] button:hover {
+  background: var(--adm-hijau-muda) !important;
+  color: var(--adm-hijau-gelap) !important;
+  border-color: var(--adm-garis-kuat) !important;
+}
+
+/* 7.3 Bagian Kanan Metadata (Situs Web & Avatar Pengguna) */
+#nc-root [class*="ToolbarSectionMeta"] {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.85rem !important;
+  padding-left: 1.25rem !important;
+  border-left: 1px solid var(--adm-garis) !important;
+  flex-shrink: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*="ToolbarSectionMeta"] a {
+  color: var(--adm-teks-lunak) !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  padding: 0.35rem 0.75rem !important;
+  border-radius: var(--radius-pil) !important;
+  transition: all 120ms ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+#nc-root [class*="ToolbarSectionMeta"] a:hover {
+  color: var(--adm-hijau-gelap) !important;
+  background: var(--adm-latar-2) !important;
+}
+
+#nc-root [class*="ToolbarSectionMeta"] img {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  border: 1.5px solid var(--adm-garis) !important;
+  object-fit: cover !important;
+}
+
+/* ── 8. SplitPane Editor (Pane1 & Pane2): Lebar Penuh (100%) ── */
+
+/* Hilangkan kunci 680px dari Emotion Decap pada SplitPane */
+#nc-root [class*="EditorContainer"],
+#nc-root [class*="EditorContainer"] > div,
+#nc-root [class*="EditorContent"],
+#nc-root .SplitPane,
+#nc-root [class*="StyledSplitPane"],
 #nc-root div:has(> .Pane1),
 #nc-root div:has(> .Pane2) {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  margin: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+#nc-root .SplitPane {
   display: flex !important;
-  min-height: calc(100vh - 7.8rem) !important;
+  position: absolute !important;
+  top: 4.25rem !important;
+  bottom: 0 !important;
+  height: calc(100vh - 4.25rem) !important;
+  min-height: calc(100vh - 4.25rem) !important;
   align-items: stretch !important;
-  margin-top: 0 !important;
-  padding-top: 0 !important;
 }
 
 /* Pane 1 (Formulir Pengisian) */
 #nc-root .Pane1 {
   background-color: var(--adm-latar) !important;
-  padding: 1.75rem 2rem 5rem !important;
+  padding: 2rem 2.5rem 6rem !important;
   overflow-y: auto !important;
   overscroll-behavior: contain !important;
-  min-width: 320px !important;
+  min-width: 360px !important;
+  box-sizing: border-box !important;
 }
 
 /* Wadah fieldset di dalam Pane 1 agar proporsional di layar lebar */
 #nc-root .Pane1 > form,
-#nc-root .Pane1 > div {
+#nc-root .Pane1 > div,
+#nc-root [class*="ControlPaneContainer"] {
   max-width: 780px !important;
   margin-inline: auto !important;
+  width: 100% !important;
 }
 
 /* Resizer Pemisah yang Halus & Responsif */
 #nc-root .Resizer.vertical {
   background: transparent !important;
-  width: 10px !important;
-  margin: 0 -5px !important;
+  width: 12px !important;
+  margin: 0 -6px !important;
   z-index: 25 !important;
   cursor: col-resize !important;
   position: relative !important;
@@ -731,7 +1123,7 @@
   position: absolute !important;
   top: 0 !important;
   bottom: 0 !important;
-  left: 4px !important;
+  left: 5px !important;
   width: 2px !important;
   background: var(--adm-garis) !important;
   transition: background 150ms ease !important;
@@ -739,32 +1131,39 @@
 
 #nc-root .Resizer.vertical:hover::after {
   background: var(--adm-hijau) !important;
-  width: 3px !important;
+  width: 4px !important;
+  left: 4px !important;
 }
 
 /* Pane 2 (Panel Pratinjau / Preview) */
 #nc-root .Pane2 {
   background-color: var(--adm-latar-2) !important;
   border-left: 1px solid var(--adm-garis) !important;
-  padding: 1.5rem !important;
+  padding: 1.5rem 2rem !important;
   overflow-y: auto !important;
   position: relative !important;
-  min-width: 320px !important;
+  min-width: 360px !important;
+  box-sizing: border-box !important;
 }
 
 #nc-root .Pane2 iframe {
   width: 100% !important;
   height: 100% !important;
-  min-height: calc(100vh - 12rem) !important;
+  min-height: calc(100vh - 8rem) !important;
   border: 1px solid var(--adm-garis) !important;
   border-radius: var(--radius-kartu) !important;
   background: #ffffff !important;
-  box-shadow: var(--bayang-kartu) !important;
+  box-shadow: 0 4px 16px rgba(25, 36, 20, 0.06) !important;
 }
 
 /* Tombol Toggle Tampilan (Split / Editor Saja / Preview Saja) */
 #nc-root [class*="EditorToggleContainer"],
+#nc-root [class*="ViewControls"],
 #nc-root div:has(> button[class*="EditorToggle"]) {
+  position: absolute !important;
+  top: 1rem !important;
+  right: 1.5rem !important;
+  z-index: 35 !important;
   background: rgba(255, 255, 255, 0.95) !important;
   backdrop-filter: blur(8px) !important;
   border: 1px solid var(--adm-garis) !important;
@@ -1002,18 +1401,28 @@
 #nc-root [class*="ControlContainer"]:has([class*="ToggleBackground"]) {
   display: flex !important;
   flex-direction: column !important;
-  gap: 0.45rem !important;
+  gap: 0.4rem !important;
+  padding: 1rem 1.35rem !important;
 }
 
-/* Baris label dan toggle switch yang ringkas & menyatu */
-#nc-root [class*="ControlContainer"]:has([class*="ToggleContainer"]) > label,
-#nc-root [class*="ControlContainer"]:has([class*="BooleanControl"]) > label {
+/* Hilangkan kotak input default Decap di sekeliling tombol toggle boolean */
+#nc-root [class*="ControlContainer"]:has([class*="ToggleContainer"]) > div:not([class*="ControlTopbar"]):not([class*="ControlHint"]),
+#nc-root [class*="ControlContainer"]:has([class*="BooleanControl"]) > div:not([class*="ControlTopbar"]):not([class*="ControlHint"]),
+#nc-root div[class*="BooleanControl"] {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0.25rem 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+#nc-root [class*="ControlContainer"]:has([class*="ToggleContainer"]) [class*="ControlTopbar"],
+#nc-root [class*="ControlContainer"]:has([class*="BooleanControl"]) [class*="ControlTopbar"] {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   width: 100% !important;
-  margin-bottom: 0 !important;
-  cursor: pointer !important;
 }
 
 #nc-root button[class*="ToggleContainer"] {
@@ -1027,12 +1436,13 @@
   display: inline-flex !important;
   align-items: center !important;
   outline: none !important;
+  margin: 0.25rem 0 !important;
 }
 
 #nc-root [class*="ToggleBackground"] {
   display: inline-block !important;
-  width: 3rem !important;
-  height: 1.7rem !important;
+  width: 46px !important;
+  height: 26px !important;
   border-radius: var(--radius-pil) !important;
   background-color: #cbd5be !important;
   position: relative !important;
@@ -1042,8 +1452,8 @@
 
 #nc-root [class*="ToggleHandle"] {
   display: block !important;
-  width: 1.3rem !important;
-  height: 1.3rem !important;
+  width: 20px !important;
+  height: 20px !important;
   border-radius: var(--radius-pil) !important;
   background-color: #ffffff !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
@@ -1061,7 +1471,7 @@
 
 #nc-root button[class*="ToggleContainer"][aria-checked="true"] [class*="ToggleHandle"],
 #nc-root [class*="ToggleBackground"][class*="active"] [class*="ToggleHandle"] {
-  transform: translateX(1.3rem) !important;
+  transform: translateX(20px) !important;
 }
 
 /* ── 13. Perbaikan Widget List (`PERSYARATAN` & `ALUR`) ────── */
@@ -1210,7 +1620,8 @@
 
 /* ── 14. Widget Markdown & Visual Editor ───────────────────── */
 
-#nc-root [class*="ToolbarContainer"],
+#nc-root [class*="MarkdownControl"] [class*="ToolbarContainer"],
+#nc-root [class*="MarkdownControl"] [class*="EditorControlBar"],
 #nc-root [class*="EditorControlBar"] {
   background: var(--adm-latar-2) !important;
   border: 1.5px solid var(--adm-garis) !important;
@@ -1220,9 +1631,13 @@
   display: flex !important;
   flex-wrap: wrap !important;
   gap: 0.25rem !important;
+  position: static !important;
+  min-height: auto !important;
+  width: auto !important;
 }
 
-#nc-root [class*="ToolbarContainer"] button,
+#nc-root [class*="MarkdownControl"] [class*="ToolbarContainer"] button,
+#nc-root [class*="MarkdownControl"] [class*="EditorControlBar"] button,
 #nc-root [class*="EditorControlBar"] button {
   min-height: 2rem !important;
   height: 2rem !important;
@@ -1235,15 +1650,16 @@
   cursor: pointer !important;
 }
 
-#nc-root [class*="ToolbarContainer"] button:hover,
+#nc-root [class*="MarkdownControl"] [class*="ToolbarContainer"] button:hover,
+#nc-root [class*="MarkdownControl"] [class*="EditorControlBar"] button:hover,
 #nc-root [class*="EditorControlBar"] button:hover {
   background: #ffffff !important;
   color: var(--adm-hijau-gelap) !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
-#nc-root [class*="ToolbarContainer"] + [class*="VisualEditor"],
-#nc-root [class*="ToolbarContainer"] + textarea,
+#nc-root [class*="MarkdownControl"] [class*="ToolbarContainer"] + [class*="VisualEditor"],
+#nc-root [class*="MarkdownControl"] [class*="ToolbarContainer"] + textarea,
 #nc-root [class*="EditorControlBar"] + div {
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
