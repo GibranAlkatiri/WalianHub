@@ -97,12 +97,11 @@ collections:
         required: false
         hint: "Centang untuk menampilkan di halaman utama. Hanya 4 yang muat — pilih yang paling penting."
 
+      # Urutan terisi otomatis (nomor terbesar + 1) saat menyimpan entri baru.
       - label: Urutan
         name: urutan
-        widget: number
+        widget: hidden
         default: 100
-        value_type: int
-        hint: "Angka kecil tampil lebih dulu. Contoh: 1 paling atas, 100 paling bawah."
 
       - label: Persyaratan
         name: persyaratan
@@ -194,30 +193,31 @@ collections:
       - label: Lokasi
         name: lokasi
         widget: object
-        hint: "Titik tombol “Cek Lokasi” di website memakai angka di bawah ini."
+        hint: "Cukup tempel tautan Google Maps di Alamat — angka Latitude/Longitude terisi sendiri saat disimpan."
         fields:
           - label: Alamat
             name: alamat
             widget: string
             required: true
-            hint: "Alamat singkat yang dipahami warga."
+            hint: "Alamat singkat, atau tempel tautan panjang Google Maps dari address bar browser (yang mengandung @angka,angka). Tautan pendek maps.app.goo.gl tidak memuat angka — pakai tautan panjang."
           - label: Latitude
             name: lat
             widget: number
             value_type: float
             min: -90
             max: 90
-            required: true
-            hint: "Angka pertama dari Google Maps (klik kanan lokasi → salin)."
+            required: false
+            default: 1.313138
+            hint: "Terisi otomatis dari tautan Maps. Ubah manual hanya bila titiknya meleset."
           - label: Longitude
             name: lng
             widget: number
             value_type: float
             min: -180
             max: 180
-            required: true
-            hint: "Angka kedua dari Google Maps."
-
+            required: false
+            default: 124.838766
+            hint: "Terisi otomatis dari tautan Maps. Ubah manual hanya bila titiknya meleset."
       - label: Tampil di Beranda
         name: unggulan
         widget: boolean
@@ -225,12 +225,11 @@ collections:
         required: false
         hint: "Centang untuk destinasi andalan halaman utama."
 
+      # Urutan terisi otomatis (nomor terbesar + 1) saat menyimpan entri baru.
       - label: Urutan
         name: urutan
-        widget: number
+        widget: hidden
         default: 100
-        value_type: int
-        hint: "Angka kecil tampil lebih dulu."
 
       - label: Diperbarui
         name: diperbarui

@@ -1582,11 +1582,284 @@
     );
   });
 
+  // ── Otomatisasi form: koordinat Maps, urutan, tanggal ─────────────
+  // Koordinat bawaan Kantor Kelurahan Walian (dipakai bila tautan Maps
+  // tidak memuat angka koordinat, mis. tautan pendek maps.app.goo.gl).
+  var KOORDINAT_WALIAN = { lat: 1.313138, lng: 124.838766 };
+  var REPO_GITHUB = 'gleey/WalianHub';
+  var CABANG_GITHUB = 'main';
+
+  // Ekstrak lat,lng dari berbagai format tautan Google Maps.
+  // Mendukung: /@lat,lng,z — ?q=lat,lng / ?query=lat,lng — ll=lat,lng —
+  // !3dlat!4dlng (embed) — teks mentah "lat,lng".
+  // Tautan pendek (maps.app.goo.gl / goo.gl) tidak memuat koordinat
+  // dan tidak bisa diurai tanpa request jaringan → kembalikan null.
+  function parseKoordinatDariTautan(teks) {
+    if (!teks || typeof teks !== 'string') return null;
+    var s = teks.trim();
+    var pola = [
+      /@(-?\d{1,3}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/,
+      /[?&](?:q|query|ll|destination)=(-?\d{1,3}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/i,
+      /!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)/,
+      /^(-?\d{1,3}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)$/,
+    ];
+    for (var i = 0; i < pola.length; i++) {
+      var cocok = pola[i].exec(s);
+      if (cocok) {
+        var lat = parseFloat(cocok[1]);
+        var lng = parseFloat(cocok[2]);
+        if (isFinite(lat) && isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+          return { lat: lat, lng: lng };
+        }
+      }
+    }
+    return null;
+  }
+
+  function ambilTokenGithub() {
+    try {
+      var sesi = JSON.parse(localStorage.getItem('decap-cms-user') || 'null');
+      return sesi && sesi.token ? sesi.token : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function bacaUrutanDariMarkdown(isi) {
+    var cocok = /^urutan:\s*(-?\d+)/m.exec(isi || '');
+    return cocok ? parseInt(cocok[1], 10) : null;
+  }
+
+  // Hitung max+1 dari berkas yang sudah terbit di branch main via GitHub API.
+  // Draf di branch PR belum terbit sehingga tidak ikut dihitung (risiko kecil
+  // nomor ganda bila dua draf dibuat bersamaan — staf cukup ubah manual bila
+  // terjadi). Gagal jaringan/token → null agar pemanggil memakai cadangan.
+  async function hitungUrutanDariRepo(folder) {
+    try {
+      var token = ambilTokenGithub();
+      if (!token) return null;
+      var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      var timer = null;
+      if (ctrl) {
+        timer = setTimeout(function () {
+          try {
+            ctrl.abort();
+          } catch (e) {}
+        }, 8000);
+      }
+      var res = await fetch(
+        'https://api.github.com/repos/' + REPO_GITHUB + '/contents/' + folder + '?ref=' + CABANG_GITHUB,
+        {
+          headers: {
+            Authorization: 'Bearer ' + token,
+            Accept: 'application/vnd.github+json',
+          },
+          signal: ctrl ? ctrl.signal : undefined,
+        }
+      );
+      if (timer) clearTimeout(timer);
+      if (!res || !res.ok) return null;
+      var daftar = await res.json();
+      if (!Array.isArray(daftar)) return null;
+      var maks = null;
+      for (var i = 0; i < daftar.length; i++) {
+        var item = daftar[i];
+        if (!item || item.type !== 'file' || !/\.md$/.test(item.name || '')) continue;
+        try {
+          var f = await fetch(item.download_url, { signal: ctrl ? ctrl.signal : undefined });
+          if (!f || !f.ok) continue;
+          var isi = await f.text();
+          var n = bacaUrutanDariMarkdown(isi);
+          if (typeof n === 'number' && (maks === null || n >= maks)) maks = n;
+        } catch (e) {
+          /* lewati berkas yang gagal dibaca */
+        }
+      }
+      return maks === null ? null : maks + 1;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Pencacah cadangan di perangkat ini bila GitHub API tidak terjangkau.
+  // Benih = jumlah berkas saat ini + 1 (destinasi: 3→4, layanan: 4→5).
+  function ambilPencacahCadangan(kunci, benih) {
+    try {
+      var saatIni = parseInt(localStorage.getItem(kunci) || '', 10);
+      var berikut = isFinite(saatIni) && saatIni >= benih ? saatIni + 1 : benih;
+      localStorage.setItem(kunci, String(berikut));
+      return berikut;
+    } catch (e) {
+      return benih;
+    }
+  }
+
+  function tanggalHariIniISO() {
+    try {
+      return new Date().toISOString().slice(0, 10);
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function daftarkanOtomatisasiCMS() {
+    if (!window.CMS || typeof window.CMS.registerEventListener !== 'function') return;
+    if (window.__walianOtomatisasiTerdaftar) return;
+    window.__walianOtomatisasiTerdaftar = true;
+    window.CMS.registerEventListener({
+      name: 'preSave',
+      handler: async function (args) {
+        try {
+          var entry = args && args.entry;
+          if (!entry || typeof entry.get !== 'function') return;
+          var data = entry.get('data');
+          if (!data || typeof data.get !== 'function') return;
+
+          // Kenali koleksi dari bentuk data (tanpa API internal Decap):
+          // destinasi punya objek `lokasi`, layanan punya list `persyaratan`.
+          var lokasi = typeof data.get === 'function' ? data.get('lokasi') : null;
+          var adalahDestinasi = !!lokasi && typeof lokasi.get === 'function';
+          var adalahLayanan =
+            !adalahDestinasi &&
+            typeof data.has === 'function' &&
+            data.has('persyaratan');
+
+          // 1. Koordinat otomatis dari tautan Google Maps di kolom alamat.
+          if (adalahDestinasi) {
+            var alamat = lokasi.get('alamat') || '';
+            var lat = lokasi.get('lat');
+            var lng = lokasi.get('lng');
+            var perluKoordinat = typeof lat !== 'number' || typeof lng !== 'number';
+            if (perluKoordinat && typeof alamat === 'string' && alamat.trim()) {
+              var hasil = parseKoordinatDariTautan(alamat);
+              if (hasil) {
+                data = data.set('lokasi', lokasi.set('lat', hasil.lat).set('lng', hasil.lng));
+              }
+            }
+          }
+
+          // 2. Urutan otomatis (max+1) hanya untuk entri BARU.
+          var isBaru = entry.get('newRecord') === true;
+          if (isBaru && (adalahDestinasi || adalahLayanan)) {
+            var folder = adalahDestinasi ? 'src/content/destinasi' : 'src/content/layanan';
+            var kunci = 'walian-urutan-' + (adalahDestinasi ? 'destinasi' : 'layanan');
+            var benih = adalahDestinasi ? 4 : 5;
+            var berikut = await hitungUrutanDariRepo(folder);
+            if (typeof berikut !== 'number') {
+              berikut = ambilPencacahCadangan(kunci, benih);
+            } else {
+              try {
+                localStorage.setItem(kunci, String(berikut));
+              } catch (e) {}
+            }
+            data = data.set('urutan', berikut);
+          }
+
+          // 3. Tanggal dicek terisi hari ini bila kosong.
+          if ((adalahDestinasi || adalahLayanan) && !data.get('diperbarui')) {
+            var hariIni = tanggalHariIniISO();
+            if (hariIni) data = data.set('diperbarui', hariIni);
+          }
+
+          return data;
+        } catch (e) {
+          return;
+        }
+      },
+    });
+  }
+
+  // ── Workflow 1 tahap: sembunyikan tahap tengah "In Review" ──────────
+  // Status workflow dikodekan tetap 3 nilai di bundle Decap (draft,
+  // pending_review, pending_publish — diverifikasi di decap-cms@3) dan
+  // tidak ada flag konfigurasi untuk 1 tahap. Penyederhanaan ini murni
+  // tampilan berbasis teks: tahap tengah disembunyikan sehingga alur
+  // menjadi Simpan draf → Ready → Terbitkan (tombol terbit tetap manual,
+  // tidak ada status yang diubah otomatis oleh skrip ini).
+  var TEKS_TAHAP_TENGAH = ['in review', 'tinjauan', 'dalam tinjauan'];
+  var TEKS_TAHAP_LAIN = ['draft', 'draf', 'ready', 'siap'];
+
+  function normalisasiTeks(t) {
+    return String(t || '').trim().toLowerCase();
+  }
+
+  function subtreeMemuat(akar, daftar) {
+    var t = normalisasiTeks(akar && akar.textContent);
+    for (var i = 0; i < daftar.length; i++) {
+      if (t.indexOf(daftar[i]) !== -1) return true;
+    }
+    return false;
+  }
+
+  function sembunyikanTahapTengah() {
+    try {
+      var root = document.getElementById('nc-root');
+      if (!root) return;
+      var kandidat = root.querySelectorAll('h1, h2, h3, h4, button, option, [role="option"], [role="button"]');
+      for (var i = 0; i < kandidat.length; i++) {
+        var el = kandidat[i];
+        if (!el || el.dataset.walianTahap === '1') continue;
+        // Cocokkan teks tepat (bukan substring) agar judul konten warga
+        // yang kebetulan mengandung kata itu tidak ikut tersembunyi.
+        var teksSendiri = '';
+        var anak = el.firstChild;
+        if (anak && anak.nodeType === 3) teksSendiri = normalisasiTeks(anak.nodeValue);
+        else if (el.children.length === 0) teksSendiri = normalisasiTeks(el.textContent);
+        if (TEKS_TAHAP_TENGAH.indexOf(teksSendiri) === -1) continue;
+
+        var tag = (el.tagName || '').toLowerCase();
+        if (tag === 'option' || tag === 'button' || el.getAttribute('role') === 'option') {
+          el.style.display = 'none';
+          el.dataset.walianTahap = '1';
+          continue;
+        }
+        // Judul kolom: naik ke wadah kolom tertinggi yang TIDAK memuat
+        // tahap lain (agar papan Kanban utuh tidak ikut hilang).
+        var wadah = null;
+        var jalan = el.parentElement;
+        var kedalaman = 0;
+        while (jalan && jalan !== root && kedalaman < 7) {
+          if (subtreeMemuat(jalan, TEKS_TAHAP_TENGAH) && !subtreeMemuat(jalan, TEKS_TAHAP_LAIN)) {
+            wadah = jalan;
+          }
+          jalan = jalan.parentElement;
+          kedalaman++;
+        }
+        if (wadah) {
+          wadah.style.display = 'none';
+          wadah.dataset.walianTahap = '1';
+        }
+        el.dataset.walianTahap = '1';
+      }
+    } catch (e) {
+      /* abaikan: perapian tampilan tidak boleh menggagalkan panel */
+    }
+  }
+
+  function rapikanWorkflowSatuTahap() {
+    try {
+      sembunyikanTahapTengah();
+      if (window.__walianWorkflowObserver) return;
+      var root = document.getElementById('nc-root');
+      if (!root || typeof MutationObserver === 'undefined') return;
+      var observer = new MutationObserver(function () {
+        sembunyikanTahapTengah();
+      });
+      window.__walianWorkflowObserver = observer;
+      observer.observe(root, { childList: true, subtree: true });
+      setInterval(sembunyikanTahapTengah, 2000);
+    } catch (e) {
+      /* abaikan */
+    }
+  }
+
   // Fungsi registrasi yang dipanggil oleh auth-client.js saat Decap siap
   window.daftarkanPreview = function () {
     if (!window.CMS) return;
 
     try {
+      daftarkanOtomatisasiCMS();
+      rapikanWorkflowSatuTahap();
       if (
         !widgetDaftarNamaTerdaftar &&
         typeof window.CMS.registerWidget === 'function'
