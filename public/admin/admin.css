@@ -1826,3 +1826,56 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── Widget daftarNama: input teks langsung tanpa accordion ────── */
+
+#nc-root .daftar-nama {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.5rem !important;
+}
+
+#nc-root .daftar-nama-baris {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+#nc-root .daftar-nama-baris input {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+#nc-root .daftar-nama-hapus,
+#nc-root .daftar-nama-tambah {
+  font-family: inherit !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-pil) !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+}
+
+#nc-root .daftar-nama-hapus {
+  color: var(--adm-bahaya) !important;
+  background: var(--adm-bahaya-muda) !important;
+  border: 1px solid transparent !important;
+  padding: 0.4375rem 0.875rem !important;
+}
+
+#nc-root .daftar-nama-hapus:hover {
+  border-color: var(--adm-bahaya) !important;
+}
+
+#nc-root .daftar-nama-tambah {
+  color: var(--adm-hijau) !important;
+  background: var(--adm-hijau-muda) !important;
+  border: 1px dashed var(--adm-garis-kuat) !important;
+  padding: 0.5rem 1rem !important;
+  align-self: flex-start !important;
+}
+
+#nc-root .daftar-nama-tambah:hover {
+  background: var(--adm-hijau-muda-2) !important;
+}

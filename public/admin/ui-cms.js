@@ -164,6 +164,112 @@
     );
   }
 
+  // Widget custom "daftarNama": input teks langsung per nama pejabat,
+  // tanpa accordion bertingkat. Menyimpan array string apa adanya
+  // (aman untuk nama bergelar koma seperti "Frano R. Rowan, S.Sos.").
+  var widgetDaftarNamaTerdaftar = false;
+
+  function ambilDaftarNama(value) {
+    if (!value) return [];
+    try {
+      if (typeof value.toJS === 'function') {
+        var js = value.toJS();
+        if (Array.isArray(js)) return js;
+        return js == null ? [] : [js];
+      }
+    } catch (e) {
+      return [];
+    }
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') return value ? [value] : [];
+    return [];
+  }
+
+  function buatKontrolDaftarNama() {
+    if (!window.createClass) return null;
+    return window.createClass({
+      handleUbah: function (index, e) {
+        var daftar = ambilDaftarNama(this.props.value).slice();
+        daftar[index] = e.target.value;
+        this.props.onChange(daftar);
+      },
+      handleTambah: function () {
+        var daftar = ambilDaftarNama(this.props.value).slice();
+        daftar.push('');
+        this.props.onChange(daftar);
+      },
+      handleHapus: function (index) {
+        var daftar = ambilDaftarNama(this.props.value).slice();
+        daftar.splice(index, 1);
+        this.props.onChange(daftar);
+      },
+      render: function () {
+        var self = this;
+        var daftar = ambilDaftarNama(this.props.value);
+        var baris = daftar.length ? daftar : [''];
+        var classWrapper = this.props.classNameWrapper || '';
+        var forID = this.props.forID || 'daftar-nama';
+
+        return h(
+          'div',
+          { className: 'daftar-nama' },
+          baris.map(function (nama, index) {
+            return h(
+              'div',
+              { className: 'daftar-nama-baris', key: index },
+              h('input', {
+                id: forID + '-' + index,
+                className: classWrapper,
+                type: 'text',
+                value: nama || '',
+                placeholder: 'Nama pejabat',
+                onChange: function (e) {
+                  self.handleUbah(index, e);
+                },
+              }),
+              baris.length > 1
+                ? h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: 'daftar-nama-hapus',
+                      onClick: function () {
+                        self.handleHapus(index);
+                      },
+                    },
+                    'Hapus'
+                  )
+                : null
+            );
+          }),
+          h(
+            'button',
+            {
+              type: 'button',
+              className: 'daftar-nama-tambah',
+              onClick: this.handleTambah,
+            },
+            '+ Tambah pejabat'
+          )
+        );
+      },
+    });
+  }
+
+  function buatPratinjauDaftarNama() {
+    return buatKomponen(function (props) {
+      var daftar = ambilDaftarNama(props.value);
+      if (!daftar.length) return h('span', null, '—');
+      return h(
+        'ul',
+        { className: 'daftar-nama-pratinjau' },
+        daftar.map(function (nama, index) {
+          return h('li', { key: index }, nama);
+        })
+      );
+    });
+  }
+
   // Wrapper komponen React Decap
   function buatKomponen(renderFn) {
     if (window.createClass) {
@@ -1481,6 +1587,21 @@
     if (!window.CMS) return;
 
     try {
+      if (
+        !widgetDaftarNamaTerdaftar &&
+        typeof window.CMS.registerWidget === 'function'
+      ) {
+        var KontrolDaftarNama = buatKontrolDaftarNama();
+        var PratinjauDaftarNama = buatPratinjauDaftarNama();
+        if (KontrolDaftarNama) {
+          window.CMS.registerWidget(
+            'daftarNama',
+            KontrolDaftarNama,
+            PratinjauDaftarNama
+          );
+          widgetDaftarNamaTerdaftar = true;
+        }
+      }
       if (typeof window.CMS.registerPreviewStyle === 'function') {
         window.CMS.registerPreviewStyle(
           'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'

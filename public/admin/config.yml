@@ -522,13 +522,7 @@ collections:
               - { label: Jabatan, name: jabatan, widget: string, required: true }
               - label: Nama Pejabat
                 name: nama
-                widget: list
-                summary: "{{fields.nama}}"
-                collapsed: false
-                field:
-                  label: Nama
-                  name: nama
-                  widget: string
+                widget: daftarNama
                 required: false
                 hint: "Satu baris satu nama. Kosongkan jika jabatan belum terisi."
               - label: Atasan
