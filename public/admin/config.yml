@@ -199,7 +199,7 @@ collections:
             name: alamat
             widget: string
             required: true
-            hint: "Alamat singkat, atau tempel tautan panjang Google Maps dari address bar browser (yang mengandung @angka,angka). Tautan pendek maps.app.goo.gl tidak memuat angka — pakai tautan panjang."
+            hint: "Tempel tautan Google Maps apa pun (panjang maupun pendek maps.app.goo.gl) — tombol Cek Lokasi di website akan membuka tautan ini persis. Tautan panjang yang memuat angka koordinat juga mengisi Latitude/Longitude otomatis."
           - label: Latitude
             name: lat
             widget: number

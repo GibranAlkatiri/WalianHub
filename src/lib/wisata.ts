@@ -20,5 +20,17 @@ export function susunWisata<T extends PilihanDestinasi>(daftar: T[]) {
   return { semua, pilihan, pakaiHalaman, href: pakaiHalaman ? '/wisata' : '/#wisata' };
 }
 
-export const tautanPetaDestinasi = (lokasi: { lat: number; lng: number }) =>
-  `https://www.google.com/maps/search/?api=1&query=${lokasi.lat},${lokasi.lng}`;
+/**
+ * Tautan tombol "Cek Lokasi". Jika kolom Alamat berisi tautan (mis. Google
+ * Maps, termasuk tautan pendek maps.app.goo.gl yang tidak bisa diurai jadi
+ * angka), tautan itu dipakai langsung agar titiknya persis. Jika tidak,
+ * dirakit dari angka lat/lng sebagai fallback.
+ */
+export const tautanPetaDestinasi = (
+  lokasi: { lat: number; lng: number },
+  alamat?: string,
+) => {
+  const trimAlamat = (alamat ?? '').trim();
+  if (/^https?:\/\//i.test(trimAlamat)) return trimAlamat;
+  return `https://www.google.com/maps/search/?api=1&query=${lokasi.lat},${lokasi.lng}`;
+};

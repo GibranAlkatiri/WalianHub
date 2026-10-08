@@ -310,8 +310,10 @@
     var diperbarui = getVal(entry, ['data', 'diperbarui'], '');
     var bodyWidget = props.widgetFor ? props.widgetFor('body') : null;
 
-    var mapsUrl =
-      lat && lng
+    var alamatTrim = String(alamat || '').trim();
+    var mapsUrl = /^https?:\/\//i.test(alamatTrim)
+      ? alamatTrim
+      : lat && lng
         ? 'https://www.google.com/maps/search/?api=1&query=' +
           encodeURIComponent(lat + ',' + lng)
         : '#';
