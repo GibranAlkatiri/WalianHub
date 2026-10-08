@@ -1702,6 +1702,69 @@
     }
   }
 
+  // ── Workflow 1 tahap: simpan → otomatis Ready ────────────────────
+  // Decap memblokir tombol "Publish new entry" pada kartu Draft (pesan
+  // "Only items with a Ready status can be published..."). Status
+  // editorial disimpan sebagai label PR "decap-cms/<status>" (terverifikasi
+  // di bundle decap-cms@3.16.3: cmsLabelPrefix "decap-cms/"). Fungsi ini
+  // memindahkan entri ke Ready via GitHub API tepat setelah disimpan,
+  // sehingga tombol Publish langsung berfungsi. Publish tetap manual.
+  // BUTUH: PAT GITHUB_TOKEN harus punya izin Pull requests (Read+Write)
+  // dan/atau Issues (Read+Write) selain Contents — tanpanya pemindahan
+  // gagal diam-diam dan staf tetap bisa drag manual ke kolom Ready.
+  var LABEL_PREFIX_STATUS = 'decap-cms/';
+  var STATUS_READY = 'pending_publish';
+
+  function tunggu(ms) {
+    return new Promise(function (res) {
+      setTimeout(res, ms);
+    });
+  }
+
+  async function pindahkanKeReadyOtomatis(namaKoleksi, slug) {
+    try {
+      var token = ambilTokenGithub();
+      if (!token || !namaKoleksi || !slug) return;
+      var cabang = 'cms/' + namaKoleksi + '/' + slug;
+      var headers = {
+        Authorization: 'Bearer ' + token,
+        Accept: 'application/vnd.github+json',
+      };
+      // Tunggu PR dibuat Decap setelah persist (coba 2x).
+      var pr = null;
+      for (var percobaan = 0; percobaan < 2 && !pr; percobaan++) {
+        if (percobaan > 0) await tunggu(4000);
+        var urlCari =
+          'https://api.github.com/repos/' +
+          REPO_GITHUB +
+          '/pulls?state=open&head=' +
+          encodeURIComponent('gleey:' + cabang);
+        var res = await fetch(urlCari, { headers: headers });
+        if (!res || !res.ok) continue;
+        var daftar = await res.json();
+        if (Array.isArray(daftar) && daftar.length) pr = daftar[0];
+      }
+      if (!pr || !pr.number) return;
+      var labelLain = [];
+      var labelLama = pr.labels || [];
+      for (var i = 0; i < labelLama.length; i++) {
+        var nama = labelLama[i] && labelLama[i].name;
+        if (nama && nama.indexOf(LABEL_PREFIX_STATUS) !== 0) labelLain.push(nama);
+      }
+      labelLain.push(LABEL_PREFIX_STATUS + STATUS_READY);
+      await fetch(
+        'https://api.github.com/repos/' + REPO_GITHUB + '/issues/' + pr.number + '/labels',
+        {
+          method: 'PUT',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ labels: labelLain }),
+        }
+      );
+    } catch (e) {
+      /* gagal diam-diam: alur drag manual tetap tersedia */
+    }
+  }
+
   function daftarkanOtomatisasiCMS() {
     if (!window.CMS || typeof window.CMS.registerEventListener !== 'function') return;
     if (window.__walianOtomatisasiTerdaftar) return;
@@ -1764,6 +1827,29 @@
           return data;
         } catch (e) {
           return;
+        }
+      },
+    });
+    // Setiap simpan (baru maupun ubah) di destinasi/layanan → pindah ke Ready.
+    window.CMS.registerEventListener({
+      name: 'postSave',
+      handler: async function (args) {
+        try {
+          var entry = args && args.entry;
+          if (!entry || typeof entry.get !== 'function') return;
+          var data = entry.get('data');
+          if (!data || typeof data.get !== 'function') return;
+          var lokasi = typeof data.get === 'function' ? data.get('lokasi') : null;
+          var adalahDestinasi = !!lokasi && typeof lokasi.get === 'function';
+          var adalahLayanan =
+            !adalahDestinasi && typeof data.has === 'function' && data.has('persyaratan');
+          if (!adalahDestinasi && !adalahLayanan) return;
+          var namaKoleksi = entry.get('collection');
+          var slug = entry.get('slug');
+          if (typeof namaKoleksi !== 'string' || typeof slug !== 'string') return;
+          await pindahkanKeReadyOtomatis(namaKoleksi, slug);
+        } catch (e) {
+          /* abaikan */
         }
       },
     });
