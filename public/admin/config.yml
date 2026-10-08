@@ -97,16 +97,17 @@ collections:
         required: false
         hint: "Centang untuk menampilkan di halaman utama. Hanya 4 yang muat — pilih yang paling penting."
 
+      # Urutan terisi otomatis (nomor terbesar + 1) saat menyimpan entri baru.
       - label: Urutan
         name: urutan
-        widget: number
+        widget: hidden
         default: 100
-        value_type: int
-        hint: "Angka kecil tampil lebih dulu. Contoh: 1 paling atas, 100 paling bawah."
 
       - label: Persyaratan
         name: persyaratan
         widget: list
+        summary: "{{fields.syarat}}"
+        collapsed: false
         field:
           label: Syarat
           name: syarat
@@ -117,6 +118,8 @@ collections:
       - label: Alur Pelayanan
         name: alur
         widget: list
+        summary: "{{fields.langkah}}"
+        collapsed: false
         field:
           label: Langkah
           name: langkah
@@ -190,30 +193,31 @@ collections:
       - label: Lokasi
         name: lokasi
         widget: object
-        hint: "Titik tombol “Cek Lokasi” di website memakai angka di bawah ini."
+        hint: "Cukup tempel tautan Google Maps di Alamat — angka Latitude/Longitude terisi sendiri saat disimpan."
         fields:
           - label: Alamat
             name: alamat
             widget: string
             required: true
-            hint: "Alamat singkat yang dipahami warga."
+            hint: "Tempel tautan Google Maps apa pun (panjang maupun pendek maps.app.goo.gl) — tombol Cek Lokasi di website akan membuka tautan ini persis. Tautan panjang yang memuat angka koordinat juga mengisi Latitude/Longitude otomatis."
           - label: Latitude
             name: lat
             widget: number
             value_type: float
             min: -90
             max: 90
-            required: true
-            hint: "Angka pertama dari Google Maps (klik kanan lokasi → salin)."
+            required: false
+            default: 1.313138
+            hint: "Terisi otomatis dari tautan Maps. Ubah manual hanya bila titiknya meleset."
           - label: Longitude
             name: lng
             widget: number
             value_type: float
             min: -180
             max: 180
-            required: true
-            hint: "Angka kedua dari Google Maps."
-
+            required: false
+            default: 124.838766
+            hint: "Terisi otomatis dari tautan Maps. Ubah manual hanya bila titiknya meleset."
       - label: Tampil di Beranda
         name: unggulan
         widget: boolean
@@ -221,12 +225,11 @@ collections:
         required: false
         hint: "Centang untuk destinasi andalan halaman utama."
 
+      # Urutan terisi otomatis (nomor terbesar + 1) saat menyimpan entri baru.
       - label: Urutan
         name: urutan
-        widget: number
+        widget: hidden
         default: 100
-        value_type: int
-        hint: "Angka kecil tampil lebih dulu."
 
       - label: Diperbarui
         name: diperbarui
@@ -257,6 +260,7 @@ collections:
             name: daftar
             widget: list
             summary: "{{fields.judul}} — {{fields.tanggal}}"
+            collapsed: false
             required: false
             hint: "Pengumuman untuk warga. Yang terbaru di atas."
             fields:
@@ -392,6 +396,7 @@ collections:
                 name: tanggalLibur
                 widget: list
                 summary: "{{fields.tanggal}} — {{fields.keterangan}}"
+                collapsed: false
                 required: false
                 hint: "Hari libur khusus (tanggal merah). Tambah satu baris per hari libur."
                 fields:
@@ -412,6 +417,7 @@ collections:
             name: mediaSosial
             widget: list
             summary: "{{fields.platform}}: {{fields.url}}"
+            collapsed: false
             required: false
             hint: "Akun resmi kelurahan. Kosongkan jika belum punya."
             fields:
@@ -429,6 +435,7 @@ collections:
             name: tautanPenting
             widget: list
             summary: "{{fields.label}}: {{fields.url}}"
+            collapsed: false
             required: false
             hint: "Link ke website pemerintah lain, tampil di bagian bawah website."
             fields:
@@ -457,6 +464,7 @@ collections:
                 name: foto
                 widget: list
                 summary: "{{fields.keterangan}}"
+                collapsed: false
                 max: 5
                 required: false
                 hint: "Maksimal 5 foto, berganti otomatis. Urutan di sini = urutan tampil. Tanpa foto: tampil gambar bawaan."
@@ -513,11 +521,7 @@ collections:
               - { label: Jabatan, name: jabatan, widget: string, required: true }
               - label: Nama Pejabat
                 name: nama
-                widget: list
-                field:
-                  label: Nama
-                  name: nama
-                  widget: string
+                widget: daftarNama
                 required: false
                 hint: "Satu baris satu nama. Kosongkan jika jabatan belum terisi."
               - label: Atasan
@@ -577,6 +581,8 @@ collections:
           - label: Misi
             name: misi
             widget: list
+            summary: "{{fields.misi}}"
+            collapsed: false
             field:
               label: Misi
               name: misi
@@ -587,6 +593,8 @@ collections:
           - label: Program Unggulan
             name: programUnggulan
             widget: list
+            summary: "{{fields.program}}"
+            collapsed: false
             field:
               label: Program
               name: program

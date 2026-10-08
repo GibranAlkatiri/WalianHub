@@ -47,7 +47,7 @@ const diperbarui = wisata.semua.length > 0
               kategori={item.data.kategori}
               ringkasan={item.data.ringkasan}
               gambar={item.data.gambar}
-              href={tautanPetaDestinasi(item.data.lokasi)}
+              href={tautanPetaDestinasi(item.data.lokasi, item.data.lokasi.alamat)}
             />
           ))}
         </div>
