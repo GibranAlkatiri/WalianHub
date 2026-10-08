@@ -157,8 +157,8 @@ const layanan = defineCollection({
     ikon: z.string().trim().refine((nama) => ikonTersedia.includes(nama), 'Pilih ikon yang tersedia di src/icons/').default('file-text'),
     unggulan: z.boolean().default(false),
     urutan: z.number().default(100),
-    persyaratan: z.array(teksWajib),
-    alur: z.array(teksWajib),
+    persyaratan: z.array(teksWajib).default([]),
+    alur: z.array(teksWajib).default([]),
     diperbarui: tanggalKonten,
   }),
 });
