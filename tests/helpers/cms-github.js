@@ -57,6 +57,7 @@ export function fakeGithub(files = {}, repository) {
       }
     }
     if (path === 'git/blobs' && method === 'POST') return json({ sha: blob(body.encoding === 'base64' ? Buffer.from(body.content, 'base64') : body.content) }, 201);
+    if (path.startsWith('git/blobs/') && method === 'GET') return blobs.has(path.slice(10)) ? json({ content: to64(blobs.get(path.slice(10))), encoding: 'base64' }) : json({}, 404);
     if (path === 'git/trees' && method === 'POST') {
       const files = new Map(trees.get(body.base_tree));
       for (const change of body.tree) if (change.sha === null) files.delete(change.path); else files.set(change.path, change.sha);
@@ -84,7 +85,7 @@ export function fakeGithub(files = {}, repository) {
     if (prPath) {
       const pr = pulls.find((item) => item.number === Number(prPath[1])); if (!pr) return json({}, 404);
       if (pr.state === 'open') pr.head.sha = refs.get(pr.head.ref);
-      if (method === 'GET' && !prPath[2]) return json({ ...pr, mergeable: options.mergeable, mergeable_state: options.mergeable ? 'clean' : 'dirty' });
+      if (method === 'GET' && !prPath[2]) return json({ ...pr, mergeable: options.mergeable, mergeable_state: options.mergeable == null ? 'unknown' : options.mergeable ? 'clean' : 'dirty' });
       if (method === 'PATCH') { pr.state = body.state; return json(pr); }
       if (prPath[2] === 'files') {
         const headAncestors = ancestors(refs.get(pr.head.ref));

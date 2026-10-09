@@ -91,23 +91,31 @@ export function createCmsHandler(fetchGitHub = fetch) {
       const pulls = (state = 'open') => all(`pulls?state=${state}&base=${encodeURIComponent(main)}`);
       const pullFor = async (branch) => (await pulls()).find((pr) => pr.head.ref === branch && pr.head.repo?.full_name === repo);
       const allowedChange = (file, t) => [file.filename, ...(file.previous_filename ? [file.previous_filename] : [])].every((path) => path === t.path || /^public\/uploads\/[a-zA-Z0-9._-]+\.(png|jpe?g|webp)$/.test(path));
-      const entry = async (t) => {
-        const [published, draftRef] = await Promise.all([content(t.path, main), ref(t.branch, true)]);
+      const draftState = async (t, published, draftRef, history) => {
         const draft = draftRef ? await content(t.path, t.branch) : null;
-        const history = draftRef ? await pulls('all') : [];
         const related = history.filter((pr) => pr.head.ref === t.branch && pr.head.repo?.full_name === repo);
         const pr = related.find((pr) => pr.state === 'open');
         const draftCommit = draftRef ? await gh(`git/commits/${draftRef.object.sha}`) : null;
-        const retired = related.some((pr) => pr.merged_at && pr.head.sha === draftRef.object.sha) || draftCommit?.message === `Buang draf ${t.collectionName}: ${t.slug}`;
-        const hasDraft = !!draftRef && !retired && (!!pr || (draft?.sha || null) !== (published?.sha || null));
-        const chosen = hasDraft && draft ? draft : published;
+        const retired = related.some((pr) => pr.merged_at && pr.head.sha === draftRef?.object.sha) || draftCommit?.message === `Buang draf ${t.collectionName}: ${t.slug}`;
+        // The immutable blob preserves the editable content after withdrawal,
+        // including after the removal PR is merged or main changes again.
+        const withdrawalBlob = draftCommit?.message?.match(new RegExp(`^Tarik ke draf ${t.collectionName}: ${t.slug}\\n\\nKonten-draf: ([a-f0-9]{40})$`))?.[1];
+        const withdrawn = !!withdrawalBlob && !published;
+        const hasDraft = withdrawn || (!!draftRef && !retired && (!!pr || (draft?.sha || null) !== (published?.sha || null)));
+        const retained = hasDraft && withdrawalBlob ? await gh(`git/blobs/${withdrawalBlob}`) : null;
+        const chosen = hasDraft ? draft || retained || published : published;
         return {
           slug: t.slug, collection: t.collectionName, label: t.label,
-          status: hasDraft ? 'draft' : 'published', published: !!published, deleted: hasDraft && !draft,
+          status: hasDraft ? 'draft' : 'published', published: !!published, deleted: hasDraft && !draft && !withdrawn,
+          withdrawal: hasDraft && !!withdrawalBlob, withdrawn,
           revision: hasDraft ? draftRef.object.sha : null, publishedSha: published?.sha || null,
           data: chosen ? parseContent(text64(chosen.content), t.path) : {},
-          ...(hasDraft && !pr ? { warning: 'Draf tersimpan, tetapi pemeriksaan belum dapat dimulai. Simpan kembali atau hubungi pengelola.' } : {}),
+          ...(hasDraft && !pr && !withdrawn ? { warning: 'Draf sudah tersimpan. Pemeriksaan belum dimulai; buka konten lalu klik Simpan draf lagi. Jika tetap gagal, hubungi pengelola panel.' } : {}),
         };
+      };
+      const entry = async (t) => {
+        const [published, draftRef] = await Promise.all([content(t.path, main), ref(t.branch, true)]);
+        return draftState(t, published, draftRef, draftRef ? await pulls('all') : []);
       };
       if (request.method === 'GET') {
         const action = url.searchParams.get('action') || 'list';
@@ -137,16 +145,9 @@ export function createCmsHandler(fetchGitHub = fetch) {
         const entries = await Promise.all([...slugs].map(async (slug) => {
           const t = target(config, collectionName, slug);
           const [published, draftRef] = await Promise.all([content(t.path, main), Promise.resolve(draftRefs.find((r) => r.ref === `refs/heads/${t.branch}`))]);
-          const draft = draftRef ? await content(t.path, t.branch) : null;
-          const related = openPulls.filter((p) => p.head.ref === t.branch && p.head.repo?.full_name === repo);
-          const pr = related.find((p) => p.state === 'open');
-          const draftCommit = draftRef ? await gh(`git/commits/${draftRef.object.sha}`) : null;
-          const retired = related.some((p) => p.merged_at && p.head.sha === draftRef?.object.sha) || draftCommit?.message === `Buang draf ${t.collectionName}: ${t.slug}`;
-          const hasDraft = !!draftRef && !retired && (!!pr || (draft?.sha || null) !== (published?.sha || null));
-          if (!published && !draft) return null;
-          const chosen = hasDraft ? draft : published;
-          const data = chosen ? parseContent(text64(chosen.content), t.path) : parseContent(text64(published.content), t.path);
-          return { slug, collection: collectionName, status: hasDraft ? 'draft' : 'published', published: !!published, deleted: hasDraft && !draft, title: t.label || data[collection.identifier_field || 'judul'] || data.nama || slug, summary: data.ringkasan || '', revision: hasDraft ? draftRef.object.sha : null, publishedSha: published?.sha || null, data };
+          const item = await draftState(t, published, draftRef, openPulls);
+          if (!item.published && !item.revision) return null;
+          return { ...item, title: t.label || item.data[collection.identifier_field || 'judul'] || item.data.nama || slug, summary: item.data.ringkasan || '' };
         }));
         return response({ entries: entries.filter(Boolean) });
       }
@@ -170,7 +171,11 @@ export function createCmsHandler(fetchGitHub = fetch) {
         if (!current.revision) fail('Simpan draf terlebih dahulu.', 409);
         const pr = await pullFor(t.branch);
         if (!pr) fail('Draf belum siap diterbitkan. Simpan kembali.', 409);
-        const detail = await gh(`pulls/${pr.number}`);
+        let detail = await gh(`pulls/${pr.number}`);
+        for (let attempt = 0; attempt < 2 && (detail.mergeable == null || detail.mergeable_state === 'unknown'); attempt++) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          detail = await gh(`pulls/${pr.number}`);
+        }
         if (detail.head.sha !== current.revision || detail.base.ref !== main) fail('Draf berubah. Muat ulang.', 409);
         const changed = await all(`pulls/${pr.number}/files`);
         if (!changed.length || changed.some((file) => !allowedChange(file, t))) fail('Draf memuat perubahan di luar konten ini. Hubungi pengelola.', 409);
@@ -181,16 +186,21 @@ export function createCmsHandler(fetchGitHub = fetch) {
         const check = checks.check_runs.find((run) => run.name === 'check' && run.app?.slug === 'github-actions' && run.head_sha === current.revision);
         if (!check || check.status !== 'completed') fail('Konten sedang diperiksa. Draf sudah tersimpan; coba Terbitkan kembali sebentar lagi.', 409);
         if (check.conclusion !== 'success') fail('Pemeriksaan konten belum berhasil. Perbaiki isian sebelum menerbitkan.', 422);
-        if (detail.mergeable !== true || detail.mergeable_state !== 'clean') fail('Draf belum bisa digabung dengan versi terbaru. Hubungi pengelola.', 409);
-        const merged = await gh(`pulls/${pr.number}/merge`, 'PUT', { sha: current.revision, merge_method: 'squash', commit_title: `${current.deleted ? 'Hapus' : 'Terbitkan'} ${body.collection}: ${body.slug}` });
+        if (detail.mergeable == null || detail.mergeable_state === 'unknown') fail('Kesiapan penerbitan masih diperiksa. Tunggu sebentar, lalu coba lagi. Draf sudah tersimpan.', 409);
+        if (detail.mergeable === false || detail.mergeable_state === 'dirty') fail('Draf berbenturan dengan versi website terbaru. Muat ulang konten, simpan draf, lalu coba lagi.', 409);
+        if (detail.mergeable_state !== 'clean') fail('Penerbitan masih tertahan oleh pemeriksaan atau persetujuan GitHub. Draf sudah tersimpan; coba lagi setelah pemeriksaan selesai.', 409);
+        const merged = await gh(`pulls/${pr.number}/merge`, 'PUT', { sha: current.revision, merge_method: 'squash', commit_title: `${current.withdrawal ? 'Tarik ke draf' : current.deleted ? 'Hapus' : 'Terbitkan'} ${body.collection}: ${body.slug}` });
         if (!merged.merged) fail('Penerbitan belum berhasil. Draf tetap tersimpan.', 409);
         // Keep the merged branch as history. Identical branches are ignored in
         // lists and reused for the next draft; never delete a live edit.
-        return response({ ok: true, message: 'Perubahan diterbitkan. Website diperbarui setelah proses build selesai.' });
+        return response({ ok: true, message: current.withdrawal ? 'Konten ditarik ke draf. Isinya tetap tersimpan; website diperbarui setelah deployment selesai.' : current.deleted ? 'Konten dihapus. Website diperbarui setelah deployment selesai.' : 'Konten berhasil diterbitkan. Website diperbarui setelah deployment selesai.' });
       }
-      if (!['save', 'delete'].includes(body.action)) fail('Tindakan tidak dikenali.');
-      if (body.action === 'delete' && (t.collection.delete === false || t.collection.files)) fail('Konten ini tidak boleh dihapus.', 403);
-      if (body.action === 'delete' && !current.published) fail('Gunakan Buang draf untuk konten yang belum terbit.');
+      if (!['save', 'delete', 'withdraw'].includes(body.action)) fail('Tindakan tidak dikenali.');
+      const removing = ['delete', 'withdraw'].includes(body.action);
+      if (removing && (t.collection.delete === false || t.collection.files)) fail('Konten ini tidak boleh dihapus atau ditarik dari website.', 403);
+      if (removing && !current.published) fail('Konten ini belum terbit. Gunakan Hapus untuk membuang draf.');
+      if (body.action === 'withdraw' && current.deleted) fail('Selesaikan atau batalkan penghapusan terlebih dahulu.', 409);
+      const retained = body.action === 'withdraw' ? await content(t.path, current.revision ? t.branch : main) : null;
       const uploads = body.uploads || [];
       if (!Array.isArray(uploads) || uploads.length > 5) fail('Unggah maksimal 5 foto dalam satu penyimpanan.');
       const preparedUploads = uploads.map((upload) => {
@@ -223,7 +233,7 @@ export function createCmsHandler(fetchGitHub = fetch) {
         if (previous.some((file) => !allowedChange(file, t))) fail('Draf memuat perubahan di luar konten ini. Hubungi pengelola.', 409);
         for (const file of previous) if (file.filename !== t.path && file.status !== 'removed') changes.push({ path: file.filename, mode: '100644', type: 'blob', sha: file.sha });
       }
-      if (body.action === 'delete') changes.push({ path: t.path, mode: '100644', type: 'blob', sha: null });
+      if (removing) changes.push({ path: t.path, mode: '100644', type: 'blob', sha: null });
       else {
         const allowed = new Set(t.fields.map((field) => field.name));
         const data = Object.fromEntries(Object.entries(body.data || {}).filter(([key]) => allowed.has(key)));
@@ -248,13 +258,13 @@ export function createCmsHandler(fetchGitHub = fetch) {
         changes.push({ path: upload.path, mode: '100644', type: 'blob', sha: blob.sha });
       }
       const tree = await gh('git/trees', 'POST', { base_tree: commit.tree.sha, tree: changes });
-      const saved = await gh('git/commits', 'POST', { message: `Simpan draf ${body.collection}: ${body.slug}`, tree: tree.sha, parents: [...new Set([parent, ...(mainHead ? [mainHead] : [])])] });
+      const saved = await gh('git/commits', 'POST', { message: retained ? `Tarik ke draf ${body.collection}: ${body.slug}\n\nKonten-draf: ${retained.sha}` : `Simpan draf ${body.collection}: ${body.slug}`, tree: tree.sha, parents: [...new Set([parent, ...(mainHead ? [mainHead] : [])])] });
       if (oldRef) await gh(`git/refs/heads/${encodePath(t.branch)}`, 'PATCH', { sha: saved.sha, force: false });
       else await gh('git/refs', 'POST', { ref: `refs/heads/${t.branch}`, sha: saved.sha });
       try {
         if (!(await pullFor(t.branch))) await gh('pulls', 'POST', { title: `Konten ${body.collection}: ${body.slug}`, head: t.branch, base: main, body: 'Draf konten CMS. Penerbitan dilakukan melalui panel setelah pemeriksaan berhasil.' });
       } catch (error) {
-        return response({ ...await entry(t), warning: 'Draf tersimpan, tetapi pemeriksaan belum dapat dimulai. Simpan kembali atau hubungi pengelola.' });
+        return response({ ...await entry(t), warning: 'Draf sudah tersimpan. Pemeriksaan belum dimulai; coba Simpan draf lagi. Jika tetap gagal, hubungi pengelola panel.' });
       }
       return response(await entry(t));
     } catch (error) {

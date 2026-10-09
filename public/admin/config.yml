@@ -95,7 +95,7 @@ collections:
         widget: boolean
         default: false
         required: false
-        hint: "Centang untuk menampilkan di halaman utama. Hanya 4 yang muat — pilih yang paling penting."
+        hint: "Centang untuk menampilkan layanan ini di halaman utama. Semua layanan yang dicentang akan tampil setelah diterbitkan."
 
       # Urutan terisi otomatis (nomor terbesar + 1) saat menyimpan entri baru.
       - label: Urutan

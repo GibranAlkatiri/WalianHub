@@ -47,7 +47,7 @@
 
     if (window.__walianPanelDimuat) return;
     window.__walianPanelDimuat = true;
-    import('./cms.js?v=20261010_01')
+    import('./cms.js?v=20261010_02')
       .then(function (cms) { return cms.start(); })
       .catch(function () {
         window.__walianPanelDimuat = false;
