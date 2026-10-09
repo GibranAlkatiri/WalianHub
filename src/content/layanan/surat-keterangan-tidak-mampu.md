@@ -1,16 +1,19 @@
 ---
-judul: "Surat Keterangan Tidak Mampu"
-ringkasan: "Surat keterangan kondisi ekonomi warga untuk keperluan bantuan atau keringanan biaya."
-ikon: "hand-heart"
+judul: Surat Keterangan Tidak Mampu
+ringkasan: Keterangan kondisi ekonomi warga untuk pengajuan bantuan atau keringanan biaya.
+ikon: hand-heart
 unggulan: true
 urutan: 3
 persyaratan:
-  - "[Persyaratan 1]"
-  - "[Persyaratan 2]"
+  - Salinan KTP Pemohon, satu lembar
+  - Salinan Kartu Keluarga, satu lembar
+  - Surat pengantar yang di terbitkan lingkungan setempat
 alur:
-  - "[Langkah 1]"
-  - "[Langkah 2]"
+  - Pemohon menyiapkan surat pengantar dan dokumen identitas.
+  - Pemohon mengajukan permohonan kepada petugas kelurahan.
+  - Petugas memeriksa kelengkapan dokumen dan informasi pada rancangan surat.
+  - Surat diajukan untuk mendapat persetujuan lurah.
 diperbarui: 2026-09-28
 ---
 
-[Catatan tambahan, jika ada.]
+Tidak dipungut biaya apapun
