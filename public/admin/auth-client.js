@@ -1,13 +1,12 @@
 /**
- * Panel Konten Kelurahan Walian — Klien Autentikasi Decap CMS
+ * Panel Konten Kelurahan Walian — Klien Autentikasi CMS
  * Menangani login via /api/auth, penyimpanan sesi GitHub token,
- * dan inisialisasi Decap CMS.
+ * dan pemuatan panel konten.
  */
 (function () {
   'use strict';
 
   var KUNCI = 'decap-cms-user';
-  var BATAS_TUNGGU_MS = 30000;
   var galat = document.getElementById('galat');
   var statusGalat = document.getElementById('status-galat');
   var statusText = document.getElementById('status');
@@ -40,65 +39,20 @@
     if (statusKeluar) statusKeluar.hidden = false;
   }
 
-  function inisialisasiPreview() {
-    if (window.daftarkanPreview && typeof window.daftarkanPreview === 'function') {
-      try {
-        window.daftarkanPreview();
-      } catch (e) {
-        /* abaikan jika sudah terdaftar */
-      }
-    }
-  }
-
-  // Decap CMS me-render app ke div#nc-root yang ditambahkan ke body.
-  // Tunggu sampai elemen tersebut memiliki anak dan siap digunakan.
-  function tungguRender() {
-    var mulai = Date.now();
-    var timer = setInterval(function () {
-      inisialisasiPreview();
-      var root = document.getElementById('nc-root');
-      if (root && root.childElementCount > 0) {
-        clearInterval(timer);
-        inisialisasiPreview();
-        var link = document.getElementById('admin-stylesheet');
-        if (link && link.parentNode) {
-          link.parentNode.appendChild(link);
-        }
-        var panel = document.getElementById('panel');
-        if (panel) panel.hidden = true;
-        return;
-      }
-      if (Date.now() - mulai > BATAS_TUNGGU_MS) {
-        clearInterval(timer);
-        gagalPanel(
-          'Panel tidak merespons dalam 30 detik. Periksa koneksi internet dan token GitHub server, lalu muat ulang.'
-        );
-      }
-    }, 400);
-  }
-
   function bukaPanel() {
     document.body.classList.add('panel-aktif');
     document.title = 'Panel Konten — Kelurahan Walian';
     var panel = document.getElementById('panel');
     if (panel) panel.hidden = false;
 
-    if (!document.querySelector('script[data-decap]')) {
-      var s = document.createElement('script');
-      s.src = 'https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js';
-      s.setAttribute('data-decap', '1');
-      s.onload = function () {
-        inisialisasiPreview();
-      };
-      s.onerror = function () {
-        gagalPanel('Gagal memuat script Decap CMS dari unpkg. Periksa koneksi internet lalu muat ulang.');
-      };
-      document.body.appendChild(s);
-    } else {
-      inisialisasiPreview();
-    }
-
-    tungguRender();
+    if (window.__walianPanelDimuat) return;
+    window.__walianPanelDimuat = true;
+    import('./cms.js?v=20261010_01')
+      .then(function (cms) { return cms.start(); })
+      .catch(function () {
+        window.__walianPanelDimuat = false;
+        gagalPanel('Panel gagal dimuat. Periksa koneksi lalu muat ulang.');
+      });
   }
 
   // Tombol keluar / reset sesi
