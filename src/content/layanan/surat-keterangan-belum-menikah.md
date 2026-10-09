@@ -2,7 +2,7 @@
 judul: Surat Keterangan Belum Menikah
 ringkasan: Keterangan status belum menikah untuk melengkapi kebutuhan administrasi pemohon.
 ikon: file-text
-unggulan: false
+unggulan: true
 urutan: 5
 persyaratan:
   - Surat pengantar dari lingkungan setempat
