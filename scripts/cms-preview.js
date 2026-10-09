@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
+import { load } from 'js-yaml';
 import { createCmsHandler } from '../functions/api/cms.js';
 import { fakeGithub } from '../tests/helpers/cms-github.js';
 
@@ -7,7 +8,7 @@ const repo = resolve(import.meta.dir, '..');
 const files = {};
 for await (const path of new Bun.Glob('src/content/**/*.{md,json}').scan({ cwd: repo })) files[path.replaceAll('\\', '/')] = await readFile(resolve(repo, path), 'utf8');
 const config = await readFile(resolve(repo, 'public/admin/config.yml'), 'utf8');
-const github = fakeGithub(files);
+const github = fakeGithub(files, load(config).backend.repo);
 const handler = createCmsHandler(github.fetch);
 const env = { GITHUB_TOKEN: 'local-preview-only', ASSETS: { fetch: async () => new Response(config) } };
 const types = { '.css': 'text/css', '.js': 'text/javascript', '.html': 'text/html', '.json': 'application/json', '.yml': 'text/yaml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml' };

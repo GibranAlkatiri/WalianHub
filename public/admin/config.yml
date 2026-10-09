@@ -9,7 +9,7 @@
 
 backend:
   name: github
-  repo: gleey/WalianHub
+  repo: GibranAlkatiri/WalianHub
   branch: main
   squash_merges: true
 
@@ -19,8 +19,8 @@ publish_mode: editorial_workflow
 media_folder: public/uploads
 public_folder: /uploads
 
-site_url: https://walianhub.pages.dev
-display_url: https://walianhub.pages.dev
+site_url: https://walianhub-8ib.pages.dev
+display_url: https://walianhub-8ib.pages.dev
 
 # favikon kelurahan + nama, supaya staf langsung tahu sedang mengedit
 # situsnya sendiri, bukan aplikasi lain.

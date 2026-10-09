@@ -6,7 +6,7 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), { status
 
 // In-memory GitHub API for backend tests and the local CMS preview.
 // Every draft has its own immutable file snapshot; no production requests.
-export function fakeGithub(files = {}, repository = 'gleey/WalianHub') {
+export function fakeGithub(files = {}, repository) {
   const refs = new Map(), blobs = new Map(), trees = new Map(), commits = new Map(), pulls = [];
   let next = 0;
   const blob = (content) => { const id = sha(content); blobs.set(id, content); return id; };
