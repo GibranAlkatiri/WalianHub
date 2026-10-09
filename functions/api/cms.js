@@ -56,12 +56,20 @@ export function createCmsHandler(fetchGitHub = fetch) {
       if (!/^[\w.-]+\/[\w.-]+$/.test(config.backend?.repo) || !/^[\w/-]+$/.test(config.backend?.branch || '')) fail('Konfigurasi repository tidak valid.', 503);
       const repo = config.backend.repo;
       const main = config.backend.branch;
-      const gh = async (path, method = 'GET', body, allow404 = false) => {
-        const res = await fetchGitHub(`https://api.github.com/repos/${repo}/${path}`, {
+      const gh = async (path, method = 'GET', body, allow404 = false, publicReadFallback = false) => {
+        const headers = { Authorization: `Bearer ${secret}`, Accept: 'application/vnd.github+json', 'User-Agent': 'WalianHub-CMS', 'X-GitHub-Api-Version': '2026-03-10', ...(body ? { 'content-type': 'application/json' } : {}) };
+        const send = (requestHeaders) => fetchGitHub(`https://api.github.com/repos/${repo}/${path}`, {
           method,
-          headers: { Authorization: `Bearer ${secret}`, Accept: 'application/vnd.github+json', 'User-Agent': 'WalianHub-CMS', 'X-GitHub-Api-Version': '2026-03-10', ...(body ? { 'content-type': 'application/json' } : {}) },
+          headers: requestHeaders,
           ...(body ? { body: JSON.stringify(body) } : {}),
         }).catch(() => fail('GitHub belum dapat dihubungi. Coba kembali.', 502));
+        let res = await send(headers);
+        if (res.status === 403 && method === 'GET' && publicReadFallback) {
+          // Fine-grained PATs cannot grant Checks access. Public repositories
+          // expose read-only check results anonymously; never retry writes.
+          const { Authorization, ...publicHeaders } = headers;
+          res = await send(publicHeaders);
+        }
         if (res.status === 404 && allow404) return null;
         if (!res.ok) {
           if ([409, 422].includes(res.status)) fail('Konten berubah atau mengalami konflik. Muat ulang sebelum menyimpan.', 409);
@@ -169,7 +177,7 @@ export function createCmsHandler(fetchGitHub = fetch) {
         const latestMain = (await ref(main)).object.sha;
         const comparison = await gh(`compare/${latestMain}...${current.revision}`);
         if (comparison.behind_by > 0) fail('Versi website baru tersedia. Klik Simpan draf untuk memperbarui pemeriksaan, lalu coba Terbitkan kembali.', 409);
-        const checks = await gh(`commits/${current.revision}/check-runs?filter=latest&per_page=100`);
+        const checks = await gh(`commits/${current.revision}/check-runs?filter=latest&per_page=100`, 'GET', undefined, false, true);
         const check = checks.check_runs.find((run) => run.name === 'check' && run.app?.slug === 'github-actions' && run.head_sha === current.revision);
         if (!check || check.status !== 'completed') fail('Konten sedang diperiksa. Draf sudah tersimpan; coba Terbitkan kembali sebentar lagi.', 409);
         if (check.conclusion !== 'success') fail('Pemeriksaan konten belum berhasil. Perbaiki isian sebelum menerbitkan.', 422);
