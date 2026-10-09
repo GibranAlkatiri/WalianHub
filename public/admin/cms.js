@@ -4,6 +4,7 @@ const root = document.getElementById('cms-root');
 const state = { config: null, collection: 'layanan', filter: 'all', search: '', entries: [], entry: null, uploads: new Map(), dirty: false, busy: false, urls: new Set() };
 let sequence = 0;
 let loadSequence = 0;
+let toastTimer;
 const el = (tag, attrs = {}, ...children) => {
   const node = document.createElement(tag);
   for (const [key, value] of Object.entries(attrs)) {
@@ -23,12 +24,23 @@ function message(text, error = false) {
   const node = root.querySelector('#cms-message');
   node.textContent = text; node.className = `cms-message${error ? ' is-error' : ''}`; node.hidden = !text;
 }
+function notify(text) {
+  clearTimeout(toastTimer);
+  let node = document.getElementById('cms-notification');
+  if (!node) { node = el('div', { id: 'cms-notification', class: 'cms-notification', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }); document.body.append(node); }
+  node.hidden = false;
+  node.replaceChildren(el('span', { class: 'cms-notification-icon', 'aria-hidden': 'true' }, '✓'), el('span', {}, text), button('×', () => { node.hidden = true; }, 'cms-notification-close'));
+  node.lastChild.setAttribute('aria-label', 'Tutup pemberitahuan');
+  toastTimer = setTimeout(() => { node.hidden = true; }, 7000);
+}
 function setBusy(value) {
   state.busy = value;
+  if (value) { const notification = document.getElementById('cms-notification'); if (notification) notification.hidden = true; clearTimeout(toastTimer); }
   root.querySelectorAll('button').forEach((node) => { node.disabled = value; });
+  root.querySelectorAll('.cms-status-select').forEach((node) => { node.disabled = value; });
   root.querySelector('.cms-editor')?.toggleAttribute('inert', value);
 }
-function canLeave() { return !state.dirty || confirm('Ada perubahan yang belum disimpan. Tinggalkan halaman ini?'); }
+function canLeave() { return !state.busy && (!state.dirty || confirm('Ada perubahan yang belum disimpan. Tinggalkan halaman ini?')); }
 function cleanup() { for (const url of state.urls) URL.revokeObjectURL(url); state.urls.clear(); state.uploads.clear(); }
 function defaults(list) {
   return Object.fromEntries(list.filter((field) => field.name !== 'body').map((field) => [field.name,
@@ -38,7 +50,7 @@ function shell() {
   root.replaceChildren();
   const nav = el('nav', { class: 'cms-nav', 'aria-label': 'Jenis konten' });
   for (const collection of state.config.collections) nav.append(button(collection.label, () => { if (canLeave()) { state.collection = collection.name; state.filter = 'all'; state.search = ''; showList(); } }, state.collection === collection.name ? 'is-active' : ''));
-  const top = el('header', { class: 'cms-header' }, el('a', { href: './', class: 'cms-brand', onClick: (event) => { event.preventDefault(); if (canLeave()) showList(); } }, el('span', { 'aria-hidden': 'true' }, 'W'), el('strong', {}, 'Panel Konten', el('small', {}, 'Kelurahan Walian'))), el('div', { class: 'cms-account' }, el('a', { href: state.config.site_url, target: '_blank', rel: 'noopener' }, 'Lihat website'), button('Keluar', () => { if (canLeave()) logout(); })));
+  const top = el('header', { class: 'cms-header' }, el('a', { href: './', class: 'cms-brand', onClick: (event) => { event.preventDefault(); if (canLeave()) showList(); } }, el('span', { 'aria-hidden': 'true' }, 'W'), el('strong', {}, 'Panel Konten', el('small', {}, 'Kelurahan Walian'))), el('div', { class: 'cms-account' }, el('a', { href: state.config.site_url, onClick: (event) => { if (!canLeave()) event.preventDefault(); } }, 'Lihat website'), button('Keluar', () => { if (canLeave()) logout(); })));
   root.append(top);
   if (window.WALIAN_DEMO) root.append(el('p', { class: 'cms-demo' }, 'Mode uji — perubahan hanya tersimpan selama pratinjau lokal ini berjalan.'));
   root.append(nav, el('main', { class: 'cms-main' }, el('p', { id: 'cms-message', class: 'cms-message', role: 'status', 'aria-live': 'polite', hidden: true }), el('div', { id: 'cms-content' })));
@@ -70,7 +82,64 @@ function drawRows() {
   const rows = root.querySelector('#cms-rows'); rows.replaceChildren();
   const items = state.entries.filter((item) => (state.filter === 'all' || item.status === state.filter) && `${item.title} ${item.summary}`.toLocaleLowerCase('id').includes(state.search.toLocaleLowerCase('id')));
   if (!items.length) rows.append(el('p', { class: 'cms-empty' }, state.search ? 'Tidak ada konten yang cocok dengan pencarian.' : 'Belum ada konten pada status ini.'));
-  for (const item of items) rows.append(el('article', { class: 'cms-row' }, el('div', { class: 'cms-row-copy' }, el('h2', {}, item.title), item.summary ? el('p', {}, item.summary) : null, item.status === 'draft' && item.published ? el('small', {}, item.deleted ? 'Draf penghapusan — versi terbit masih tampil.' : 'Ada revisi draf — versi terbit masih tampil.') : null), el('span', { class: `cms-badge ${item.status}` }, item.status === 'draft' ? 'Draf' : 'Terbit'), button('Ubah', () => openEntry(item.slug))));
+  for (const item of items) {
+    const status = el('select', { class: `cms-status-select ${item.status}`, 'aria-label': `Status ${item.title}`, onChange: (event) => changeStatus(item, event.target.value) }, el('option', { value: 'draft', disabled: !item.deleted && !item.revision && (menu().files || menu().delete === false) }, 'Draf'), el('option', { value: 'published' }, 'Terbit'));
+    status.value = item.status;
+    if (item.status === 'draft' && item.published && !item.deleted && !menu().files && menu().delete !== false) status.append(el('option', { value: 'withdraw' }, 'Tarik ke draf'));
+    const actions = el('div', { class: 'cms-row-actions' }, button('Ubah', () => openEntry(item.slug)));
+    if (menu().delete !== false && !menu().files) actions.append(button('Hapus', () => removeEntry(item), 'cms-danger-text'));
+    const hint = item.withdrawal && item.published ? 'Penarikan ke draf menunggu pemeriksaan. Klik Lanjutkan penarikan.' : item.deleted ? 'Penghapusan menunggu pemeriksaan. Klik Lanjutkan hapus.' : item.status === 'draft' && item.published ? 'Ada revisi draf — versi terbit masih tampil.' : item.withdrawn ? 'Sudah ditarik dari website; isinya tetap tersimpan.' : '';
+    rows.append(el('article', { class: 'cms-row' }, el('div', { class: 'cms-row-copy' }, el('h2', {}, item.title), item.summary ? el('p', {}, item.summary) : null, hint ? el('small', {}, hint) : null), status, actions));
+    if (item.deleted) actions.prepend(button(item.withdrawal ? 'Lanjutkan penarikan' : 'Lanjutkan hapus', () => finishRemoval(item), 'cms-secondary'));
+  }
+  if (state.busy) setBusy(true);
+}
+const entryParams = (item) => ({ collection: state.collection, slug: item.slug, revision: item.revision, publishedSha: item.publishedSha });
+async function finishRemoval(item) {
+  if (state.busy) return;
+  setBusy(true); message('Memeriksa perubahan…');
+  try { const result = await request('publish', entryParams(item), 'POST'); await showList(); notify(result.message); }
+  catch (error) { message(error.message + ` Untuk melanjutkan, klik ${item.withdrawal ? 'Lanjutkan penarikan' : 'Lanjutkan hapus'}.`, true); }
+  finally { setBusy(false); }
+}
+async function changeStatus(item, value) {
+  if (state.busy) return;
+  if (value === 'withdraw') value = 'draft';
+  if (value === 'draft' && !item.published) { drawRows(); return; }
+  if (value === 'published' && item.deleted) { drawRows(); message('Selesaikan atau batalkan penarikan/penghapusan dahulu melalui tombol Ubah.', true); return; }
+  if (value === 'published' && item.status === 'published') return;
+  if (value === 'draft' && !confirm(`Tarik “${item.title}” dari website dan simpan isinya sebagai draf? Website berubah setelah deployment selesai.`)) { drawRows(); return; }
+  if (value === 'published') {
+    const listFields = menu().files?.find((file) => file.name === item.slug)?.fields || menu().fields;
+    const errors = errorsFor(listFields, item.data);
+    if (errors.length) { drawRows(); message('Isian belum lengkap. Klik Ubah: ' + errors.slice(0, 3).join(' '), true); return; }
+  }
+  setBusy(true); message(value === 'draft' ? 'Menarik konten ke draf…' : 'Memeriksa penerbitan…');
+  let current = item;
+  try {
+    if (value === 'draft' && !item.withdrawal) current = await request('withdraw', entryParams(item), 'POST');
+    if (value === 'published' && (item.withdrawn || item.warning)) current = await request('save', { ...entryParams(item), data: item.data }, 'POST');
+    const result = await request('publish', entryParams(current), 'POST');
+    await showList(); notify(result.message);
+  } catch (error) { await showList(); message(error.message + (value === 'draft' && current.withdrawal ? ' Klik Lanjutkan penarikan untuk mencoba lagi.' : ''), true); }
+  finally { setBusy(false); }
+}
+async function removeEntry(item) {
+  if (state.busy) return;
+  if (!confirm(`Hapus “${item.title || name()}”? ${item.published ? 'Konten di website akan dihapus setelah pemeriksaan dan deployment selesai.' : 'Draf ini akan dibuang.'}`)) return;
+  setBusy(true); message('Menghapus konten…');
+  let prepared = false;
+  try {
+    if (!item.published) { await request('discard', entryParams(item), 'POST'); state.dirty = false; await showList(); notify('Draf berhasil dihapus.'); }
+    else {
+      const current = item.deleted && !item.withdrawal ? item : await request('delete', entryParams(item), 'POST');
+      prepared = true;
+      state.dirty = false;
+      const result = await request('publish', entryParams(current), 'POST');
+      await showList(); notify(result.message);
+    }
+  } catch (error) { if (prepared || !state.entry) await showList(); message(error.message + (prepared ? ' Klik Lanjutkan hapus untuk mencoba lagi.' : ''), true); }
+  finally { setBusy(false); }
 }
 async function openEntry(slug) {
   if (!canLeave()) return;
@@ -205,15 +274,16 @@ async function save(publish = false) {
   if (!slug) { message('Isi nama atau judul dahulu agar draf mudah ditemukan.', true); return; }
   setBusy(true); message(publish ? 'Menyimpan dan memeriksa konten…' : 'Menyimpan draf…');
   try {
-    if (!publish || state.dirty || !state.entry.revision || state.entry.warning) {
+    if (!publish || state.dirty || !state.entry.revision || state.entry.warning || state.entry.withdrawn) {
       const uploads = [...state.uploads.entries()].filter(([path]) => JSON.stringify(data).includes(path)).map(([, upload]) => ({ path: upload.path, content: upload.content }));
       const result = await request('save', { collection: state.collection, slug, data, revision: state.entry.revision, publishedSha: state.entry.publishedSha, uploads }, 'POST');
       state.entry = result; state.dirty = false; cleanup(); drawEditor();
-      message(result.warning || 'Draf tersimpan. Konten belum berubah di website.', !!result.warning);
+      if (!publish) { await showList(); notify('Draf berhasil disimpan.'); if (result.warning) message(result.warning, true); }
+      else message(result.warning || 'Draf sudah tersimpan. Memeriksa penerbitan…', !!result.warning);
     }
     if (publish) {
       const result = await request('publish', { collection: state.collection, slug, revision: state.entry.revision, publishedSha: state.entry.publishedSha }, 'POST');
-      await showList(); message(result.message);
+      await showList(); notify(result.message);
     }
   } catch (error) { message(error.message, true); } finally { setBusy(false); }
 }
@@ -224,22 +294,20 @@ async function discard() {
   catch (error) { message(error.message, true); } finally { setBusy(false); }
 }
 async function deletePublished() {
-  if (!confirm('Siapkan penghapusan konten ini? Konten tetap tampil sampai penghapusan diterbitkan.')) return;
-  setBusy(true);
-  try { state.entry = await request('delete', { collection: state.collection, slug: state.entry.slug, revision: state.entry.revision, publishedSha: state.entry.publishedSha }, 'POST'); state.dirty = false; drawEditor(); message('Penghapusan disimpan sebagai draf. Klik Terbitkan penghapusan setelah pemeriksaan selesai.'); }
-  catch (error) { message(error.message, true); } finally { setBusy(false); }
+  if (state.dirty && !confirm('Ada perubahan yang belum disimpan. Lanjutkan menghapus konten ini?')) return;
+  await removeEntry(state.entry);
 }
 function drawEditor() {
   shell(); const area = root.querySelector('#cms-content');
   const actions = el('div', { class: 'cms-editor-actions' });
   if (!state.entry.deleted) actions.append(button('Simpan draf', () => save(), 'cms-secondary'));
-  actions.append(button(state.entry.deleted ? 'Terbitkan penghapusan' : 'Terbitkan', async () => {
-    if (state.entry.deleted) { setBusy(true); try { const result = await request('publish', { collection: state.collection, slug: state.entry.slug, revision: state.entry.revision, publishedSha: state.entry.publishedSha }, 'POST'); await showList(); message(result.message); } catch (error) { message(error.message, true); } finally { setBusy(false); } }
+  actions.append(button(state.entry.deleted ? state.entry.withdrawal ? 'Tarik ke draf' : 'Terbitkan penghapusan' : 'Terbitkan', async () => {
+    if (state.entry.deleted) await finishRemoval(state.entry);
     else await save(true);
   }, 'cms-primary'));
   const header = el('div', { class: 'cms-editor-bar' }, button('← Daftar', () => { if (canLeave()) showList(); }), el('div', { class: 'cms-editor-title' }, el('h1', {}, name()), el('span', { class: 'cms-badge ' + state.entry.status }, state.entry.status === 'draft' ? 'Draf' : 'Terbit')), actions);
   area.append(header, el('p', { class: 'cms-editor-help' }, state.entry.published ? 'Revisi disimpan sebagai draf. Versi terbit tetap tampil sampai revisi diterbitkan.' : 'Simpan draf untuk melanjutkan nanti. Terbitkan jika semua isian sudah benar.'));
-  if (state.entry.deleted) area.append(el('p', { class: 'cms-empty' }, 'Draf ini akan menghapus konten dari website setelah diterbitkan.'));
+  if (state.entry.deleted) area.append(el('p', { class: 'cms-empty' }, state.entry.withdrawal ? 'Konten akan ditarik dari website setelah pemeriksaan selesai. Isinya tetap tersedia sebagai draf.' : 'Draf ini akan menghapus konten dari website setelah diterbitkan.'));
   else {
     const form = el('form', { class: 'cms-editor', noValidate: true, onSubmit: (e) => { e.preventDefault(); save(); } });
     for (const field of fields()) form.append(fieldControl(field, state.entry.data, field.name, field.name));
@@ -247,7 +315,7 @@ function drawEditor() {
   }
   const bottom = el('div', { class: 'cms-editor-bottom' });
   if (state.entry.revision) bottom.append(button('Buang draf', discard, 'cms-danger-text'));
-  else if (state.entry.published && menu().delete !== false && !menu().files) bottom.append(button('Hapus konten', deletePublished, 'cms-danger-text'));
+  if (state.entry.published && menu().delete !== false && !menu().files) bottom.append(button('Hapus konten', deletePublished, 'cms-danger-text'));
   area.append(bottom);
   if (state.busy) setBusy(true);
 }
