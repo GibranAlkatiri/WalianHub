@@ -175,6 +175,97 @@ describe('CMS sederhana: draf dan penerbitan', () => {
   test('file pengaturan tidak dapat dihapus', async () => {
     const { call } = setup(); expect((await call('delete', { collection: 'pengaturan', slug: 'situs' }, 'POST')).status).toBe(403);
   });
+  test('penarikan mempertahankan revisi draf setelah terhapus dari main dan dapat diterbitkan ulang', async () => {
+    const { save, call, github } = setup();
+    const revision = (await save({ ...DATA, judul: 'Revisi yang disimpan' })).body;
+    const pending = await call('withdraw', { revision: revision.revision, publishedSha: revision.publishedSha }, 'POST');
+    expect(pending.status).toBe(200); expect(pending.body.deleted).toBe(true);
+    expect(pending.body.withdrawal).toBe(true); expect(pending.body.data.judul).toBe('Revisi yang disimpan');
+    expect(github.get(PATH)).not.toBeNull();
+    github.options.checks = 'pending';
+    expect((await call('publish', { revision: pending.body.revision, publishedSha: pending.body.publishedSha }, 'POST')).status).toBe(409);
+    expect(github.get(PATH)).not.toBeNull();
+    github.options.checks = 'success';
+    expect((await call('publish', { revision: pending.body.revision, publishedSha: pending.body.publishedSha }, 'POST')).status).toBe(200);
+    expect(github.get(PATH)).toBeNull();
+    github.advanceMain({ 'src/perubahan.js': 'baru' });
+    const withdrawn = (await call('entry', { slug: 'contoh' })).body;
+    expect(withdrawn.published).toBe(false); expect(withdrawn.status).toBe('draft'); expect(withdrawn.deleted).toBe(false);
+    expect(withdrawn.withdrawn).toBe(true); expect(withdrawn.data.judul).toBe('Revisi yang disimpan');
+    expect((await call('list')).body.entries[0].data).toEqual(withdrawn.data);
+    const saved = await save(withdrawn.data);
+    expect(saved.status).toBe(200); expect(saved.body.withdrawn).toBe(false);
+    expect((await call('publish', { revision: saved.body.revision, publishedSha: saved.body.publishedSha }, 'POST')).status).toBe(200);
+    expect(parseContent(github.get(PATH), PATH).judul).toBe('Revisi yang disimpan');
+    expect(github.get('src/perubahan.js')).toBe('baru');
+  });
+  test('penarikan tanpa revisi tetap menyimpan isi dan pembatalan mempertahankan versi terbit', async () => {
+    const { call, github } = setup();
+    const current = (await call('entry', { slug: 'contoh' })).body;
+    const pending = (await call('withdraw', { publishedSha: current.publishedSha }, 'POST')).body;
+    expect(pending.data.judul).toBe(DATA.judul);
+    expect((await call('discard', { revision: pending.revision, publishedSha: pending.publishedSha }, 'POST')).status).toBe(200);
+    expect(github.get(PATH)).toBe(serializeContent(DATA, PATH));
+    expect((await call('list')).body.entries[0].status).toBe('published');
+  });
+  test('draf hasil penarikan dapat dihapus dan tidak muncul lagi di daftar', async () => {
+    const { call, github } = setup();
+    const current = (await call('entry', { slug: 'contoh' })).body;
+    const pending = (await call('withdraw', { publishedSha: current.publishedSha }, 'POST')).body;
+    await call('publish', { revision: pending.revision, publishedSha: pending.publishedSha }, 'POST');
+    const withdrawn = (await call('entry', { slug: 'contoh' })).body;
+    expect((await call('discard', { revision: withdrawn.revision }, 'POST')).status).toBe(200);
+    expect((await call('list')).body.entries).toHaveLength(0);
+    expect(github.get(PATH)).toBeNull();
+  });
+  test('penarikan tidak boleh menimpa perubahan editor lain atau menghapus file pengaturan', async () => {
+    const { call, save } = setup();
+    const before = (await call('entry', { slug: 'contoh' })).body;
+    await save({ ...DATA, judul: 'Editor lain' });
+    expect((await call('withdraw', { publishedSha: before.publishedSha }, 'POST')).status).toBe(409);
+    expect((await call('withdraw', { collection: 'pengaturan', slug: 'situs' }, 'POST')).status).toBe(403);
+  });
+  test('GitHub yang belum menghitung kesiapan merge memberikan arahan coba lagi tanpa kehilangan draf', async () => {
+    const { call, save, github } = setup();
+    const saved = (await save({ ...DATA, judul: 'Siap' })).body;
+    github.options.mergeable = null;
+    const pending = await call('publish', { revision: saved.revision, publishedSha: saved.publishedSha }, 'POST');
+    expect(pending.status).toBe(409); expect(pending.body.error).toContain('Tunggu sebentar');
+    expect(pending.body.error).not.toContain('Hubungi'); expect(github.get(PATH)).toBe(serializeContent(DATA, PATH));
+    github.options.mergeable = true;
+    expect((await call('publish', { revision: saved.revision, publishedSha: saved.publishedSha }, 'POST')).status).toBe(200);
+  });
+  test('kesiapan merge yang selesai saat percobaan ulang otomatis dapat diterbitkan', async () => {
+    let details = 0;
+    const { call, save, github } = setup(undefined, (input, init) => {
+      if (/\/pulls\/\d+$/.test(new URL(input).pathname) && init.method === 'GET' && ++details === 1) {
+        return github.fetch(input, init).then(async (result) => new Response(JSON.stringify({ ...await result.json(), mergeable: null, mergeable_state: 'unknown' })));
+      }
+      return null;
+    });
+    const saved = (await save({ ...DATA, judul: 'Siap diterbitkan' })).body;
+    expect((await call('publish', { revision: saved.revision, publishedSha: saved.publishedSha }, 'POST')).status).toBe(200);
+    expect(details).toBe(2); expect(parseContent(github.get(PATH), PATH).judul).toBe('Siap diterbitkan');
+  });
+  test('versi yang diterbitkan pengelola setelah penarikan tidak tertutup isi draf lama', async () => {
+    const { call, github } = setup();
+    const current = (await call('entry', { slug: 'contoh' })).body;
+    const pending = (await call('withdraw', { publishedSha: current.publishedSha }, 'POST')).body;
+    await call('publish', { revision: pending.revision, publishedSha: pending.publishedSha }, 'POST');
+    github.advanceMain({ [PATH]: serializeContent({ ...DATA, judul: 'Versi pengelola terbaru' }, PATH) });
+    const latest = (await call('entry', { slug: 'contoh' })).body;
+    expect(latest.status).toBe('published'); expect(latest.data.judul).toBe('Versi pengelola terbaru');
+    expect((await call('list')).body.entries[0].title).toBe('Versi pengelola terbaru');
+  });
+  test('riwayat PR yang branch-nya sudah dihapus tidak merusak daftar konten terbit', async () => {
+    const { call, save, github } = setup();
+    const saved = (await save({ ...DATA, judul: 'Terbit' })).body;
+    await call('publish', { revision: saved.revision, publishedSha: saved.publishedSha }, 'POST');
+    github.refs.delete('cms/layanan/contoh');
+    const list = await call('list');
+    expect(list.status).toBe(200); expect(list.body.entries[0].title).toBe('Terbit');
+    expect(list.body.entries[0].status).toBe('published');
+  });
   test('unggahan foto dan konten berada di commit draf yang sama', async () => {
     const { save, github } = setup();
     const content = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 0]).toString('base64');
