@@ -9,7 +9,7 @@ const PATH = 'src/content/layanan/contoh.md';
 const DATA = { judul: 'Contoh', ringkasan: 'Layanan contoh', ikon: 'house', unggulan: false, urutan: 1, persyaratan: ['KTP'], alur: ['Datang'], diperbarui: '2026-10-10', body: 'Catatan' };
 function setup(files = { [PATH]: serializeContent(DATA, PATH) }, intercept = null) {
   const github = fakeGithub(files, load(CONFIG).backend.repo);
-  const handler = createCmsHandler(intercept ? (input, init) => intercept(input, init) || github.fetch(input, init) : github.fetch);
+  const handler = createCmsHandler(intercept ? async (input, init) => intercept(input, init) || github.fetch(input, init) : github.fetch);
   const env = { GITHUB_TOKEN: 'token-test', ASSETS: { fetch: async () => new Response(CONFIG) } };
   const call = async (action, data = {}, method = 'GET', headers = {}) => {
     const url = new URL('http://localhost/api/cms');
@@ -73,6 +73,30 @@ describe('CMS sederhana: draf dan penerbitan', () => {
       expect((await call('publish', { revision: saved.revision, publishedSha: saved.publishedSha }, 'POST')).status).not.toBe(200);
       expect(parseContent(github.get(PATH), PATH).judul).toBe('Contoh');
     }
+  });
+  test.each(['success', 'pending', 'failure'])('token tanpa Checks membaca CI publik dan tetap memvalidasi hasil %s', async (checks) => {
+    const checkRequests = [];
+    const { save, call, github } = setup(undefined, (input, init) => {
+      if (new URL(input).pathname.endsWith('/check-runs')) {
+        const authenticated = new Headers(init.headers).has('authorization');
+        checkRequests.push({ method: init.method, authenticated });
+        if (authenticated) return new Response('{}', { status: 403 });
+      } else expect(new Headers(init.headers).has('authorization')).toBe(true);
+      return null;
+    });
+    const saved = (await save({ ...DATA, judul: 'Revisi publik' })).body;
+    github.options.checks = checks;
+    const result = await call('publish', { revision: saved.revision, publishedSha: saved.publishedSha }, 'POST');
+    expect(result.status === 200).toBe(checks === 'success');
+    expect(checkRequests).toEqual([{ method: 'GET', authenticated: true }, { method: 'GET', authenticated: false }]);
+    expect(parseContent(github.get(PATH), PATH).judul).toBe(checks === 'success' ? 'Revisi publik' : DATA.judul);
+  });
+  test('hasil CI yang tetap tidak dapat dibaca tidak mengizinkan penerbitan', async () => {
+    const { save, call, github } = setup(undefined, (input) => new URL(input).pathname.endsWith('/check-runs') ? new Response('{}', { status: 403 }) : null);
+    const saved = (await save({ ...DATA, judul: 'Revisi belum diperiksa' })).body;
+    expect((await call('publish', { revision: saved.revision, publishedSha: saved.publishedSha }, 'POST')).status).toBe(502);
+    expect(parseContent(github.get(PATH), PATH).judul).toBe(DATA.judul);
+    expect(github.requests.some((request) => request.path.endsWith('/merge') && request.method === 'PUT')).toBe(false);
   });
   test('penerbitan berhasil setelah check lulus dan draf hilang dari daftar', async () => {
     const { save, call, github } = setup(); const saved = (await save({ ...DATA, judul: 'Revisi' })).body;
