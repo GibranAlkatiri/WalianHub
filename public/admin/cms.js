@@ -40,7 +40,43 @@ function setBusy(value) {
   root.querySelectorAll('.cms-status-select').forEach((node) => { node.disabled = value; });
   root.querySelector('.cms-editor')?.toggleAttribute('inert', value);
 }
-function canLeave() { return !state.busy && (!state.dirty || confirm('Ada perubahan yang belum disimpan. Tinggalkan halaman ini?')); }
+function confirmAction({ title, description, subject, action, danger = false, returnFocus }) {
+  if (document.getElementById('cms-confirm-dialog')) return Promise.resolve(false);
+  return new Promise((resolve) => {
+    const previousFocus = returnFocus || document.activeElement;
+    const previousOverflow = document.documentElement.style.overflow;
+    const cancel = button('Batal', () => dialog.close('cancel'));
+    cancel.setAttribute('autofocus', '');
+    const proceed = button(action, () => dialog.close('confirm'), danger ? 'cms-dialog-danger' : 'cms-dialog-primary');
+    const dialog = el('dialog', { id: 'cms-confirm-dialog', class: 'cms-dialog', 'aria-labelledby': 'cms-dialog-title', 'aria-describedby': `${subject ? 'cms-dialog-subject ' : ''}cms-dialog-description` },
+      el('div', { class: 'cms-dialog-body' }, el('span', { class: `cms-dialog-symbol${danger ? ' is-danger' : ''}`, 'aria-hidden': 'true' }, danger ? '!' : '↶'),
+        el('h2', { id: 'cms-dialog-title' }, title), subject ? el('p', { id: 'cms-dialog-subject', class: 'cms-dialog-subject' }, subject) : null,
+        el('p', { id: 'cms-dialog-description' }, description)), el('div', { class: 'cms-dialog-actions' }, cancel, proceed));
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key !== 'Tab' || event.ctrlKey || event.altKey || event.metaKey) return;
+      if (event.shiftKey && document.activeElement === cancel) { event.preventDefault(); proceed.focus(); }
+      else if (!event.shiftKey && document.activeElement === proceed) { event.preventDefault(); cancel.focus(); }
+    });
+    dialog.addEventListener('click', (event) => {
+      if (event.target !== dialog) return;
+      const bounds = dialog.getBoundingClientRect();
+      if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close('cancel');
+    });
+    dialog.addEventListener('close', () => {
+      document.documentElement.style.overflow = previousOverflow;
+      dialog.remove();
+      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+      resolve(dialog.returnValue === 'confirm');
+    }, { once: true });
+    document.body.append(dialog); document.documentElement.style.overflow = 'hidden'; dialog.showModal();
+  });
+}
+async function canLeave() {
+  if (state.busy) return false;
+  const leave = !state.dirty || await confirmAction({ title: 'Perubahan belum disimpan', description: 'Jika Anda keluar, perubahan terakhir pada formulir ini akan hilang.', action: 'Tinggalkan halaman', danger: true });
+  if (leave) state.dirty = false;
+  return leave;
+}
 function cleanup() { for (const url of state.urls) URL.revokeObjectURL(url); state.urls.clear(); state.uploads.clear(); }
 function defaults(list) {
   return Object.fromEntries(list.filter((field) => field.name !== 'body').map((field) => [field.name,
@@ -49,8 +85,8 @@ function defaults(list) {
 function shell() {
   root.replaceChildren();
   const nav = el('nav', { class: 'cms-nav', 'aria-label': 'Jenis konten' });
-  for (const collection of state.config.collections) nav.append(button(collection.label, () => { if (canLeave()) { state.collection = collection.name; state.filter = 'all'; state.search = ''; showList(); } }, state.collection === collection.name ? 'is-active' : ''));
-  const top = el('header', { class: 'cms-header' }, el('a', { href: './', class: 'cms-brand', onClick: (event) => { event.preventDefault(); if (canLeave()) showList(); } }, el('span', { 'aria-hidden': 'true' }, 'W'), el('strong', {}, 'Panel Konten', el('small', {}, 'Kelurahan Walian'))), el('div', { class: 'cms-account' }, el('a', { href: state.config.site_url, onClick: (event) => { if (!canLeave()) event.preventDefault(); } }, 'Lihat website'), button('Keluar', () => { if (canLeave()) logout(); })));
+  for (const collection of state.config.collections) nav.append(button(collection.label, async () => { if (await canLeave()) { state.collection = collection.name; state.filter = 'all'; state.search = ''; showList(); } }, state.collection === collection.name ? 'is-active' : ''));
+  const top = el('header', { class: 'cms-header' }, el('a', { href: './', class: 'cms-brand', onClick: async (event) => { event.preventDefault(); if (await canLeave()) showList(); } }, el('span', { 'aria-hidden': 'true' }, 'W'), el('strong', {}, 'Panel Konten', el('small', {}, 'Kelurahan Walian'))), el('div', { class: 'cms-account' }, el('a', { href: state.config.site_url, onClick: async (event) => { event.preventDefault(); if (await canLeave()) { state.dirty = false; location.assign(state.config.site_url); } } }, 'Lihat website'), button('Keluar', async () => { if (await canLeave()) logout(); })));
   root.append(top);
   if (window.WALIAN_DEMO) root.append(el('p', { class: 'cms-demo' }, 'Mode uji — perubahan hanya tersimpan selama pratinjau lokal ini berjalan.'));
   root.append(nav, el('main', { class: 'cms-main' }, el('p', { id: 'cms-message', class: 'cms-message', role: 'status', 'aria-live': 'polite', hidden: true }), el('div', { id: 'cms-content' })));
@@ -83,7 +119,7 @@ function drawRows() {
   const items = state.entries.filter((item) => (state.filter === 'all' || item.status === state.filter) && `${item.title} ${item.summary}`.toLocaleLowerCase('id').includes(state.search.toLocaleLowerCase('id')));
   if (!items.length) rows.append(el('p', { class: 'cms-empty' }, state.search ? 'Tidak ada konten yang cocok dengan pencarian.' : 'Belum ada konten pada status ini.'));
   for (const item of items) {
-    const status = el('select', { class: `cms-status-select ${item.status}`, 'aria-label': `Status ${item.title}`, onChange: (event) => changeStatus(item, event.target.value) }, el('option', { value: 'draft', disabled: !item.deleted && !item.revision && (menu().files || menu().delete === false) }, 'Draf'), el('option', { value: 'published' }, 'Terbit'));
+    const status = el('select', { class: `cms-status-select ${item.status}`, 'aria-label': `Status ${item.title}`, onChange: (event) => changeStatus(item, event.target.value, event.target) }, el('option', { value: 'draft', disabled: !item.deleted && !item.revision && (menu().files || menu().delete === false) }, 'Draf'), el('option', { value: 'published' }, 'Terbit'));
     status.value = item.status;
     if (item.status === 'draft' && item.published && !item.deleted && !menu().files && menu().delete !== false) status.append(el('option', { value: 'withdraw' }, 'Tarik ke draf'));
     const actions = el('div', { class: 'cms-row-actions' }, button('Ubah', () => openEntry(item.slug)));
@@ -102,13 +138,13 @@ async function finishRemoval(item) {
   catch (error) { message(error.message + ` Untuk melanjutkan, klik ${item.withdrawal ? 'Lanjutkan penarikan' : 'Lanjutkan hapus'}.`, true); }
   finally { setBusy(false); }
 }
-async function changeStatus(item, value) {
+async function changeStatus(item, value, control) {
   if (state.busy) return;
   if (value === 'withdraw') value = 'draft';
   if (value === 'draft' && !item.published) { drawRows(); return; }
   if (value === 'published' && item.deleted) { drawRows(); message('Selesaikan atau batalkan penarikan/penghapusan dahulu melalui tombol Ubah.', true); return; }
   if (value === 'published' && item.status === 'published') return;
-  if (value === 'draft' && !confirm(`Tarik “${item.title}” dari website dan simpan isinya sebagai draf? Website berubah setelah deployment selesai.`)) { drawRows(); return; }
+  if (value === 'draft' && !await confirmAction({ title: 'Tarik ke draf?', subject: item.title, description: 'Konten akan ditarik dari website setelah proses selesai. Isinya tetap tersimpan di sini dan dapat diterbitkan kembali kapan saja.', action: 'Tarik ke draf', returnFocus: control })) { if (control?.isConnected) control.value = item.status; return; }
   if (value === 'published') {
     const listFields = menu().files?.find((file) => file.name === item.slug)?.fields || menu().fields;
     const errors = errorsFor(listFields, item.data);
@@ -126,7 +162,7 @@ async function changeStatus(item, value) {
 }
 async function removeEntry(item) {
   if (state.busy) return;
-  if (!confirm(`Hapus “${item.title || name()}”? ${item.published ? 'Konten di website akan dihapus setelah pemeriksaan dan deployment selesai.' : 'Draf ini akan dibuang.'}`)) return;
+  if (!await confirmAction({ title: item.published ? 'Hapus konten?' : 'Hapus draf?', subject: item.title || name(), description: (state.dirty ? 'Isian yang belum disimpan juga akan dibuang. ' : '') + (item.published ? 'Konten akan dihapus dari website setelah proses selesai.' : 'Isian draf ini akan dihapus dari daftar konten.'), action: item.published ? 'Hapus konten' : 'Hapus draf', danger: true })) return;
   setBusy(true); message('Menghapus konten…');
   let prepared = false;
   try {
@@ -142,7 +178,7 @@ async function removeEntry(item) {
   finally { setBusy(false); }
 }
 async function openEntry(slug) {
-  if (!canLeave()) return;
+  if (!await canLeave()) return;
   const loadId = ++loadSequence, collection = state.collection;
   cleanup(); state.dirty = false;
   try {
@@ -288,13 +324,12 @@ async function save(publish = false) {
   } catch (error) { message(error.message, true); } finally { setBusy(false); }
 }
 async function discard() {
-  if (!confirm('Buang draf ini? Versi yang sudah terbit tetap tersedia.')) return;
+  if (!await confirmAction({ title: 'Buang draf?', subject: name(), description: state.entry.published ? 'Revisi draf akan dibuang. Versi yang sudah terbit tetap tampil di website.' : 'Isian draf ini akan dihapus dari daftar konten.', action: 'Buang draf', danger: true })) return;
   setBusy(true);
   try { await request('discard', { collection: state.collection, slug: state.entry.slug, revision: state.entry.revision, publishedSha: state.entry.publishedSha }, 'POST'); await showList(); message('Draf dibuang.'); }
   catch (error) { message(error.message, true); } finally { setBusy(false); }
 }
 async function deletePublished() {
-  if (state.dirty && !confirm('Ada perubahan yang belum disimpan. Lanjutkan menghapus konten ini?')) return;
   await removeEntry(state.entry);
 }
 function drawEditor() {
@@ -305,7 +340,7 @@ function drawEditor() {
     if (state.entry.deleted) await finishRemoval(state.entry);
     else await save(true);
   }, 'cms-primary'));
-  const header = el('div', { class: 'cms-editor-bar' }, button('← Daftar', () => { if (canLeave()) showList(); }), el('div', { class: 'cms-editor-title' }, el('h1', {}, name()), el('span', { class: 'cms-badge ' + state.entry.status }, state.entry.status === 'draft' ? 'Draf' : 'Terbit')), actions);
+  const header = el('div', { class: 'cms-editor-bar' }, button('← Daftar', async () => { if (await canLeave()) showList(); }), el('div', { class: 'cms-editor-title' }, el('h1', {}, name()), el('span', { class: 'cms-badge ' + state.entry.status }, state.entry.status === 'draft' ? 'Draf' : 'Terbit')), actions);
   area.append(header, el('p', { class: 'cms-editor-help' }, state.entry.published ? 'Revisi disimpan sebagai draf. Versi terbit tetap tampil sampai revisi diterbitkan.' : 'Simpan draf untuk melanjutkan nanti. Terbitkan jika semua isian sudah benar.'));
   if (state.entry.deleted) area.append(el('p', { class: 'cms-empty' }, state.entry.withdrawal ? 'Konten akan ditarik dari website setelah pemeriksaan selesai. Isinya tetap tersedia sebagai draf.' : 'Draf ini akan menghapus konten dari website setelah diterbitkan.'));
   else {
