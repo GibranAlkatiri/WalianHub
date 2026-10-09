@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
+import { load } from 'js-yaml';
 import { createCmsHandler, parseContent, serializeContent } from '../functions/api/cms.js';
 import { fakeGithub } from './helpers/cms-github.js';
 
@@ -7,7 +8,7 @@ const CONFIG = readFileSync(new URL('../public/admin/config.yml', import.meta.ur
 const PATH = 'src/content/layanan/contoh.md';
 const DATA = { judul: 'Contoh', ringkasan: 'Layanan contoh', ikon: 'house', unggulan: false, urutan: 1, persyaratan: ['KTP'], alur: ['Datang'], diperbarui: '2026-10-10', body: 'Catatan' };
 function setup(files = { [PATH]: serializeContent(DATA, PATH) }, intercept = null) {
-  const github = fakeGithub(files);
+  const github = fakeGithub(files, load(CONFIG).backend.repo);
   const handler = createCmsHandler(intercept ? (input, init) => intercept(input, init) || github.fetch(input, init) : github.fetch);
   const env = { GITHUB_TOKEN: 'token-test', ASSETS: { fetch: async () => new Response(CONFIG) } };
   const call = async (action, data = {}, method = 'GET', headers = {}) => {
