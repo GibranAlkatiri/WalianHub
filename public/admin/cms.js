@@ -1,10 +1,15 @@
 import { request, imageUrl, uploadImage, logout } from './cms-client.js?v=20261010_05';
+import { createEditorPreview } from './editor-preview.js?v=20261010_ui02';
+import { createEditorSections } from './editor-sections.js?v=20261010_ui03';
 
 const root = document.getElementById('cms-root');
 const state = { config: null, collection: 'layanan', filter: 'all', search: '', entries: [], entry: null, uploads: new Map(), dirty: false, busy: false, urls: new Set() };
 let sequence = 0;
 let loadSequence = 0;
 let toastTimer;
+let editorPreview;
+let editorSections;
+const editorView = { open: null, section: null };
 const el = (tag, attrs = {}, ...children) => {
   const node = document.createElement(tag);
   for (const [key, value] of Object.entries(attrs)) {
@@ -23,6 +28,7 @@ const button = (text, onClick, className = '') => el('button', { type: 'button',
 function message(text, error = false) {
   const node = root.querySelector('#cms-message');
   node.textContent = text; node.className = `cms-message${error ? ' is-error' : ''}`; node.hidden = !text;
+  if (error) editorSections?.revealError(text);
 }
 function notify(text) {
   clearTimeout(toastTimer);
@@ -83,6 +89,8 @@ function defaults(list) {
     field.default ?? (field.widget === 'object' ? defaults(field.fields) : ['list', 'daftarNama', 'daftarTeks'].includes(field.widget) ? [] : field.widget === 'boolean' ? false : field.widget === 'number' ? null : field.widget === 'datetime' ? new Date().toISOString().slice(0, 10) : '')]));
 }
 function shell() {
+  editorPreview?.destroy(); editorPreview = null;
+  editorSections = null;
   root.replaceChildren();
   const nav = el('nav', { class: 'cms-nav', 'aria-label': 'Jenis konten' });
   for (const collection of state.config.collections) nav.append(button(collection.label, async () => { if (await canLeave()) { state.collection = collection.name; state.filter = 'all'; state.search = ''; showList(); } }, state.collection === collection.name ? 'is-active' : ''));
@@ -353,6 +361,7 @@ async function deletePublished() {
   await removeEntry(state.entry);
 }
 function drawEditor(animate = false) {
+  if (animate) { editorView.open = null; editorView.section = null; }
   shell(); const area = root.querySelector('#cms-content');
   if (animate) area.classList.add('cms-content-ready');
   const actions = el('div', { class: 'cms-editor-actions' });
@@ -361,13 +370,19 @@ function drawEditor(animate = false) {
     if (state.entry.deleted) await finishRemoval(state.entry);
     else await save(true);
   }, 'cms-primary'));
-  const header = el('div', { class: 'cms-editor-bar' }, button('← Daftar', async () => { if (await canLeave()) showList(); }), el('div', { class: 'cms-editor-title' }, el('h1', {}, name()), el('span', { class: 'cms-badge ' + state.entry.status }, state.entry.status === 'draft' ? 'Draf' : 'Terbit')), actions);
+  const header = el('div', { class: 'cms-editor-bar' }, button('← Daftar', async () => { if (await canLeave()) showList(); }), el('div', { class: 'cms-editor-title' }, el('h1', { title: name() }, name()), el('span', { class: 'cms-badge ' + state.entry.status }, state.entry.status === 'draft' ? 'Draf' : 'Terbit')), actions);
   area.append(header, el('p', { class: 'cms-editor-help' }, state.entry.published ? 'Revisi disimpan sebagai draf. Versi terbit tetap tampil sampai revisi diterbitkan.' : 'Simpan draf untuk melanjutkan nanti. Terbitkan jika semua isian sudah benar.'));
   if (state.entry.deleted) area.append(el('p', { class: 'cms-empty' }, state.entry.withdrawal ? 'Konten akan ditarik dari website setelah pemeriksaan selesai. Isinya tetap tersedia sebagai draf.' : 'Draf ini akan menghapus konten dari website setelah diterbitkan.'));
   else {
     const form = el('form', { class: 'cms-editor', noValidate: true, onSubmit: (e) => { e.preventDefault(); save(); } });
-    for (const field of fields()) form.append(fieldControl(field, state.entry.data, field.name, field.name));
-    area.append(form);
+    for (const field of fields()) {
+      const control = fieldControl(field, state.entry.data, field.name, field.name);
+      if (control instanceof HTMLElement) control.dataset.fieldName = field.name;
+      form.append(control);
+    }
+    editorSections = createEditorSections({ form, collection: state.collection, slug: state.entry.slug, fields: fields(), view: editorView });
+    editorPreview = createEditorPreview({ area, header, form, collection: state.collection, getTitle: name, getData: () => state.entry.data, fields: fields(), view: editorView });
+    area.append(editorPreview.layout);
   }
   const bottom = el('div', { class: 'cms-editor-bottom' });
   if (state.entry.revision) bottom.append(button('Buang draf', discard, 'cms-danger-text'));
