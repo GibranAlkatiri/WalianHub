@@ -1,4 +1,5 @@
 import { load, dump, JSON_SCHEMA } from 'js-yaml';
+import { sessionEnabled, readSession, sameOrigin, SessionError } from '../../server/cms-session.js';
 
 const HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' };
 const response = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: HEADERS });
@@ -37,17 +38,23 @@ function publicConfig(config) {
   return { collections: config.collections, site_url: config.site_url, media_folder: config.media_folder, public_folder: config.public_folder };
 }
 
-// The session token already issued by /api/auth is validated on the server.
-// No repository or GitHub API URL is accepted from the browser.
+// Browser cookies authorize CMS requests in session mode; GitHub credentials
+// stay on the server. The production legacy flow is kept until final rollout.
 export function createCmsHandler(fetchGitHub = fetch) {
   return async function onRequest({ request, env }) {
     try {
       if (!['GET', 'POST'].includes(request.method)) return response({ error: 'Metode tidak didukung.' }, 405);
       const secret = String(env.GITHUB_TOKEN || '').trim();
-      const supplied = request.headers.get('authorization') || '';
-      let mismatch = supplied.length ^ (`Bearer ${secret}`).length;
-      for (let i = 0; i < Math.max(supplied.length, secret.length + 7); i++) mismatch |= (supplied.charCodeAt(i) || 0) ^ ((`Bearer ${secret}`).charCodeAt(i) || 0);
-      if (!secret || mismatch) fail('Sesi berakhir. Silakan masuk kembali.', 401);
+      if (sessionEnabled(env)) {
+        await readSession(request, env);
+        if (request.method === 'POST') sameOrigin(request);
+        if (!secret) fail('Koneksi penyimpanan konten belum tersedia. Hubungi pengelola panel.', 503);
+      } else {
+        const supplied = request.headers.get('authorization') || '';
+        let mismatch = supplied.length ^ (`Bearer ${secret}`).length;
+        for (let i = 0; i < Math.max(supplied.length, secret.length + 7); i++) mismatch |= (supplied.charCodeAt(i) || 0) ^ ((`Bearer ${secret}`).charCodeAt(i) || 0);
+        if (!secret || mismatch) fail('Sesi berakhir. Silakan masuk kembali.', 401);
+      }
       const url = new URL(request.url);
       if (request.method === 'POST' && request.headers.has('origin') && request.headers.get('origin') !== url.origin) fail('Permintaan harus berasal dari panel ini.', 403);
       const asset = await env.ASSETS.fetch(new Request(new URL('/admin/config.yml', url)));
@@ -268,7 +275,8 @@ export function createCmsHandler(fetchGitHub = fetch) {
       }
       return response(await entry(t));
     } catch (error) {
-      return response({ error: error instanceof CmsError ? error.message : 'Permintaan tidak dapat diproses. Periksa isian lalu coba kembali.' }, error instanceof CmsError ? error.status : 400);
+      const expected = error instanceof CmsError || error instanceof SessionError;
+      return response({ error: expected ? error.message : 'Permintaan tidak dapat diproses. Periksa isian lalu coba kembali.' }, expected ? error.status : 400);
     }
   };
 }

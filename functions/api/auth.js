@@ -1,76 +1,52 @@
-// Login username+password untuk panel Decap CMS (/admin/).
-//
-// /admin/index.html menampilkan form username+password sendiri dan memanggil
-// endpoint ini dengan JSON. Jika kredensial benar, server mengembalikan GitHub
-// personal access token milik server; frontend menyimpannya di localStorage
-// key `decap-cms-user` agar Decap langsung masuk tanpa layar login GitHub.
-//
-// Format sesi yang ditulis frontend: {"token":"...","backendName":"github"}.
-// Ini cocok dengan LocalStorageAuthStore Decap (storageKey 'decap-cms-user'):
-// saat boot, Decap memanggil backend.currentUser() → restoreUser(stored) →
-// github authenticate(state.token) → api.user() + hasWriteAccess() memakai
-// token tersebut. Jadi seeding {token, backendName} cukup untuk login penuh.
-//
-// Env yang dibutuhkan (Cloudflare Pages → Settings → Environment variables):
-// - CMS_USERNAME       contoh: admin
-// - CMS_PASSWORD_HASH  SHA-256 hex dari password (`echo -n '...' | sha256sum`)
-// - GITHUB_TOKEN       fine-grained PAT, akses repo ini saja, Contents: Read+Write
-//
-// ponytail: 1 admin saja — kredensial di env, satu token GitHub milik satu akun.
-// Upgrade path: simpan hash per-user (KV/D1) + pilih PAT per-user di bawah.
+import { sessionEnabled, sameOrigin, sha256, equal, readSession, createSession, revokeSession, checkLoginLimit, failedLogin, cookieHeader, SESSION_SECONDS, SessionError } from '../../server/cms-session.js';
 
-const JSON_HEADERS = {
-  'content-type': 'application/json; charset=utf-8',
-  'cache-control': 'no-store',
-};
+const HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' };
+const json = (data, status = 200, cookie) => new Response(JSON.stringify(data), { status, headers: { ...HEADERS, ...(cookie ? { 'set-cookie': cookie } : {}) } });
+const failure = (error) => json({ ok: false, mode: 'session', error: error instanceof SessionError ? error.message : 'Login belum dapat diproses. Coba kembali.' }, error instanceof SessionError ? error.status : 503);
 
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), { status, headers: JSON_HEADERS });
+async function credentials(request) {
+  if (Number(request.headers.get('content-length') || 0) > 4096) throw new SessionError('Isian login terlalu panjang.', 413);
+  const text = await request.text();
+  if (text.length > 4096) throw new SessionError('Isian login terlalu panjang.', 413);
+  const type = request.headers.get('content-type') || '';
+  let body;
+  try {
+    if (type.includes('application/json')) body = JSON.parse(text);
+    else if (type.includes('application/x-www-form-urlencoded')) body = Object.fromEntries(new URLSearchParams(text));
+    else throw new SessionError('Format login tidak didukung.', 415);
+  } catch (error) { if (error instanceof SessionError) throw error; throw new SessionError('Isian login tidak valid.', 400); }
+  if (!body || typeof body.username !== 'string' || typeof body.password !== 'string') throw new SessionError('Isian login tidak valid.', 400);
+  return body;
 }
-
-async function sha256Hex(teks) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(teks));
-  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+export async function onRequestGet({ request, env } = { env: {} }) {
+  if (!sessionEnabled(env)) return json({ ok: false, mode: 'legacy', error: 'Gunakan form login di /admin/.' }, 405);
+  try { return json({ ok: true, mode: 'session', ...await readSession(request, env) }); }
+  catch (error) { return failure(error); }
 }
-
-function sama(a, b) {
-  if (a.length !== b.length) return false;
-  let beda = 0;
-  for (let i = 0; i < a.length; i++) beda |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return beda === 0;
-}
-
-async function bacaKredensial(request) {
-  const tipe = request.headers.get('content-type') || '';
-  if (tipe.includes('application/json')) {
-    const body = await request.json().catch(() => ({}));
-    return { username: String(body.username || ''), password: String(body.password || '') };
-  }
-  const form = await request.formData();
-  return { username: String(form.get('username') || ''), password: String(form.get('password') || '') };
-}
-
-export async function onRequestGet() {
-  return json({ ok: false, error: 'Gunakan form login di /admin/.' }, 405);
-}
-
 export async function onRequestPost({ request, env }) {
-  const { username, password } = await bacaKredensial(request);
-  // Env di-trim: spasi tak sengaja di kolom Value Cloudflare tidak boleh
-  // membuat login selalu gagal.
-  const envUser = String(env.CMS_USERNAME || '').trim();
-  const envHash = String(env.CMS_PASSWORD_HASH || '').trim().toLowerCase();
-  const envToken = String(env.GITHUB_TOKEN || '').trim();
-  if (!envUser || !envHash || !envToken) {
-    return json(
-      { ok: false, error: 'Konfigurasi login di server belum lengkap. Lengkapi env lalu redeploy.' },
-      500,
-    );
-  }
-  const userCocok = username.trim() === envUser;
-  const passCocok = sama(await sha256Hex(password), envHash);
-  if (!userCocok || !passCocok) {
-    return json({ ok: false, error: 'Username atau password salah.' }, 401);
-  }
-  return json({ ok: true, token: envToken });
+  const sessions = sessionEnabled(env);
+  try {
+    if (sessions) sameOrigin(request);
+    else if (request.headers.has('origin') && request.headers.get('origin') !== new URL(request.url).origin) throw new SessionError('Permintaan harus berasal dari panel ini.', 403);
+    const envUser = String(env.CMS_USERNAME || '').trim();
+    const envHash = String(env.CMS_PASSWORD_HASH || '').trim().toLowerCase();
+    const envToken = String(env.GITHUB_TOKEN || '').trim();
+    if (!envUser || !/^[a-f0-9]{64}$/.test(envHash) || (!sessions && !envToken)) return json({ ok: false, mode: sessions ? 'session' : 'legacy', error: 'Konfigurasi login di server belum lengkap. Lengkapi env lalu redeploy.' }, 500);
+    const key = sessions ? await checkLoginLimit(request, env) : null;
+    const { username, password } = await credentials(request);
+    const passwordValid = equal(await sha256(password), envHash);
+    if (username.trim() !== envUser || !passwordValid) {
+      if (sessions) await failedLogin(key, env);
+      return json({ ok: false, mode: sessions ? 'session' : 'legacy', error: 'Username atau password salah.' }, 401);
+    }
+    // Keep the production GitHub flow until the final migration switch.
+    if (!sessions) return json({ ok: true, mode: 'legacy', token: envToken });
+    const session = await createSession(request, env);
+    return json({ ok: true, mode: 'session', username: envUser, expiresAt: session.expiresAt }, 200, cookieHeader(session.token, SESSION_SECONDS));
+  } catch (error) { return failure(error); }
+}
+export async function onRequestDelete({ request, env }) {
+  if (!sessionEnabled(env)) return json({ ok: false, mode: 'legacy', error: 'Metode tidak didukung.' }, 405);
+  try { sameOrigin(request); await revokeSession(request, env); return json({ ok: true, mode: 'session' }, 200, cookieHeader()); }
+  catch (error) { return failure(error); }
 }
