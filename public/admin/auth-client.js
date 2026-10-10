@@ -61,7 +61,7 @@
     if (root && root.querySelector('.cms-header')) { root.hidden = false; if (panel) panel.hidden = true; return; }
     if (window.__walianPanelDimuat) return;
     window.__walianPanelDimuat = true;
-    import('./cms.js?v=20261010_04')
+    import('./cms.js?v=20261010_05')
       .then(function (cms) { return cms.start(); })
       .catch(function () {
         window.__walianPanelDimuat = false;

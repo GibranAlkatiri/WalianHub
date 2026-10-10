@@ -2,10 +2,11 @@ import { load, dump, JSON_SCHEMA } from 'js-yaml';
 import { sessionEnabled, readSession, sameOrigin, SessionError } from '../../server/cms-session.js';
 import { layananD1Enabled, layananOperation, LayananError } from '../../server/cms-layanan.js';
 import { publicLayananEnabled } from '../../server/published-layanan.js';
+import { mediaEnabled, mediaPaths, assertMediaReferences, MediaError } from '../../server/cms-media.js';
 
 const HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' };
 const response = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: HEADERS });
-class CmsError extends Error { constructor(message, status = 400) { super(message); this.status = status; } }
+export class CmsError extends Error { constructor(message, status = 400) { super(message); this.status = status; } }
 const fail = (message, status) => { throw new CmsError(message, status); };
 const encodePath = (path) => path.split('/').map(encodeURIComponent).join('/');
 const validSlug = (slug) => typeof slug === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) && slug.length <= 100;
@@ -26,7 +27,7 @@ export function serializeContent(data, path) {
   return '---\n' + dump(frontmatter, { schema: JSON_SCHEMA, lineWidth: -1, noRefs: true }) + '---\n\n' + String(body).replace(/\s+$/, '') + '\n';
 }
 
-function target(config, collectionName, slug) {
+export function target(config, collectionName, slug) {
   const collection = config.collections.find((item) => item.name === collectionName);
   if (!collection || !validSlug(slug)) fail('Konten tidak dikenali.', 404);
   const file = collection.files?.find((item) => item.name === slug);
@@ -36,8 +37,8 @@ function target(config, collectionName, slug) {
   return { collection, fields: file?.fields || collection.fields, path, branch: `cms/${collectionName}/${slug}`, slug, collectionName, label: file?.label };
 }
 
-function publicConfig(config, siteUrl = config.site_url) {
-  return { collections: config.collections, site_url: siteUrl, media_folder: config.media_folder, public_folder: config.public_folder };
+function publicConfig(config, siteUrl = config.site_url, media = false) {
+  return { collections: config.collections, site_url: siteUrl, media_folder: config.media_folder, public_folder: config.public_folder, ...(media ? {media_upload:'/api/media'} : {}) };
 }
 
 // Browser cookies authorize CMS requests in session mode; GitHub credentials
@@ -73,7 +74,7 @@ export function createCmsHandler(fetchGitHub = fetch) {
       }
       const action = request.method === 'GET' ? (url.searchParams.get('action') || 'list') : postBody.action;
       const collectionName = request.method === 'GET' ? url.searchParams.get('collection') : postBody.collection;
-      if (d1 && action === 'config' && request.method === 'GET') return response(publicConfig(config, publicLayananEnabled(env) ? new URL('/', request.url).href : config.site_url));
+      if (d1 && action === 'config' && request.method === 'GET') return response(publicConfig(config, publicLayananEnabled(env) ? new URL('/', request.url).href : config.site_url, mediaEnabled(env)));
       if (d1 && collectionName === 'layanan') {
         if (request.method === 'POST' && new TextEncoder().encode(postText).length > 256 * 1024) fail('Isian layanan terlalu panjang.', 413);
         if (request.method === 'GET' && !['list', 'entry'].includes(action)) fail('Tindakan layanan tidak dikenali.', 404);
@@ -82,6 +83,11 @@ export function createCmsHandler(fetchGitHub = fetch) {
         const collection = config.collections.find((item) => item.name === 'layanan');
         if (!collection || collection.folder !== 'src/content/layanan' || collection.files) fail('Konfigurasi layanan tidak valid.', 503);
         if (action !== 'list') target(config, 'layanan', slug);
+        if (action === 'save') await assertMediaReferences(env, postBody.data, 'layanan', slug);
+        if (action === 'publish') {
+          const current = await layananOperation(env.CMS_DB, collection, 'entry', slug);
+          if (!current.deleted && !current.withdrawal) await assertMediaReferences(env, current.data, 'layanan', slug);
+        }
         return response(await layananOperation(env.CMS_DB, collection, action, slug, postBody));
       }
       if (!secret) fail('Koneksi penyimpanan konten belum tersedia. Hubungi pengelola panel.', 503);
@@ -151,7 +157,7 @@ export function createCmsHandler(fetchGitHub = fetch) {
       };
       if (request.method === 'GET') {
         const action = url.searchParams.get('action') || 'list';
-        if (action === 'config') return response(publicConfig(config));
+        if (action === 'config') return response(publicConfig(config, config.site_url, mediaEnabled(env)));
         const collectionName = url.searchParams.get('collection');
         const collection = config.collections.find((item) => item.name === collectionName);
         if (!collection) fail('Menu tidak dikenali.', 404);
@@ -198,6 +204,8 @@ export function createCmsHandler(fetchGitHub = fetch) {
       }
       if (body.action === 'publish') {
         if (!current.revision) fail('Simpan draf terlebih dahulu.', 409);
+        if (!current.deleted && !current.withdrawal && env.CMS_MIGRATION_PREVIEW === '1' && mediaPaths(current.data).length) fail('Foto dan draf sudah tersimpan. Penerbitan foto baru tersedia setelah pembaruan menu ini.', 409);
+        if (!current.deleted && !current.withdrawal) await assertMediaReferences(env, current.data, body.collection, body.slug);
         const pr = await pullFor(t.branch);
         if (!pr) fail('Draf belum siap diterbitkan. Simpan kembali.', 409);
         let detail = await gh(`pulls/${pr.number}`);
@@ -231,6 +239,8 @@ export function createCmsHandler(fetchGitHub = fetch) {
       if (body.action === 'withdraw' && current.deleted) fail('Selesaikan atau batalkan penghapusan terlebih dahulu.', 409);
       const retained = body.action === 'withdraw' ? await content(t.path, current.revision ? t.branch : main) : null;
       const uploads = body.uploads || [];
+      if (body.action === 'save') await assertMediaReferences(env, body.data, body.collection, body.slug);
+      if (mediaEnabled(env) && uploads.length) fail('Pilih ulang foto untuk mengunggahnya sebelum menyimpan.', 422);
       if (!Array.isArray(uploads) || uploads.length > 5) fail('Unggah maksimal 5 foto dalam satu penyimpanan.');
       const preparedUploads = uploads.map((upload) => {
         if (!/^public\/uploads\/[a-zA-Z0-9._-]+\.(png|jpe?g|webp)$/.test(upload.path || '')) fail('Lokasi foto tidak diperbolehkan.');
@@ -290,6 +300,10 @@ export function createCmsHandler(fetchGitHub = fetch) {
       const saved = await gh('git/commits', 'POST', { message: retained ? `Tarik ke draf ${body.collection}: ${body.slug}\n\nKonten-draf: ${retained.sha}` : `Simpan draf ${body.collection}: ${body.slug}`, tree: tree.sha, parents: [...new Set([parent, ...(mainHead ? [mainHead] : [])])] });
       if (oldRef) await gh(`git/refs/heads/${encodePath(t.branch)}`, 'PATCH', { sha: saved.sha, force: false });
       else await gh('git/refs', 'POST', { ref: `refs/heads/${t.branch}`, sha: saved.sha });
+      if (env.CMS_MIGRATION_PREVIEW === '1' && body.action === 'save' && mediaPaths(body.data).length) {
+        // Keep the private draft branch, but do not invite a merge to production.
+        return response({ ...await entry(t), warning: 'Foto dan draf sudah tersimpan. Penerbitan foto baru tersedia setelah pembaruan menu ini.' });
+      }
       try {
         if (!(await pullFor(t.branch))) await gh('pulls', 'POST', { title: `Konten ${body.collection}: ${body.slug}`, head: t.branch, base: main, body: 'Draf konten CMS. Penerbitan dilakukan melalui panel setelah pemeriksaan berhasil.' });
       } catch (error) {
@@ -297,7 +311,7 @@ export function createCmsHandler(fetchGitHub = fetch) {
       }
       return response(await entry(t));
     } catch (error) {
-      const expected = error instanceof CmsError || error instanceof SessionError || error instanceof LayananError;
+      const expected = error instanceof CmsError || error instanceof SessionError || error instanceof LayananError || error instanceof MediaError;
       return response({ error: expected ? error.message : 'Permintaan tidak dapat diproses. Periksa isian lalu coba kembali.' }, expected ? error.status : 400);
     }
   };

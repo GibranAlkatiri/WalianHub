@@ -1,4 +1,4 @@
-import { request, imageUrl, logout } from './cms-client.js?v=20261010_04';
+import { request, imageUrl, uploadImage, logout } from './cms-client.js?v=20261010_05';
 
 const root = document.getElementById('cms-root');
 const state = { config: null, collection: 'layanan', filter: 'all', search: '', entries: [], entry: null, uploads: new Map(), dirty: false, busy: false, urls: new Set() };
@@ -246,12 +246,25 @@ function fieldControl(field, parent, key, path) {
     if (existing) {
       const pending = state.uploads.get(existing);
       if (pending) { preview.src = pending.url; preview.hidden = false; }
+      else if (/^\/media\//.test(existing)) { preview.src = new URL(existing,location.origin);preview.hidden = false; }
       else if (/^\/uploads\//.test(existing) && state.entry.slug) imageUrl({ collection: state.collection, slug: state.entry.slug, path: existing, draft: state.entry.revision ? '1' : '0' }).then((url) => { state.urls.add(url); if (preview.isConnected) { preview.src = url; preview.hidden = false; } }).catch(() => { if (preview.isConnected) box.append(el('small', { class: 'cms-hint' }, 'Foto tersimpan, tetapi pratinjaunya belum dapat dimuat.')); });
       else if (/^(\/|https?:\/\/)/.test(existing)) { preview.src = existing.startsWith('/') ? new URL(existing, state.config.site_url) : existing; preview.hidden = false; }
     }
     const input = el('input', { id, type: 'file', accept: 'image/jpeg,image/png,image/webp', onChange: async (event) => {
       const file = event.target.files[0]; if (!file) return;
       if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) { event.target.value = ''; message('Pilih foto JPEG, PNG, atau WebP maksimal 5 MB.', true); return; }
+      if (state.config.media_upload) {
+        const slug = state.entry.slug || slugify(state.entry.data[menu().identifier_field || 'judul'] || state.entry.data.nama || '');
+        if (!slug) { event.target.value = '';message('Isi nama atau judul dahulu sebelum memilih foto.',true);return; }
+        // Keep this slug when the user renames the entry after uploading.
+        state.entry.slug = slug;setBusy(true);message('Mengunggah foto…');
+        try {
+          const result = await uploadImage(file,{collection:state.collection,slug,id:crypto.randomUUID()});
+          set(result.path);drawEditor();message('Foto berhasil diunggah. Simpan draf atau terbitkan untuk menyimpan isian.');
+        } catch (error) { event.target.value = '';message(error.message,true); }
+        finally { setBusy(false); }
+        return;
+      }
       const ext = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1];
       const path = `/uploads/${crypto.randomUUID()}.${ext}`;
       setBusy(true); state.dirty = true;
