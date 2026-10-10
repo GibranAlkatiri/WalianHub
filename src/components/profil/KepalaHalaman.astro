@@ -8,9 +8,10 @@ import { JEDA_HURUF_SUBJUDUL, jedaSubjudulKetik } from '../../lib/teks-ketik';
 
 interface Props {
   ringkasan: string;
+  runtimeTemplate?: boolean;
 }
 
-const { ringkasan } = Astro.props;
+const { ringkasan, runtimeTemplate = false } = Astro.props;
 const judulHalaman = 'Profil Kelurahan Walian';
 
 const tautanSection = [
@@ -20,7 +21,7 @@ const tautanSection = [
 ];
 ---
 
-<section class="pt-8 pb-12 sm:pt-10 sm:pb-16 lg:pt-12 lg:pb-20">
+<section data-cms-profile-heading class="pt-8 pb-12 sm:pt-10 sm:pb-16 lg:pt-12 lg:pb-20">
   <Container>
     <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-sm text-ink-subtle">
       <a href={url('/')} class="hover:text-forest-600 hover:underline">Beranda</a>
@@ -28,10 +29,10 @@ const tautanSection = [
       <span class="text-ink">Profil</span>
     </nav>
     <h1 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl">
-      <TeksKetik teks={judulHalaman} />
+      <TeksKetik teks={runtimeTemplate ? '__CMS_PROFILE_TITLE__' : judulHalaman} runtimeMarker={runtimeTemplate ? '__CMS_TYPED_PROFILE_TITLE__' : undefined} />
     </h1>
     <p class="mt-4 max-w-2xl text-ink-muted">
-      <TeksKetik teks={ringkasan} jedaAwal={jedaSubjudulKetik(judulHalaman)} jedaHuruf={JEDA_HURUF_SUBJUDUL} />
+      <TeksKetik teks={ringkasan} jedaAwal={jedaSubjudulKetik(judulHalaman)} jedaHuruf={JEDA_HURUF_SUBJUDUL} runtimeMarker={runtimeTemplate ? '__CMS_TYPED_SUMMARY__' : undefined} />
     </p>
     <ul data-motion data-motion-delay="140" class="mt-6 flex flex-wrap gap-2">
       {

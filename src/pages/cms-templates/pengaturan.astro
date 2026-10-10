@@ -1,0 +1,47 @@
+---
+// Runtime fragments keep the same markup, icons and scoped styles as the site.
+import { getEntry } from 'astro:content';
+import Hero from '../../components/home/Hero.astro';
+import ProfileIntro from '../../components/home/ProfileIntro.astro';
+import Contact from '../../components/home/Contact.astro';
+import Footer from '../../components/layout/Footer.astro';
+import Pengaduan from '../../components/layanan/Pengaduan.astro';
+import KepalaHalaman from '../../components/profil/KepalaHalaman.astro';
+import StrukturOrganisasi from '../../components/profil/StrukturOrganisasi.astro';
+import SimpulBagan from '../../components/profil/SimpulBagan.astro';
+import Wilayah from '../../components/profil/Wilayah.astro';
+import VisiMisi from '../../components/profil/VisiMisi.astro';
+import StatCard from '../../components/ui/StatCard.astro';
+export const partial = true;
+const situs = {...(await getEntry('situs','situs'))!.data,namaKelurahan:'__CMS_SITE_NAME__',kecamatan:'__CMS_DISTRICT__',kota:'__CMS_CITY_NAME__',provinsi:'__CMS_PROVINCE__',alamat:'__CMS_ADDRESS__',kredit:'__CMS_CREDIT__',whatsapp:'628000000001',email:'cms@cms.invalid',koordinat:{lat:12.34567,lng:76.54321},googleMapsUrl:'https://cms.invalid/__CMS_DIRECTIONS__',tautanPenting:[{label:'__CMS_LINK_LABEL__',url:'https://cms.invalid/__CMS_LINK_URL__'}],mediaSosial: ['facebook','instagram','youtube','tiktok'].map((platform)=>({platform,url:'https://cms.invalid/__CMS_SOCIAL_URL__'}))} as any;
+const foto = {gambar:'/__CMS_IMAGE__',keterangan:'__CMS_IMAGE_LABEL__',posisi:'tengah'} as const;
+const hero = {judul:'__CMS_HERO_TITLE__',subjudul:'__CMS_HERO_SUBTITLE__',foto:[foto,foto]};
+const lurah = {nama:'__CMS_LURAH_NAME__',foto:'/__CMS_IMAGE__'};
+const node = {jabatan:'__CMS_JOB__',nama:['__CMS_NAMES__'],samping:[],bawahan:[]};
+const lingkungan = {nama:'__CMS_ENVIRONMENT_NAME__',kepala:'__CMS_HEAD__',wakil:'__CMS_DEPUTY__',kepalaKeluarga:1234567,jumlahPenduduk:2345678,luasKm2:3456789};
+---
+<template id="cms-hero"><Hero {hero} runtimeTemplate /></template>
+<template id="cms-hero-slide"><Hero hero={{...hero,foto:[foto]}} /></template>
+<template id="cms-hero-empty"><Hero hero={{...hero,foto:[]}} /></template>
+<template id="cms-hero-point"><Hero {hero} /></template>
+<template id="cms-intro-photo"><ProfileIntro ringkasan="__CMS_SUMMARY__" {lurah} /></template>
+<template id="cms-intro-empty"><ProfileIntro ringkasan="__CMS_SUMMARY__" lurah={{...lurah,foto:''}} /></template>
+<template id="cms-contact"><Contact {situs} runtimeTemplate /></template>
+<template id="cms-footer"><Footer {situs} /></template>
+<template id="cms-complaint"><Pengaduan whatsapp={situs.whatsapp} /></template>
+<template id="cms-profile-heading"><KepalaHalaman ringkasan="__CMS_SUMMARY__" runtimeTemplate /></template>
+<template id="cms-structure"><StrukturOrganisasi {lurah} strukturOrganisasi={[]} runtimeTemplate /></template>
+<template id="cms-node-root"><SimpulBagan simpul={node} puncak /></template>
+<template id="cms-node-child"><SimpulBagan simpul={node} /></template>
+<template id="cms-node-side"><SimpulBagan simpul={node} samping /></template>
+<template id="cms-node-empty-root"><SimpulBagan simpul={{...node,nama:[]}} puncak /></template>
+<template id="cms-node-empty-child"><SimpulBagan simpul={{...node,nama:[]}} /></template>
+<template id="cms-node-empty-side"><SimpulBagan simpul={{...node,nama:[]}} samping /></template>
+<template id="cms-region"><Wilayah sumberData={{tahun:'__CMS_YEAR__',sumber:'__CMS_SOURCE__'}} lingkungan={[lingkungan]} runtimeTemplate /></template>
+<template id="cms-region-empty"><Wilayah sumberData={{tahun:'__CMS_YEAR__',sumber:'__CMS_SOURCE__'}} lingkungan={[]} runtimeTemplate /></template>
+<template id="cms-region-row"><Wilayah sumberData={{tahun:'',sumber:''}} lingkungan={[lingkungan]} /></template>
+<template id="cms-vision"><VisiMisi visi="__CMS_VISION__" misi={['__CMS_MISSION__']} programUnggulan={['__CMS_PROGRAM__']} sumber="https://cms.invalid/__CMS_VISION_SOURCE__" /></template>
+{[{ikon:'map',label:'Lingkungan'},{ikon:'house',label:'Kepala keluarga'},{ikon:'users',label:'Jumlah penduduk',satuan:'jiwa'},{ikon:'land-plot',label:'Luas wilayah',satuan:'km²'}].map((props,i)=><>
+  <template id={`cms-stat-${['environment','family','population','area'][i]}`}><StatCard {...props} angka="__CMS_NUMBER__" /></template>
+  <template id={`cms-stat-empty-${['environment','family','population','area'][i]}`}><StatCard {...props} angka={null} /></template>
+</>)}

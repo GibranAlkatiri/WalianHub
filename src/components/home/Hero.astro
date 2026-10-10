@@ -13,9 +13,10 @@ import { JEDA_HURUF_SUBJUDUL, jedaSubjudulKetik } from '../../lib/teks-ketik';
 
 interface Props {
   hero: CollectionEntry<'beranda'>['data']['hero'];
+  runtimeTemplate?: boolean;
 }
 
-const { hero } = Astro.props;
+const { hero, runtimeTemplate = false } = Astro.props;
 const daftarFoto = hero.foto.filter((foto) => foto.gambar.trim());
 const tanpaFoto = daftarFoto.length === 0;
 const bergilir = daftarFoto.length > 1;
@@ -44,7 +45,7 @@ const posisiFoto = {
   {/* Latar: foto (atau gambar default), lapisan hijau, lalu gradasi atas dan bawah. Latar hijau tua mencegah kilatan terang saat foto berganti. */}
   <div class="absolute inset-0 -z-10 bg-forest-900">
     {
-      tanpaFoto ? (
+      runtimeTemplate ? '__CMS_SLIDES__' : tanpaFoto ? (
         <SmartImage src="" alt="Pemandangan Kelurahan Walian" fill priority showLabel={false} />
       ) : (
         daftarFoto.map((foto, i) => (
@@ -73,10 +74,10 @@ const posisiFoto = {
       id="judul-hero"
       class="mx-auto max-w-2xl text-3xl leading-[1.1] font-extrabold text-balance text-white sm:text-4xl lg:text-6xl"
     >
-      <TeksKetik teks={hero.judul} />
+      <TeksKetik teks={hero.judul} runtimeMarker={runtimeTemplate ? '__CMS_TYPED_TITLE__' : undefined} />
     </h1>
     <p class="mx-auto mt-4 max-w-xl text-base text-pretty text-white/90 sm:mt-5 sm:text-lg lg:text-xl">
-      <TeksKetik teks={hero.subjudul} jedaAwal={jedaSubjudul} jedaHuruf={JEDA_HURUF_SUBJUDUL} />
+      <TeksKetik teks={hero.subjudul} jedaAwal={jedaSubjudul} jedaHuruf={JEDA_HURUF_SUBJUDUL} runtimeMarker={runtimeTemplate ? '__CMS_TYPED_SUBTITLE__' : undefined} />
     </p>
   </Container>
 
@@ -88,7 +89,7 @@ const posisiFoto = {
         bergilir && (
           <div data-hero-kontrol hidden role="group" aria-label="Kontrol foto latar" class="flex min-w-0 items-center gap-2">
             <div class="flex min-w-0 gap-1 overflow-x-auto rounded-full bg-ink/80 px-1">
-              {daftarFoto.map((foto, i) => (
+              {runtimeTemplate ? '__CMS_POINTS__' : daftarFoto.map((foto, i) => (
                 <button
                   type="button"
                   data-hero-pilih={i}
@@ -111,7 +112,7 @@ const posisiFoto = {
               <Icon name="pause" class="size-4 group-data-[berhenti]/jeda:hidden" />
               <Icon name="play" class="hidden size-4 group-data-[berhenti]/jeda:block" />
             </button>
-            <span data-hero-status aria-live="off" aria-atomic="true" class="sr-only">Foto 1 dari {daftarFoto.length}: {daftarFoto[0].keterangan}</span>
+            <span data-hero-status aria-live="off" aria-atomic="true" class="sr-only">{runtimeTemplate ? '__CMS_SLIDE_STATUS__' : `Foto 1 dari ${daftarFoto.length}: ${daftarFoto[0].keterangan}`}</span>
           </div>
         )
       }

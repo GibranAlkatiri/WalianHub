@@ -19,9 +19,10 @@ interface Lingkungan {
 interface Props {
   sumberData: { tahun: string; sumber: string };
   lingkungan: Lingkungan[];
+  runtimeTemplate?: boolean;
 }
 
-const { sumberData, lingkungan } = Astro.props;
+const { sumberData, lingkungan, runtimeTemplate = false } = Astro.props;
 
 // Jumlah dari lingkungan yang sudah diisi. Jika belum ada satu pun yang diisi: null ("Data menyusul").
 const jumlahkan = (ambil: (item: Lingkungan) => number | null) => {
@@ -46,10 +47,12 @@ const nama = (isi: string) => isi.trim() || '[kosong]';
 
     <h3 class="mt-8 text-lg font-bold text-ink">Ringkasan kelurahan</h3>
     <div data-motion-group class="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
+      {runtimeTemplate ? '__CMS_STATS__' : <>
       <StatCard ikon="map" label="Lingkungan" angka={lingkungan.length > 0 ? String(lingkungan.length) : null} />
       <StatCard ikon="house" label="Kepala keluarga" angka={formatAngka(total.kepalaKeluarga)} />
       <StatCard ikon="users" label="Jumlah penduduk" angka={formatAngka(total.jumlahPenduduk)} satuan="jiwa" />
       <StatCard ikon="land-plot" label="Luas wilayah" angka={formatAngka(total.luasKm2)} satuan="km²" />
+      </>}
     </div>
     <p class="mt-4 text-sm text-ink-subtle">
       Sumber data: {sumberData.sumber}, {sumberData.tahun}. Total dijumlahkan dari data lingkungan yang sudah diisi.
@@ -75,7 +78,7 @@ const nama = (isi: string) => isi.trim() || '[kosong]';
                 </tr>
               </thead>
               <tbody class="divide-y divide-line">
-                {lingkungan.map((item) => (
+                {runtimeTemplate ? '__CMS_ENVIRONMENT_ROWS__' : lingkungan.map((item) => (
                   <tr>
                     <th scope="row" class="px-4 py-3 font-semibold text-ink">{item.nama}</th>
                     <td class:list={['px-4 py-3', item.kepala.trim() ? 'text-ink' : 'text-ink-subtle']}>{nama(item.kepala)}</td>
@@ -101,7 +104,7 @@ const nama = (isi: string) => isi.trim() || '[kosong]';
 
           {/* HP: satu kartu untuk setiap lingkungan. Total ada di ringkasan kelurahan di atas. */}
           <ul data-motion-group class="mt-4 grid gap-3 sm:grid-cols-2 sm:gap-4 md:hidden">
-            {lingkungan.map((item) => (
+            {runtimeTemplate ? '__CMS_ENVIRONMENT_CARDS__' : lingkungan.map((item) => (
               <li data-motion="card" data-motion-card class="rounded-2xl bg-white p-4 shadow-card">
                 <h4 class="font-bold text-ink">{item.nama}</h4>
                 <dl class="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">

@@ -18,6 +18,6 @@ const profil = (await getEntry('profil', 'profil'))!.data;
   <Wilayah sumberData={profil.sumberData} lingkungan={profil.lingkungan} />
   <VisiMisi visi={profil.visi} misi={profil.misi} programUnggulan={profil.programUnggulan} sumber={profil.sumberVisiMisi} />
   <Container>
-    <p class="py-8 text-center text-sm text-ink-subtle">Terakhir diperbarui: {formatTanggal(profil.diperbarui)}</p>
+    <p data-cms-profile-updated class="py-8 text-center text-sm text-ink-subtle">Terakhir diperbarui: {formatTanggal(profil.diperbarui)}</p>
   </Container>
 </BaseLayout>

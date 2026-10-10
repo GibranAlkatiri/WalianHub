@@ -1,7 +1,8 @@
 import { layananOperation, LayananError } from './cms-layanan.js';
+import { validatePengaturan } from './cms-pengaturan.js';
 const fail = (message, status = 422) => { throw new LayananError(message, status); };
-export const collectionD1Enabled = (env, name) => ({layanan:env.CMS_LAYANAN_D1, destinasi:env.CMS_DESTINASI_D1, pengumuman:env.CMS_PENGUMUMAN_D1})[name] === '1';
-export const publicCollectionEnabled = (env, name) => ({destinasi:env.CMS_PUBLIC_DESTINASI_D1, pengumuman:env.CMS_PUBLIC_PENGUMUMAN_D1})[name] === '1';
+export const collectionD1Enabled = (env, name) => ({layanan:env.CMS_LAYANAN_D1, destinasi:env.CMS_DESTINASI_D1, pengumuman:env.CMS_PENGUMUMAN_D1, pengaturan:env.CMS_PENGATURAN_D1})[name] === '1';
+export const publicCollectionEnabled = (env, name) => ({destinasi:env.CMS_PUBLIC_DESTINASI_D1, pengumuman:env.CMS_PUBLIC_PENGUMUMAN_D1, pengaturan:env.CMS_PUBLIC_PENGATURAN_D1})[name] === '1';
 const object = (value, keys) => {
   if (!value || Array.isArray(value) || typeof value !== 'object' || Object.keys(value).some((key) => !keys.includes(key))) fail('Isian konten tidak valid.');
 };
@@ -47,8 +48,9 @@ export function validatePengumuman(value, collection, publish = false) {
 }
 export async function collectionOperation(db, collection, action, slug, body) {
   try {
-    const result = await layananOperation(db,collection,action,slug,body,collection.name === 'destinasi' ? validateDestinasi : validatePengumuman);
-    if (result.message) result.message = result.message.replace('Layanan',collection.name === 'destinasi' ? 'Destinasi' : 'Pengumuman');
+    const validate = collection.name === 'pengaturan' ? (value,c,publish)=>validatePengaturan(value,c,slug,publish) : collection.name === 'destinasi' ? validateDestinasi : validatePengumuman;
+    const result = await layananOperation(db,collection,action,slug,body,validate);
+    if (result.message) result.message = result.message.replace('Layanan',collection.name === 'destinasi' ? 'Destinasi' : collection.name === 'pengaturan' ? 'Pengaturan' : 'Pengumuman');
     return result;
   } catch (error) {
     if (error instanceof LayananError) error.message = error.message.replaceAll('layanan','konten').replaceAll('Layanan','Konten');
