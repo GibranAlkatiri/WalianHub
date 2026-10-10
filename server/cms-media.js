@@ -26,7 +26,7 @@ export async function assertMediaReferences(env, data, collection, slug) {
   if (!mediaEnabled(env) || !env.CMS_DB) throw unavailable();
   for (const path of paths) {
     let row;
-    try { row = await env.CMS_DB.prepare('SELECT collection,slug,ready FROM cms_media WHERE public_path = ?').bind(path).first(); }
+    try { row = await env.CMS_DB.prepare("SELECT collection,slug,ready FROM cms_media WHERE public_path = ? AND NOT EXISTS (SELECT 1 FROM cms_media_cleanup g WHERE g.provider_key=cms_media.provider_key AND g.state <> 'pending')").bind(path).first(); }
     catch { throw unavailable(); }
     if (!row?.ready || row.collection !== collection || row.slug !== slug) throw new MediaError('Foto tidak tersedia untuk konten ini. Pilih ulang fotonya.', 422);
   }
@@ -76,10 +76,13 @@ export async function uploadMedia(request, env, owner, fetchProvider = fetch) {
   const path = `/media/${id}.${format}`, providerKey = `walianhub/${id}-${sha}`;
   let phase = 'database';
   try {
-    await env.CMS_DB.prepare(`INSERT INTO cms_media(id,public_path,collection,slug,source_path,provider_key,content_type,format,byte_length,sha256)
-      VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO NOTHING`).bind(id,path,owner.collectionName,owner.slug,owner.path,providerKey,type,format,bytes.length,sha).run();
+    const cleanup = await env.CMS_DB.prepare('SELECT state FROM cms_media_cleanup WHERE provider_key=?').bind(providerKey).first();
+    if (cleanup && cleanup.state !== 'pending') throw new MediaError('Foto lama sudah dibersihkan. Pilih ulang foto untuk membuat unggahan baru.',409);
+    await env.CMS_DB.prepare(`INSERT INTO cms_media(id,public_path,collection,slug,source_path,provider_key,content_type,format,byte_length,sha256,provider_cloud)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO NOTHING`).bind(id,path,owner.collectionName,owner.slug,owner.path,providerKey,type,format,bytes.length,sha,auth.cloud).run();
     const row = await env.CMS_DB.prepare('SELECT * FROM cms_media WHERE id = ?').bind(id).first();
     if (!row || row.sha256 !== sha || row.collection !== owner.collectionName || row.slug !== owner.slug || row.public_path !== path || row.source_path !== owner.path) throw new MediaError('Unggahan telah berubah. Pilih ulang foto agar tidak menimpa berkas lain.',409);
+    if (row.provider_cloud && row.provider_cloud !== auth.cloud) throw new MediaError('Lingkungan penyimpanan foto berubah. Hubungi pengelola panel.');
     if (!row.ready) {
       phase = 'provider';
       const form = new FormData();
@@ -104,6 +107,7 @@ export async function uploadMedia(request, env, owner, fetchProvider = fetch) {
 }
 export async function downloadMedia(row,env,fetchProvider = fetch) {
   const auth = credentials(env);
+  if (row.provider_cloud && row.provider_cloud !== auth.cloud) throw unavailable();
   try {
     const source = row.provider_key + '.' + row.format;
     const hash = new Uint8Array(await crypto.subtle.digest('SHA-1',new TextEncoder().encode(source + auth.secret)));

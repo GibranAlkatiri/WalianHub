@@ -15,7 +15,7 @@ import {pengaturanImportSql} from '../scripts/lib/cms-pengaturan-import.js';
 import {typedText} from '../server/pengaturan-template.js';
 const configText=readFileSync(new URL('../public/admin/config.yml',import.meta.url),'utf8'),config=load(configText),collection=config.collections.find((item)=>item.name==='pengaturan');
 const content=Object.fromEntries(['situs','beranda','profil'].map((slug)=>[slug,JSON.parse(readFileSync(new URL('../src/content/pengaturan/'+slug+'.json',import.meta.url),'utf8'))]));
-const schema=['0001_content.sql','0002_sessions.sql','0003_media.sql'].map((name)=>readFileSync(new URL('../migrations/'+name,import.meta.url),'utf8')).join('\n');
+const schema=['0001_content.sql','0002_sessions.sql','0003_media.sql','0004_media_cleanup.sql'].map((name)=>readFileSync(new URL('../migrations/'+name,import.meta.url),'utf8')).join('\n');
 async function setup(){
   const db=sqliteD1(schema),provider=fakeCloudinary(),github=[];
   db.raw.query('INSERT INTO cms_imports(snapshot_id,repository,main_sha,captured_at) VALUES (?,?,?,?)').run('fixture',config.backend.repo,'a'.repeat(40),'2026-10-10');

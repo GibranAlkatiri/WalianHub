@@ -10,7 +10,7 @@ import { sqliteD1 } from './helpers/d1-sqlite.js';
 import { fakeGithub } from './helpers/cms-github.js';
 import { fakeCloudinary,png,jpeg } from './helpers/cms-cloudinary.js';
 const config = readFileSync(new URL('../public/admin/config.yml',import.meta.url),'utf8');
-const schema = ['0001_content.sql','0002_sessions.sql','0003_media.sql'].map((name)=>readFileSync(new URL('../migrations/' + name,import.meta.url),'utf8')).join('\n');
+const schema = ['0001_content.sql','0002_sessions.sql','0003_media.sql','0004_media_cleanup.sql'].map((name)=>readFileSync(new URL('../migrations/' + name,import.meta.url),'utf8')).join('\n');
 const data = {judul:'Layanan foto',ringkasan:'Panduan warga',ikon:'file-text',unggulan:true,urutan:1,persyaratan:[],alur:[],diperbarui:'2026-10-10',body:''};
 const destinasi = {nama:'Contoh wisata',kategori:'Alam',ringkasan:'Tempat wisata',gambar:'',lokasi:{alamat:'Walian',lat:1,lng:124},unggulan:true,urutan:1,diperbarui:'2026-10-10',body:''};
 async function setup(wrapProvider = (fetch) => fetch) {
