@@ -1,0 +1,13 @@
+---
+// Runtime uses the same cards and announcements as the static website.
+import DestinationCard from '../../components/ui/DestinationCard.astro';
+import DaftarPengumuman from '../../components/layanan/DaftarPengumuman.astro';
+export const partial = true;
+const announcement = {judul:'__CMS_TITLE__',isi:'__CMS_TEXT__',tanggal:new Date('2000-01-01T00:00:00Z'),penting:false};
+const destination = {nama:'__CMS_TITLE__',kategori:'__CMS_CATEGORY__',ringkasan:'__CMS_SUMMARY__',href:'https://cms.invalid/__CMS_MAP__'};
+---
+<template id="cms-destination-photo"><DestinationCard {...destination} gambar="/__CMS_IMAGE__" /></template>
+<template id="cms-destination-empty"><DestinationCard {...destination} /></template>
+<template id="cms-destination-point"><button type="button" data-carousel-titik="__CMS_INDEX__" aria-label="__CMS_POINT_LABEL__" aria-controls="carousel-destinasi" class="group/titik grid size-10 place-items-center rounded-full"><span class="size-2.5 rounded-full bg-line transition-colors group-data-[aktif]/titik:bg-forest-600"></span></button></template>
+<template id="cms-announcement-normal"><DaftarPengumuman pengumuman={[announcement]} runtimeTemplate /></template>
+<template id="cms-announcement-important"><DaftarPengumuman pengumuman={[{...announcement,penting:true}]} runtimeTemplate /></template>

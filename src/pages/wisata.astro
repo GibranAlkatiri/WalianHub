@@ -39,8 +39,7 @@ const diperbarui = wisata.semua.length > 0
   <section class="bg-sage-100 py-12 sm:py-16 lg:py-24">
     <Container>
       <SectionHeading overline="Wisata" title="Daftar destinasi" />
-      {wisata.semua.length > 0 ? (
-        <div data-motion-group class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+        <div data-cms-destination-list hidden={wisata.semua.length === 0} data-motion-group class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {wisata.semua.map((item) => (
             <DestinationCard
               nama={item.data.nama}
@@ -51,15 +50,11 @@ const diperbarui = wisata.semua.length > 0
             />
           ))}
         </div>
-      ) : (
-        <p class="mt-8 rounded-2xl bg-white p-8 text-center text-ink-muted shadow-card">Informasi destinasi wisata sedang disiapkan.</p>
-      )}
+        <p data-cms-destinations-empty hidden={wisata.semua.length > 0} class="mt-8 rounded-2xl bg-white p-8 text-center text-ink-muted shadow-card">Informasi destinasi wisata sedang disiapkan.</p>
     </Container>
   </section>
 
-  {diperbarui && (
     <Container>
-      <p class="py-8 text-center text-sm text-ink-subtle">Terakhir diperbarui: {formatTanggal(diperbarui)}</p>
+      <p data-cms-destinations-updated hidden={!diperbarui} class="py-8 text-center text-sm text-ink-subtle">{diperbarui ? `Terakhir diperbarui: ${formatTanggal(diperbarui)}` : ''}</p>
     </Container>
-  )}
 </BaseLayout>

@@ -1,8 +1,9 @@
 import { load, dump, JSON_SCHEMA } from 'js-yaml';
 import { sessionEnabled, readSession, sameOrigin, SessionError } from '../../server/cms-session.js';
-import { layananD1Enabled, layananOperation, LayananError } from '../../server/cms-layanan.js';
+import { layananOperation, LayananError } from '../../server/cms-layanan.js';
 import { publicLayananEnabled } from '../../server/published-layanan.js';
 import { mediaEnabled, mediaPaths, assertMediaReferences, MediaError } from '../../server/cms-media.js';
+import { collectionD1Enabled, publicCollectionEnabled, collectionOperation } from '../../server/cms-collections.js';
 
 const HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' };
 const response = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: HEADERS });
@@ -62,8 +63,8 @@ export function createCmsHandler(fetchGitHub = fetch) {
       const asset = await env.ASSETS.fetch(new Request(new URL('/admin/config.yml', url)));
       if (!asset.ok) fail('Konfigurasi panel tidak tersedia.', 503);
       const config = load(await asset.text(), { schema: JSON_SCHEMA });
-      const d1 = layananD1Enabled(env);
-      if (d1 && !sessionEnabled(env)) fail('Mode layanan D1 memerlukan sesi server.', 503);
+      const d1 = ['layanan','destinasi','pengumuman'].some((name) => collectionD1Enabled(env,name));
+      if (d1 && !sessionEnabled(env)) fail('Mode konten D1 memerlukan sesi server.', 503);
       let postBody, postText;
       if (request.method === 'POST') {
         if (!request.headers.get('content-type')?.includes('application/json')) fail('Format permintaan tidak valid.', 415);
@@ -74,21 +75,22 @@ export function createCmsHandler(fetchGitHub = fetch) {
       }
       const action = request.method === 'GET' ? (url.searchParams.get('action') || 'list') : postBody.action;
       const collectionName = request.method === 'GET' ? url.searchParams.get('collection') : postBody.collection;
-      if (d1 && action === 'config' && request.method === 'GET') return response(publicConfig(config, publicLayananEnabled(env) ? new URL('/', request.url).href : config.site_url, mediaEnabled(env)));
-      if (d1 && collectionName === 'layanan') {
-        if (request.method === 'POST' && new TextEncoder().encode(postText).length > 256 * 1024) fail('Isian layanan terlalu panjang.', 413);
-        if (request.method === 'GET' && !['list', 'entry'].includes(action)) fail('Tindakan layanan tidak dikenali.', 404);
-        if (request.method === 'POST' && !['save', 'publish', 'discard', 'withdraw', 'delete'].includes(action)) fail('Tindakan layanan tidak dikenali.', 404);
+      if (d1 && action === 'config' && request.method === 'GET') return response(publicConfig(config, publicLayananEnabled(env) || ['destinasi','pengumuman'].some((name) => publicCollectionEnabled(env,name)) ? new URL('/', request.url).href : config.site_url, mediaEnabled(env)));
+      if (collectionD1Enabled(env,collectionName) && action !== 'asset') {
+        if (request.method === 'POST' && new TextEncoder().encode(postText).length > 256 * 1024) fail('Isian konten terlalu panjang.', 413);
+        if (request.method === 'GET' && !['list', 'entry'].includes(action)) fail('Tindakan konten tidak dikenali.', 404);
+        if (request.method === 'POST' && !['save', 'publish', 'discard', 'withdraw', 'delete'].includes(action)) fail('Tindakan konten tidak dikenali.', 404);
         const slug = request.method === 'GET' ? url.searchParams.get('slug') : postBody.slug;
-        const collection = config.collections.find((item) => item.name === 'layanan');
-        if (!collection || collection.folder !== 'src/content/layanan' || collection.files) fail('Konfigurasi layanan tidak valid.', 503);
-        if (action !== 'list') target(config, 'layanan', slug);
-        if (action === 'save') await assertMediaReferences(env, postBody.data, 'layanan', slug);
+        const collection = config.collections.find((item) => item.name === collectionName);
+        if (!collection || (collectionName === 'pengumuman' ? collection.files?.length !== 1 || collection.files[0].name !== 'pengumuman' || collection.files[0].file !== 'src/content/pengaturan/pengumuman.json' : collection.folder !== `src/content/${collectionName}` || collection.files)) fail('Konfigurasi konten tidak valid.', 503);
+        const operation = collectionName === 'layanan' ? layananOperation : collectionOperation;
+        if (action !== 'list') target(config, collectionName, slug);
+        if (action === 'save') await assertMediaReferences(env, postBody.data, collectionName, slug);
         if (action === 'publish') {
-          const current = await layananOperation(env.CMS_DB, collection, 'entry', slug);
-          if (!current.deleted && !current.withdrawal) await assertMediaReferences(env, current.data, 'layanan', slug);
+          const current = await operation(env.CMS_DB, collection, 'entry', slug);
+          if (!current.deleted && !current.withdrawal) await assertMediaReferences(env, current.data, collectionName, slug);
         }
-        return response(await layananOperation(env.CMS_DB, collection, action, slug, postBody));
+        return response(await operation(env.CMS_DB, collection, action, slug, postBody));
       }
       if (!secret) fail('Koneksi penyimpanan konten belum tersedia. Hubungi pengelola panel.', 503);
       if (!/^[\w.-]+\/[\w.-]+$/.test(config.backend?.repo) || !/^[\w/-]+$/.test(config.backend?.branch || '')) fail('Konfigurasi repository tidak valid.', 503);
@@ -166,7 +168,8 @@ export function createCmsHandler(fetchGitHub = fetch) {
           const t = target(config, collectionName, url.searchParams.get('slug'));
           const path = url.searchParams.get('path') || '';
           if (!/^\/uploads\/[a-zA-Z0-9._-]+\.(png|jpe?g|webp)$/.test(path)) fail('Gambar tidak dikenali.', 404);
-          const file = await content(`public${path}`, url.searchParams.get('draft') === '1' ? t.branch : main);
+          let file = await content(`public${path}`, url.searchParams.get('draft') === '1' ? t.branch : main);
+          if (!file && collectionD1Enabled(env,collectionName)) file = await content(`public${path}`, main);
           if (!file) fail('Gambar belum tersedia.', 404);
           return new Response(bytes64(file.content), { headers: { 'content-type': path.endsWith('.png') ? 'image/png' : path.endsWith('.webp') ? 'image/webp' : 'image/jpeg', 'cache-control': 'private, no-store', 'x-content-type-options': 'nosniff' } });
         }

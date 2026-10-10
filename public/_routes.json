@@ -1,5 +1,5 @@
 {
   "version": 1,
-  "include": ["/", "/index.html", "/layanan", "/layanan/*", "/api/*", "/media/*", "/migration-preview"],
+  "include": ["/", "/index.html", "/layanan", "/layanan/*", "/wisata", "/wisata/*", "/profil", "/profil/*", "/api/*", "/media/*", "/migration-preview"],
   "exclude": []
 }
