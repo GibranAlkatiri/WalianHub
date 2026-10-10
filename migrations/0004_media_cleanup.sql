@@ -33,18 +33,18 @@ CREATE VIEW cms_media_current_references AS
 
 CREATE TRIGGER cms_media_cleanup_claim_insert BEFORE INSERT ON cms_media_cleanup
 WHEN NEW.state = 'deleting' BEGIN
-  SELECT CASE WHEN EXISTS (SELECT 1 FROM cms_media_current_references WHERE provider_key = NEW.provider_key)
+  SELECT RAISE(ABORT, 'CMS_MEDIA_IN_USE') WHERE EXISTS (SELECT 1 FROM cms_media_current_references WHERE provider_key = NEW.provider_key)
     OR EXISTS (SELECT 1 FROM cms_media WHERE provider_key = NEW.provider_key AND
       (strftime('%s', created_at) IS NULL OR CAST(strftime('%s', created_at) AS INTEGER) * 1000 > NEW.claimed_at - 604800000))
-    THEN RAISE(ABORT, 'CMS_MEDIA_IN_USE') END;
+    ;
 END;
 
 CREATE TRIGGER cms_media_cleanup_claim_update BEFORE UPDATE OF state, claimed_at ON cms_media_cleanup
 WHEN NEW.state = 'deleting' BEGIN
-  SELECT CASE WHEN EXISTS (SELECT 1 FROM cms_media_current_references WHERE provider_key = NEW.provider_key)
+  SELECT RAISE(ABORT, 'CMS_MEDIA_IN_USE') WHERE EXISTS (SELECT 1 FROM cms_media_current_references WHERE provider_key = NEW.provider_key)
     OR EXISTS (SELECT 1 FROM cms_media WHERE provider_key = NEW.provider_key AND
       (strftime('%s', created_at) IS NULL OR CAST(strftime('%s', created_at) AS INTEGER) * 1000 > NEW.claimed_at - 604800000))
-    THEN RAISE(ABORT, 'CMS_MEDIA_IN_USE') END;
+    ;
 END;
 
 CREATE TRIGGER cms_media_cleanup_upload BEFORE INSERT ON cms_media
