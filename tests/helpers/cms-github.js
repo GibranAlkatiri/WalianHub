@@ -9,7 +9,7 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), { status
 export function fakeGithub(files = {}, repository) {
   const refs = new Map(), blobs = new Map(), trees = new Map(), commits = new Map(), pulls = [];
   let next = 0;
-  const blob = (content) => { const id = sha(content); blobs.set(id, content); return id; };
+  const blob = (content) => { const bytes = Buffer.from(content); const id = createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'); blobs.set(id, content); return id; };
   const initial = new Map(Object.entries(files).map(([path, text]) => [path, blob(text)]));
   const treeId = sha('initial-tree'); trees.set(treeId, initial);
   const mainId = sha('initial-commit'); commits.set(mainId, { sha: mainId, tree: { sha: treeId }, parents: [] }); refs.set('main', mainId);

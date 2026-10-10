@@ -1,0 +1,13 @@
+{
+  // Konfigurasi khusus pengujian lokal; tidak dipakai deployment produksi.
+  "name": "walianhub-migration-local",
+  "pages_build_output_dir": "./dist",
+  "compatibility_date": "2026-10-10",
+  "vars": { "CMS_MIGRATION_PREVIEW": "1" },
+  "d1_databases": [{
+    "binding": "CMS_DB",
+    "database_name": "walianhub-migration-local",
+    "database_id": "00000000-0000-0000-0000-000000000002",
+    "migrations_dir": "migrations"
+  }]
+}
