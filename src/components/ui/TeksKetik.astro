@@ -5,9 +5,10 @@ interface Props {
   teks: string;
   jedaAwal?: number;
   jedaHuruf?: number;
+  runtimeMarker?: string;
 }
 
-const { teks, jedaAwal = 0, jedaHuruf = JEDA_HURUF_JUDUL } = Astro.props;
+const { teks, jedaAwal = 0, jedaHuruf = JEDA_HURUF_JUDUL, runtimeMarker } = Astro.props;
 const pemisah = new Intl.Segmenter('id', { granularity: 'grapheme' });
 let urutan = 0;
 // Kata tetap utuh saat membungkus baris; semua huruf sudah menempati ruangnya.
@@ -24,7 +25,7 @@ const bagian = teks.split(/(\s+)/).filter(Boolean).map((kata) => ({
 {/* Pembaca layar membaca kalimat lengkap sekali, bukan huruf demi huruf. */}
 <span class="sr-only">{teks}</span>
 <span aria-hidden="true">
-  {bagian.map((kata) => kata.spasi ? kata.teks : (
+  {runtimeMarker || bagian.map((kata) => kata.spasi ? kata.teks : (
     <span class="inline-block max-w-full">
       {kata.huruf.map((huruf) => (
         <span class="hero-huruf" style={`--jeda-huruf: ${huruf.jeda}ms`}>{huruf.teks}</span>

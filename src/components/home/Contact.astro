@@ -9,9 +9,10 @@ import InfoKantor from '../ui/InfoKantor.astro';
 
 interface Props {
   situs: CollectionEntry<'situs'>['data'];
+  runtimeTemplate?: boolean;
 }
 
-const { situs } = Astro.props;
+const { situs, runtimeTemplate = false } = Astro.props;
 const { lat, lng } = situs.koordinat;
 
 // Alamat embed Google Maps tanpa API key, langsung ke halaman embed (tanpa pengalihan).
@@ -28,7 +29,7 @@ const petunjukArah = situs.googleMapsUrl || `https://www.google.com/maps/dir/?ap
         title="Hubungi Kelurahan Walian"
         description="Datang langsung ke kantor kelurahan, atau hubungi kami lewat WhatsApp."
       />
-      <InfoKantor situs={situs} class="mt-8" />
+      <InfoKantor situs={situs} class="mt-8" runtimeTemplate={runtimeTemplate} />
     </div>
 
     <div data-motion="content" class="flex flex-col gap-4">

@@ -13,9 +13,10 @@ import { susunBagan, type JabatanBagan } from '../../lib/bagan';
 interface Props {
   lurah: { nama: string };
   strukturOrganisasi: JabatanBagan[];
+  runtimeTemplate?: boolean;
 }
 
-const { lurah, strukturOrganisasi } = Astro.props;
+const { lurah, strukturOrganisasi, runtimeTemplate = false } = Astro.props;
 const bagan = susunBagan(lurah.nama, strukturOrganisasi);
 ---
 
@@ -59,7 +60,7 @@ const bagan = susunBagan(lurah.nama, strukturOrganisasi);
     >
       <div data-bagan-isi class="mx-auto w-max p-2">
         <ul class="bagan">
-          <SimpulBagan simpul={bagan} puncak />
+          {runtimeTemplate ? '__CMS_TREE__' : <SimpulBagan simpul={bagan} puncak />}
         </ul>
       </div>
     </div>

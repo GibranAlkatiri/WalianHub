@@ -63,7 +63,7 @@ export function createCmsHandler(fetchGitHub = fetch) {
       const asset = await env.ASSETS.fetch(new Request(new URL('/admin/config.yml', url)));
       if (!asset.ok) fail('Konfigurasi panel tidak tersedia.', 503);
       const config = load(await asset.text(), { schema: JSON_SCHEMA });
-      const d1 = ['layanan','destinasi','pengumuman'].some((name) => collectionD1Enabled(env,name));
+      const d1 = ['layanan','destinasi','pengumuman','pengaturan'].some((name) => collectionD1Enabled(env,name));
       if (d1 && !sessionEnabled(env)) fail('Mode konten D1 memerlukan sesi server.', 503);
       let postBody, postText;
       if (request.method === 'POST') {
@@ -75,14 +75,15 @@ export function createCmsHandler(fetchGitHub = fetch) {
       }
       const action = request.method === 'GET' ? (url.searchParams.get('action') || 'list') : postBody.action;
       const collectionName = request.method === 'GET' ? url.searchParams.get('collection') : postBody.collection;
-      if (d1 && action === 'config' && request.method === 'GET') return response(publicConfig(config, publicLayananEnabled(env) || ['destinasi','pengumuman'].some((name) => publicCollectionEnabled(env,name)) ? new URL('/', request.url).href : config.site_url, mediaEnabled(env)));
+      if (d1 && action === 'config' && request.method === 'GET') return response(publicConfig(config, publicLayananEnabled(env) || ['destinasi','pengumuman','pengaturan'].some((name) => publicCollectionEnabled(env,name)) ? new URL('/', request.url).href : config.site_url, mediaEnabled(env)));
       if (collectionD1Enabled(env,collectionName) && action !== 'asset') {
         if (request.method === 'POST' && new TextEncoder().encode(postText).length > 256 * 1024) fail('Isian konten terlalu panjang.', 413);
         if (request.method === 'GET' && !['list', 'entry'].includes(action)) fail('Tindakan konten tidak dikenali.', 404);
         if (request.method === 'POST' && !['save', 'publish', 'discard', 'withdraw', 'delete'].includes(action)) fail('Tindakan konten tidak dikenali.', 404);
         const slug = request.method === 'GET' ? url.searchParams.get('slug') : postBody.slug;
         const collection = config.collections.find((item) => item.name === collectionName);
-        if (!collection || (collectionName === 'pengumuman' ? collection.files?.length !== 1 || collection.files[0].name !== 'pengumuman' || collection.files[0].file !== 'src/content/pengaturan/pengumuman.json' : collection.folder !== `src/content/${collectionName}` || collection.files)) fail('Konfigurasi konten tidak valid.', 503);
+        if (collectionName === 'pengaturan' && (!collection || collection.delete !== false || collection.files?.length !== 3 || !['situs','beranda','profil'].every((name)=>collection.files.some((file)=>file.name===name && file.file===`src/content/pengaturan/${name}.json`)))) fail('Konfigurasi Pengaturan tidak valid.',503);
+        if (!collection || (collectionName === 'pengaturan' ? false : collectionName === 'pengumuman' ? collection.files?.length !== 1 || collection.files[0].name !== 'pengumuman' || collection.files[0].file !== 'src/content/pengaturan/pengumuman.json' : collection.folder !== `src/content/${collectionName}` || collection.files)) fail('Konfigurasi konten tidak valid.', 503);
         const operation = collectionName === 'layanan' ? layananOperation : collectionOperation;
         if (action !== 'list') target(config, collectionName, slug);
         if (action === 'save') await assertMediaReferences(env, postBody.data, collectionName, slug);

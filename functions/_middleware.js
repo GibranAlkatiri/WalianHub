@@ -2,6 +2,8 @@ import { publicLayananEnabled, publishedLayanan, PUBLIC_HEADERS } from '../serve
 import { parseLayananTemplates, renderLayanan } from '../server/layanan-template.js';
 import { publicCollectionEnabled, publishedDestinasi, publishedPengumuman } from '../server/published-collections.js';
 import { parseCollectionTemplates, renderDestinasi, renderPengumuman, dateLabel } from '../server/collections-template.js';
+import { publishedPengaturan } from '../server/published-pengaturan.js';
+import { parsePengaturanTemplates, renderPengaturan } from '../server/pengaturan-template.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -13,13 +15,23 @@ export async function onRequest(context) {
   const serviceD1 = (home || services) && publicLayananEnabled(env);
   const destinationD1 = (home || services || destinations || profile) && publicCollectionEnabled(env,'destinasi');
   const announcementD1 = services && publicCollectionEnabled(env,'pengumuman');
-  if (!serviceD1 && !destinationD1 && !announcementD1) return context.next();
+  const settingsD1 = (home || services || destinations || profile) && publicCollectionEnabled(env,'pengaturan');
+  if (!serviceD1 && !destinationD1 && !announcementD1 && !settingsD1) return context.next();
   if (!['GET', 'HEAD'].includes(request.method)) return new Response(null, { status:405, headers:{...PUBLIC_HEADERS, allow:'GET, HEAD'} });
   // Static validators must not turn a fresh D1 read into a stale 304 response.
   const headers = new Headers(request.headers);
   for (const name of ['if-none-match', 'if-modified-since', 'range', 'if-range', 'accept-encoding']) headers.delete(name);
   const asset = await env.ASSETS.fetch(new Request(request.url, { headers }));
   if (!asset.ok || !asset.headers.get('content-type')?.includes('text/html')) return asset;
+  let settings,settingsTemplates;
+  const settingsUnavailable = async () => {
+    await asset.body?.cancel();
+    return new Response(request.method === 'HEAD' ? null : '<!doctype html><html lang="id"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Informasi belum tersedia</title><main><h1>Informasi website belum dapat dimuat.</h1><p>Silakan muat ulang sebentar lagi.</p><a href="">Muat ulang</a></main></html>',{status:503,headers:{...PUBLIC_HEADERS,'content-type':'text/html; charset=utf-8','retry-after':'5'}});
+  };
+  if (settingsD1) try {
+    const [data,template] = await Promise.all([publishedPengaturan(env),env.ASSETS.fetch(new Request(new URL('/cms-templates/pengaturan',request.url)))]);
+    if (!template.ok) throw new Error('Template tidak tersedia.');settings=data;settingsTemplates=parsePengaturanTemplates(await template.text());
+  } catch {return settingsUnavailable();}
   let content, status = 200, error = false;
   if (serviceD1) try {
     const [entries, template] = await Promise.all([
@@ -54,6 +66,21 @@ export async function onRequest(context) {
   } catch { announcementError = true;status = 503; }
   const visible = (element, show) => show ? element.removeAttribute('hidden') : element.setAttribute('hidden', '');
   const rewriter = new HTMLRewriter();
+  if (settingsD1) {
+    let parts;try {parts=renderPengaturan(settings,settingsTemplates,destinationD1 ? wisataContent.href : undefined);}catch {return settingsUnavailable();}
+    const site=settings.situs;
+    const title=home?`${site.namaKelurahan} · Kecamatan ${site.kecamatan}, Kota ${site.kota}`:`${profile?'Profil':services?'Layanan':'Wisata'} · ${site.namaKelurahan}`;
+    const description=home?`Website resmi ${site.namaKelurahan}, Kecamatan ${site.kecamatan}, Kota ${site.kota}: informasi layanan, profil wilayah, dan wisata.`:profile?`Struktur organisasi, wilayah, penduduk, serta visi dan misi ${site.namaKelurahan}.`:services?`Informasi persyaratan, alur, dan pengumuman layanan ${site.namaKelurahan}.`:`Destinasi wisata di ${site.namaKelurahan}, Kota ${site.kota}.`;
+    for (const [selector,text] of [['[data-cms-site-name]',site.namaKelurahan],['[data-cms-district]',site.kecamatan],['[data-cms-city]','Kota '+site.kota],['title',title],['[data-cms-profile-updated]','Terakhir diperbarui: '+parts.updated]]) rewriter.on(selector,{element(element){element.setInnerContent(text);}});
+    for (const [selector,value] of [['meta[property="og:site_name"]',site.namaKelurahan],['meta[property="og:title"]',title],['meta[property="og:description"]',description],['meta[name="description"]',description]]) rewriter.on(selector,{element(element){element.setAttribute('content',value);}});
+    if (home) {
+      const image=settings.beranda.hero.foto.find((foto)=>foto.gambar.trim())?.gambar;
+      rewriter.on('meta[property="og:image"]',{element(element){element.setAttribute('content',new URL(image && /\.(jpe?g|png|webp)$/i.test(image)?image:'/images/default-og.png',request.url).href);}})
+        .on('meta[property="og:image:width"],meta[property="og:image:height"]',{element(element){if(image)element.remove();}});
+    }
+    rewriter.on('[data-status-layanan]',{element(element){element.setAttribute('data-status-layanan',JSON.stringify(site.jamLayanan));}});
+    for(const [selector,key] of [['footer','footer'],...(home?[['[data-hero-foto]','hero'],['section#profil','intro'],['section#kontak','contact']]:[]),...(profile?[['[data-cms-profile-heading]','heading'],['section#struktur-organisasi','structure'],['section#wilayah','region'],['section#visi-misi','vision']]:[]),...(services?[['section#pengaduan','complaint']]:[])]) rewriter.on(selector,{element(element){element.replace(parts[key],{html:true});}});
+  }
   if (serviceD1) rewriter
     .on('[data-cms-service-cards]', { element(element) { element.setInnerContent(content.cards, {html:true});visible(element, content.featured > 0); } })
     .on('[data-cms-service-list]', { element(element) { element.setInnerContent(content.items, {html:true});visible(element, content.total > 0); } })
@@ -92,6 +119,7 @@ export async function onRequest(context) {
   if (serviceD1) dynamicHeaders.set('x-walian-layanan', 'd1');
   if (destinationD1) dynamicHeaders.set('x-walian-destinasi', 'd1');
   if (announcementD1) dynamicHeaders.set('x-walian-pengumuman', 'd1');
+  if (settingsD1) dynamicHeaders.set('x-walian-pengaturan','d1');
   if (error || wisataError || announcementError) dynamicHeaders.set('retry-after', '5');
   if (request.method === 'HEAD') {
     await asset.body?.cancel();

@@ -11,9 +11,10 @@ import { pesanWhatsapp } from '../../lib/navigasi';
 interface Props {
   situs: CollectionEntry<'situs'>['data'];
   class?: string;
+  runtimeTemplate?: boolean;
 }
 
-const { situs, class: kelas } = Astro.props;
+const { situs, class: kelas, runtimeTemplate = false } = Astro.props;
 ---
 
 <ul data-motion="content" class:list={['space-y-5', kelas]}>
@@ -29,7 +30,7 @@ const { situs, class: kelas } = Astro.props;
     <div>
       <p class="font-semibold text-ink">Jam layanan</p>
       <StatusKantor jamLayanan={situs.jamLayanan} class="my-2" />
-      {ringkasJadwal(situs.jamLayanan.jadwal).map((baris) => <p class="text-ink-muted">{baris.hari}: {baris.jam}</p>)}
+      {runtimeTemplate ? '__CMS_HOURS__' : ringkasJadwal(situs.jamLayanan.jadwal).map((baris) => <p class="text-ink-muted">{baris.hari}: {baris.jam}</p>)}
       <p class="mt-1 text-sm text-ink-subtle">Tutup pada hari libur nasional dan cuti bersama.</p>
     </div>
   </li>
