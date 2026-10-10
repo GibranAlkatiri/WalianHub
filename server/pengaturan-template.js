@@ -19,7 +19,7 @@ function row(html,marker,tag='li') {
 }
 export function parsePengaturanTemplates(html) {
   const t = Object.fromEntries([...html.matchAll(/<template id="([a-z-]+)">([\s\S]*?)<\/template>/g)].map(([,id,body])=>[id,body.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replaceAll('/__CMS_IMAGE__','__CMS_IMAGE__').replaceAll('https://cms.invalid/','').replaceAll('Kelurahan Walian','__CMS_SITE_NAME__').replaceAll('Lurah Walian','__CMS_LURAH_LABEL__').replaceAll('Kota Tomohon','Kota __CMS_CITY_NAME__')]));
-  for(const name of ['hero','hero-slide','hero-empty','hero-point','intro-photo','intro-empty','contact','footer','complaint','profile-heading','structure','node-root','node-child','node-side','region','region-empty','region-row','vision',...['environment','family','population','area'].flatMap((kind)=>['stat-'+kind,'stat-empty-'+kind])])if(!t['cms-'+name])throw new Error('Template Pengaturan belum tersedia.');
+  for(const name of ['hero','hero-slide','hero-empty','hero-point','intro-photo','intro-empty','contact','footer','complaint','profile-heading','structure','node-root','node-child','node-side','node-empty-root','node-empty-child','node-empty-side','region','region-empty','region-row','vision',...['environment','family','population','area'].flatMap((kind)=>['stat-'+kind,'stat-empty-'+kind])])if(!t['cms-'+name])throw new Error('Template Pengaturan belum tersedia.');
   t.slide=element(t['cms-hero-slide'],/<div\b[^>]*id="hero-foto-0"[^>]*>/).replaceAll('hero-foto-0','hero-foto-__CMS_INDEX__').replaceAll('object-center','object-__CMS_POSITION__');
   t.point=element(t['cms-hero-point'],/<button\b[^>]*data-hero-pilih="0"[^>]*>/).replaceAll('data-hero-pilih="0"','data-hero-pilih="__CMS_INDEX__"').replaceAll('hero-foto-0','hero-foto-__CMS_INDEX__').replace(/aria-label="[^"]*"/,'aria-label="__CMS_POINT_LABEL__"');
   t.fallback=element(t['cms-hero-empty'],/<div\b[^>]*class="absolute inset-0 overflow-hidden bg-sage-100"[^>]*>/);
@@ -39,7 +39,7 @@ export function parsePengaturanTemplates(html) {
       t.complaintPhone=element(t[name],/<a\b[^>]*href="https:\/\/wa.me\/[^"]*"[^>]*>/);t[name]=t[name].replace(t.complaintPhone,'__CMS_COMPLAINT_PHONE__');
     }
   }
-  for(const kind of ['root','child','side'])t['cms-node-'+kind]=t['cms-node-'+kind].replace('<span class="block">__CMS_NAMES__</span>','__CMS_NAMES__').replace('data-motion-delay="200"','data-motion-delay="__CMS_DELAY__"').replace(/<\/li>$/,'__CMS_BRANCHES__</li>');
+  for(const kind of ['root','child','side','empty-root','empty-child','empty-side'])t['cms-node-'+kind]=t['cms-node-'+kind].replace('<span class="block">__CMS_NAMES__</span>','__CMS_NAMES__').replace('data-motion-delay="200"','data-motion-delay="__CMS_DELAY__"').replace(/<\/li>$/,'__CMS_BRANCHES__</li>');
   const region=t['cms-region-row'];
   t.environmentRow=row(region,'__CMS_ENVIRONMENT_NAME__','tr');t.environmentCard=row(region,'__CMS_ENVIRONMENT_NAME__');
   for(const key of ['environmentRow','environmentCard','cms-region'])t[key]=t[key].replaceAll('1.234.567','__CMS_FAMILY__').replaceAll('2.345.678','__CMS_POPULATION__').replaceAll('3.456.789','__CMS_AREA__');
@@ -78,14 +78,17 @@ export function renderPengaturan(data,t,wisataHref) {
   if(!photos.length)hero=hero.replace(/(<span\b[^>]*data-label-foto) hidden/,'$1');
   const node=(item,kind='root',depth=0)=>{
     const branches=(item.samping.length?'<ul class="bagan-samping">'+item.samping.map((child)=>node(child,'side',depth+1)).join('')+'</ul>':'')+(item.bawahan.length?'<ul class="bagan-cabang">'+item.bawahan.map((child)=>node(child,'child',depth+1)).join('')+'</ul>':'');
-    return fill(t['cms-node-'+kind],{__CMS_JOB__:escapeHtml(item.jabatan),__CMS_NAMES__:item.nama.length?item.nama.map((name)=>'<span class="block">'+escapeHtml(name)+'</span>').join(''):'[kosong]',__CMS_DELAY__:String(200+Math.min(depth,3)*180),__CMS_BRANCHES__:branches});
+    return fill(t['cms-node-'+(item.nama.length?'':'empty-')+kind],{__CMS_JOB__:escapeHtml(item.jabatan),__CMS_NAMES__:item.nama.map((name)=>'<span class="block">'+escapeHtml(name)+'</span>').join(''),__CMS_DELAY__:String(200+Math.min(depth,3)*180),__CMS_BRANCHES__:branches});
   };
   values.__CMS_TREE__=node(susunBagan(p.lurah.nama,p.strukturOrganisasi));
   const sum=(key)=>{const numbers=p.lingkungan.map((item)=>item[key]).filter((number)=>number!==null);return numbers.length?numbers.reduce((a,b)=>a+b,0):null;};
   const totals={__CMS_FAMILY__:sum('kepalaKeluarga'),__CMS_POPULATION__:sum('jumlahPenduduk'),__CMS_AREA__:sum('luasKm2')};
   Object.assign(values,Object.fromEntries(Object.entries(totals).map(([key,number])=>[key,escapeHtml(formatAngka(number)??'–')])));
   values.__CMS_STATS__=[p.lingkungan.length||null,totals.__CMS_FAMILY__,totals.__CMS_POPULATION__,totals.__CMS_AREA__].map((number,index)=>fill(t['cms-stat-'+(number===null?'empty-':'')+['environment','family','population','area'][index]],{__CMS_NUMBER__:escapeHtml(formatAngka(number))})).join('');
-  const environment=(item,template)=>fill(template,{__CMS_ENVIRONMENT_NAME__:escapeHtml(item.nama),__CMS_HEAD__:escapeHtml(item.kepala||'[kosong]'),__CMS_DEPUTY__:escapeHtml(item.wakil||'[kosong]'),__CMS_FAMILY__:escapeHtml(formatAngka(item.kepalaKeluarga)??'–'),__CMS_POPULATION__:escapeHtml(formatAngka(item.jumlahPenduduk)??'–'),__CMS_AREA__:escapeHtml(formatAngka(item.luasKm2)??'–')});
+  const environment=(item,template)=>{
+    for(const [name,marker] of [['kepala','__CMS_HEAD__'],['wakil','__CMS_DEPUTY__']])if(!item[name])template=template.replace(new RegExp('(<(?:td|dd) class="[^"]*)\\btext-ink(?=")[^"]*">'+marker,'g'),'$1text-ink-subtle">'+marker);
+    return fill(template,{__CMS_ENVIRONMENT_NAME__:escapeHtml(item.nama),__CMS_HEAD__:escapeHtml(item.kepala||'[kosong]'),__CMS_DEPUTY__:escapeHtml(item.wakil||'[kosong]'),__CMS_FAMILY__:escapeHtml(formatAngka(item.kepalaKeluarga)??'–'),__CMS_POPULATION__:escapeHtml(formatAngka(item.jumlahPenduduk)??'–'),__CMS_AREA__:escapeHtml(formatAngka(item.luasKm2)??'–')});
+  };
   values.__CMS_ENVIRONMENT_ROWS__=p.lingkungan.map((item)=>environment(item,t.environmentRow)).join('');values.__CMS_ENVIRONMENT_CARDS__=p.lingkungan.map((item)=>environment(item,t.environmentCard)).join('');
   values.__CMS_MISSIONS__=p.misi.map((mission,index)=>fill(t.mission.replace('>1</span>','>__CMS_NUMBER__</span>'),{__CMS_MISSION__:escapeHtml(mission),__CMS_NUMBER__:String(index+1)})).join('');
   values.__CMS_PROGRAMS__=p.programUnggulan.map((program,index)=>fill(t.program.replace('>1.</span>','>__CMS_NUMBER__.</span>'),{__CMS_PROGRAM__:escapeHtml(program),__CMS_NUMBER__:String(index+1)})).join('');
@@ -93,6 +96,6 @@ export function renderPengaturan(data,t,wisataHref) {
   const title='Profil '+s.namaKelurahan;values.__CMS_PROFILE_TITLE__=escapeHtml(title);values.__CMS_TYPED_PROFILE_TITLE__=typedText(title);values.__CMS_TYPED_SUMMARY__=typedText(p.ringkasan,jedaSubjudulKetik(title),JEDA_HURUF_SUBJUDUL);
   const contact=fill(t['cms-contact'],values).replace(/href="https:\/\/wa.me\/[^"]*"/,()=>`href="${escapeHtml(tautanWhatsapp(s.whatsapp||'',`Halo Kantor ${s.namaKelurahan}, saya ingin bertanya tentang `))}"`);
   const complaint=fill(t['cms-complaint'],values).replace(/href="https:\/\/wa.me\/[^"]*"/,()=>`href="${escapeHtml(tautanWhatsapp(s.whatsapp||'',`Halo Kantor ${s.namaKelurahan}, saya ingin menyampaikan keluhan atau masukan: `))}"`);
-  let footer=fill(t['cms-footer'],values);if(wisataHref)footer=footer.replace(/href="\/(?:wisata|#wisata)"/g,()=>`href="${escapeHtml(wisataHref)}"`);
+  let footer=t['cms-footer'];if(!s.mediaSosial.length)footer=footer.replace(element(footer,/<ul\b[^>]*class="mt-6 flex gap-2"[^>]*>/),'');footer=fill(footer,values);if(wisataHref)footer=footer.replace(/href="\/(?:wisata|#wisata)"/g,()=>`href="${escapeHtml(wisataHref)}"`);
   return {hero:fill(hero,values),intro:fill(t[p.lurah.foto?'cms-intro-photo':'cms-intro-empty'],values),contact,footer,complaint,heading:fill(t['cms-profile-heading'],values),structure:fill(t['cms-structure'],values),region:fill(t[p.lingkungan.length?'cms-region':'cms-region-empty'],values),vision:fill(t['cms-vision'],values),updated:dateLabel(p.diperbarui)};
 }

@@ -34,6 +34,9 @@ const lingkungan = {nama:'__CMS_ENVIRONMENT_NAME__',kepala:'__CMS_HEAD__',wakil:
 <template id="cms-node-root"><SimpulBagan simpul={node} puncak /></template>
 <template id="cms-node-child"><SimpulBagan simpul={node} /></template>
 <template id="cms-node-side"><SimpulBagan simpul={node} samping /></template>
+<template id="cms-node-empty-root"><SimpulBagan simpul={{...node,nama:[]}} puncak /></template>
+<template id="cms-node-empty-child"><SimpulBagan simpul={{...node,nama:[]}} /></template>
+<template id="cms-node-empty-side"><SimpulBagan simpul={{...node,nama:[]}} samping /></template>
 <template id="cms-region"><Wilayah sumberData={{tahun:'__CMS_YEAR__',sumber:'__CMS_SOURCE__'}} lingkungan={[lingkungan]} runtimeTemplate /></template>
 <template id="cms-region-empty"><Wilayah sumberData={{tahun:'__CMS_YEAR__',sumber:'__CMS_SOURCE__'}} lingkungan={[]} runtimeTemplate /></template>
 <template id="cms-region-row"><Wilayah sumberData={{tahun:'',sumber:''}} lingkungan={[lingkungan]} /></template>
