@@ -33,6 +33,21 @@ export async function imageUrl(params) {
   return URL.createObjectURL(await res.blob());
 }
 
+export async function uploadImage(file, params) {
+  const url = new URL('/api/media', location.origin);
+  for (const [key,value] of Object.entries(params)) url.searchParams.set(key,value);
+  const send = () => fetch(url,{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'content-type':file.type},body:file});
+  let res;
+  // Retry a transport failure with the same ID; the server never overwrites it.
+  try { res = await send(); } catch {
+    try { res = await send(); } catch { throw new Error('Unggahan terputus. Pilih ulang foto untuk mencoba lagi; isian Anda tetap ada.'); }
+  }
+  const data = await res.json().catch(()=>({error:'Unggahan belum selesai. Pilih ulang foto untuk mencoba lagi.'}));
+  if (res.status === 401) { clearLegacy();window.dispatchEvent(new Event('walian:session-expired')); }
+  if (!res.ok) throw new Error(data.error || 'Foto belum berhasil diunggah. Coba kembali.');
+  return data;
+}
+
 export async function logout() {
   if (window.WALIAN_CMS_AUTH === 'session') {
     const res = await fetch('/api/auth', { method: 'DELETE', credentials: 'same-origin', cache: 'no-store' }).catch(() => { throw new Error('Keluar belum berhasil. Periksa koneksi lalu coba kembali.'); });
