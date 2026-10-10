@@ -8,19 +8,19 @@ import { sha256 } from '../server/cms-session.js';
 import { mediaPaths } from '../server/cms-media.js';
 import { sqliteD1 } from './helpers/d1-sqlite.js';
 import { fakeGithub } from './helpers/cms-github.js';
-import { fakeCloudinary,png } from './helpers/cms-cloudinary.js';
+import { fakeCloudinary,png,jpeg } from './helpers/cms-cloudinary.js';
 const config = readFileSync(new URL('../public/admin/config.yml',import.meta.url),'utf8');
 const schema = ['0001_content.sql','0002_sessions.sql','0003_media.sql'].map((name)=>readFileSync(new URL('../migrations/' + name,import.meta.url),'utf8')).join('\n');
 const data = {judul:'Layanan foto',ringkasan:'Panduan warga',ikon:'file-text',unggulan:true,urutan:1,persyaratan:[],alur:[],diperbarui:'2026-10-10',body:''};
 const destinasi = {nama:'Contoh wisata',kategori:'Alam',ringkasan:'Tempat wisata',gambar:'',lokasi:{alamat:'Walian',lat:1,lng:124},unggulan:true,urutan:1,diperbarui:'2026-10-10',body:''};
-async function setup() {
+async function setup(wrapProvider = (fetch) => fetch) {
   const db = sqliteD1(schema),provider = fakeCloudinary();
   db.raw.query('INSERT INTO cms_imports(snapshot_id,repository,main_sha,captured_at) VALUES (?,?,?,?)').run('fixture','test/repo','a'.repeat(40),'2026-10-10');
   db.raw.query('INSERT INTO cms_content(collection,slug,source_path,published_json,published_blob_sha,snapshot_id) VALUES (?,?,?,?,?,?)').run('layanan','contoh','src/content/layanan/contoh.md',JSON.stringify(data),'b'.repeat(40),'fixture');
   const github = fakeGithub({'src/content/destinasi/contoh.md':serializeContent(destinasi,'contoh.md')},'GibranAlkatiri/WalianHub');
   const env = {CMS_SESSION_AUTH:'1',CMS_LAYANAN_D1:'1',CMS_MEDIA_CLOUDINARY:'1',CMS_DB:db,CMS_USERNAME:'walian',CMS_PASSWORD_HASH:await sha256('demo'),CLOUDINARY_CLOUD_NAME:'test-cloud',CLOUDINARY_API_KEY:'123456',CLOUDINARY_API_SECRET:'provider-test-secret',GITHUB_TOKEN:'github-test-only',ASSETS:{fetch:async()=>new Response(config)}};
   const login = await onRequestPost({env,request:new Request('https://cms.example/api/auth',{method:'POST',headers:{origin:'https://cms.example','content-type':'application/json'},body:JSON.stringify({username:'walian',password:'demo'})})});
-  const cookie = login.headers.get('set-cookie').split(';')[0],cms = createCmsHandler(github.fetch),upload = createMediaHandler(provider.fetch),image = createImageHandler(provider.fetch,github.fetch);
+  const cookie = login.headers.get('set-cookie').split(';')[0],cms = createCmsHandler(github.fetch),upload = createMediaHandler(wrapProvider(provider.fetch)),image = createImageHandler(provider.fetch,github.fetch);
   const call = (action,params = {},method = 'GET') => {
     const url = new URL('https://cms.example/api/cms');
     if (method === 'GET') for (const [key,value] of Object.entries({action,collection:'layanan',slug:'contoh',...params})) url.searchParams.set(key,value);
@@ -36,6 +36,44 @@ async function setup() {
   return {db,provider,github,env,cookie,call,put,get,guard,entry};
 }
 describe('Foto Cloudinary mengikuti status konten CMS',()=>{
+  test('JPEG destinasi berhasil diunggah, tersimpan privat, diterbitkan dan dapat diunduh',async()=>{
+    for (const format of ['jpg','jpeg']) {
+      const s=await setup((fetch)=>async(...args)=>{
+        const response=await fetch(...args),asset=await response.json();
+        return Response.json({...asset,format});
+      });try {
+        s.env.CMS_DESTINASI_D1='1';s.env.GITHUB_TOKEN='';
+        const response=await s.put({collection:'destinasi',type:'image/jpeg',bytes:jpeg});expect(response.status).toBe(200);
+        const photo=await response.json();expect(photo.path).toEndWith('.jpg');expect(photo.bytes).toBe(jpeg.length);
+        expect((await s.get(photo.path)).status).toBe(404);
+        const preview=await s.get(photo.path,true);expect(preview.status).toBe(200);expect(preview.headers.get('content-type')).toBe('image/jpeg');expect(await preview.bytes()).toEqual(jpeg);
+        const item=await s.entry('destinasi'),draftResponse=await s.call('save',{collection:'destinasi',...s.guard(item),data:{...destinasi,gambar:photo.path}},'POST');expect(draftResponse.status).toBe(200);
+        const draft=await draftResponse.json();expect((await s.call('publish',{collection:'destinasi',...s.guard(draft)},'POST')).status).toBe(200);
+        expect((await s.get(photo.path)).status).toBe(200);expect(s.github.requests).toHaveLength(0);
+      } finally {s.db.close();}
+    }
+  });
+  test('penolakan Cloudinary dibedakan tanpa meneruskan respons berisi rahasia',async()=>{
+    for (const [status,expectedStatus,message] of [[401,503,'menolak akses'],[403,503,'menolak akses'],[400,422,'menolak berkas'],[413,413,'melebihi batas'],[429,429,'membatasi unggahan'],[500,503,'belum tersedia']]) {
+      const s=await setup(()=>async()=>new Response('provider-test-secret',{status}));try {
+        const response=await s.put({collection:'destinasi',type:'image/jpeg',bytes:jpeg});expect(response.status).toBe(expectedStatus);
+        const body=await response.text();expect(body).toContain(message);expect(body).not.toContain('provider-test-secret');
+        expect(s.db.raw.query('SELECT ready FROM cms_media').get().ready).toBe(0);expect(s.github.requests).toHaveLength(0);
+      } finally {s.db.close();}
+    }
+  });
+  test('ukuran JPEG yang berubah dan respons rusak tidak dinyatakan berhasil',async()=>{
+    for (const invalidJson of [false,true]) {
+      const s=await setup((fetch)=>async(...args)=>{
+        const response=await fetch(...args),asset=await response.json();
+        return invalidJson ? new Response('provider-test-secret') : Response.json({...asset,bytes:asset.bytes-1});
+      });try {
+        const response=await s.put({collection:'destinasi',type:'image/jpeg',bytes:jpeg});expect(response.status).toBe(503);
+        const body=await response.text();expect(body).toContain(invalidJson?'tidak dapat dibaca':'Ukuran foto berubah');expect(body).not.toContain('provider-test-secret');
+        expect(s.db.raw.query('SELECT ready FROM cms_media').get().ready).toBe(0);expect(s.provider.objects.size).toBe(1);
+      } finally {s.db.close();}
+    }
+  });
   test('unggahan biner langsung, metadata tanpa rahasia dan percobaan ulang tanpa duplikasi',async()=>{
     const s=await setup();try {
       const id=crypto.randomUUID(),first=await s.put({id});expect(first.status).toBe(200);const photo=await first.json();
