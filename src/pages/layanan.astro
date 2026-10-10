@@ -58,27 +58,22 @@ const diperbarui = layanan.length > 0 ? new Date(Math.max(...layanan.map((item) 
         title="Panduan pengurusan surat"
         description="Tekan nama layanan untuk melihat persyaratan dan alur pengurusannya."
       />
-      {
-        layanan.length > 0 ? (
-          <div data-motion-group class="mt-8 space-y-3 sm:space-y-4">
-            {layanan.map((item) => (
-              <ItemLayanan layanan={item} />
-            ))}
-          </div>
-        ) : (
-          <div class="mt-8 rounded-2xl bg-white p-8 text-center text-ink-muted shadow-card">Daftar layanan sedang disiapkan.</div>
-        )
-      }
+      <div data-cms-service-list hidden={layanan.length === 0} data-motion-group class="mt-8 space-y-3 sm:space-y-4">
+        {layanan.map((item) => (
+          <ItemLayanan layanan={item} />
+        ))}
+      </div>
+      <div data-cms-services-empty hidden={layanan.length > 0} class="mt-8 rounded-2xl bg-white p-8 text-center text-ink-muted shadow-card">Daftar layanan sedang disiapkan.</div>
     </Container>
   </section>
 
   <Pengaduan whatsapp={situs.whatsapp} />
 
-  {
-    diperbarui && (
-      <Container>
-        <p class="py-8 text-center text-sm text-ink-subtle">Terakhir diperbarui: {formatTanggal(diperbarui)}</p>
-      </Container>
-    )
-  }
+  <Container>
+    <p data-cms-services-updated hidden={!diperbarui} class="py-8 text-center text-sm text-ink-subtle">{diperbarui ? `Terakhir diperbarui: ${formatTanggal(diperbarui)}` : ''}</p>
+  </Container>
 </BaseLayout>
+
+<script>
+  import '../lib/layanan-anchor';
+</script>
