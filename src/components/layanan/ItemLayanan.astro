@@ -8,17 +8,19 @@ import Icon from '../ui/Icon.astro';
 
 interface Props {
   layanan: CollectionEntry<'layanan'>;
+  /** Penanda untuk template statis; tidak memuat data draf. */
+  runtimeTemplate?: boolean;
 }
 
-const { layanan } = Astro.props;
+const { layanan, runtimeTemplate = false } = Astro.props;
 const { judul, ringkasan, ikon, persyaratan, alur } = layanan.data;
-const { Content } = await render(layanan);
+const Content = runtimeTemplate ? null : (await render(layanan)).Content;
 const adaCatatan = Boolean(layanan.body?.trim());
 ---
 
 <details data-motion="card" data-motion-card data-layanan id={layanan.id} name="layanan" class="group rounded-2xl bg-white shadow-card target:ring-2 target:ring-forest-600">
   <summary class="flex cursor-pointer list-none items-center gap-4 rounded-2xl p-4 sm:p-5 [&::-webkit-details-marker]:hidden">
-    <span class="grid size-11 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600"><Icon name={ikon} /></span>
+    <span class="grid size-11 shrink-0 place-items-center rounded-full bg-sage-100 text-forest-600">{runtimeTemplate ? <Fragment set:html="__CMS_ICON__" /> : <Icon name={ikon} />}</span>
     <span class="min-w-0 flex-1">
       <h3 class="font-bold text-ink">{judul}</h3>
       <span class="mt-0.5 block text-sm text-ink-muted">{ringkasan}</span>
@@ -30,13 +32,13 @@ const adaCatatan = Boolean(layanan.body?.trim());
     <div class="grid gap-6 md:grid-cols-2">
       <div>
         <h4 class="text-sm font-semibold tracking-widest text-forest-600 uppercase">Persyaratan</h4>
-        {persyaratan.length > 0 ? <ul class="mt-2 list-disc space-y-1 pl-5 text-ink-muted marker:text-forest-600">
+        {runtimeTemplate ? <Fragment set:html="__CMS_REQUIREMENTS__" /> : persyaratan.length > 0 ? <ul class="mt-2 list-disc space-y-1 pl-5 text-ink-muted marker:text-forest-600">
           {persyaratan.map((item) => <li>{item}</li>)}
         </ul> : <p class="mt-2 text-ink-muted">Informasi persyaratan sedang disiapkan.</p>}
       </div>
       <div>
         <h4 class="text-sm font-semibold tracking-widest text-forest-600 uppercase">Alur pengurusan</h4>
-        {alur.length > 0 ? <ol class="mt-2 list-decimal space-y-1 pl-5 text-ink-muted marker:font-semibold marker:text-forest-600">
+        {runtimeTemplate ? <Fragment set:html="__CMS_STEPS__" /> : alur.length > 0 ? <ol class="mt-2 list-decimal space-y-1 pl-5 text-ink-muted marker:font-semibold marker:text-forest-600">
           {alur.map((item) => <li>{item}</li>)}
         </ol> : <p class="mt-2 text-ink-muted">Informasi alur pengurusan sedang disiapkan.</p>}
       </div>
@@ -45,30 +47,9 @@ const adaCatatan = Boolean(layanan.body?.trim());
     {
       adaCatatan && (
         <div class="mt-6 space-y-2 text-ink-muted [&_a]:font-semibold [&_a]:text-forest-600 [&_a]:underline [&_a]:underline-offset-4">
-          <Content />
+          {runtimeTemplate ? <Fragment set:html="__CMS_BODY__" /> : Content && <Content />}
         </div>
       )
     }
   </div>
 </details>
-
-<script>
-  // Layanan yang dibuka lewat anchor (misalnya dari card layanan di Beranda) langsung terbuka.
-  function bukaDariAnchor() {
-    let id: string;
-    try {
-      id = decodeURIComponent(location.hash.slice(1));
-    } catch {
-      return; // Tautan dengan escape yang tidak lengkap tidak boleh menghentikan skrip halaman.
-    }
-    const layanan = id ? document.getElementById(id) : null;
-    if (layanan instanceof HTMLDetailsElement) {
-      layanan.setAttribute('data-layanan-langsung', '');
-      layanan.open = true;
-      layanan.getBoundingClientRect();
-      requestAnimationFrame(() => layanan.removeAttribute('data-layanan-langsung'));
-    }
-  }
-  bukaDariAnchor();
-  window.addEventListener('hashchange', bukaDariAnchor);
-</script>

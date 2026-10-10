@@ -1,6 +1,7 @@
 import { load, dump, JSON_SCHEMA } from 'js-yaml';
 import { sessionEnabled, readSession, sameOrigin, SessionError } from '../../server/cms-session.js';
 import { layananD1Enabled, layananOperation, LayananError } from '../../server/cms-layanan.js';
+import { publicLayananEnabled } from '../../server/published-layanan.js';
 
 const HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' };
 const response = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: HEADERS });
@@ -35,8 +36,8 @@ function target(config, collectionName, slug) {
   return { collection, fields: file?.fields || collection.fields, path, branch: `cms/${collectionName}/${slug}`, slug, collectionName, label: file?.label };
 }
 
-function publicConfig(config) {
-  return { collections: config.collections, site_url: config.site_url, media_folder: config.media_folder, public_folder: config.public_folder };
+function publicConfig(config, siteUrl = config.site_url) {
+  return { collections: config.collections, site_url: siteUrl, media_folder: config.media_folder, public_folder: config.public_folder };
 }
 
 // Browser cookies authorize CMS requests in session mode; GitHub credentials
@@ -72,7 +73,7 @@ export function createCmsHandler(fetchGitHub = fetch) {
       }
       const action = request.method === 'GET' ? (url.searchParams.get('action') || 'list') : postBody.action;
       const collectionName = request.method === 'GET' ? url.searchParams.get('collection') : postBody.collection;
-      if (d1 && action === 'config' && request.method === 'GET') return response(publicConfig(config));
+      if (d1 && action === 'config' && request.method === 'GET') return response(publicConfig(config, publicLayananEnabled(env) ? new URL('/', request.url).href : config.site_url));
       if (d1 && collectionName === 'layanan') {
         if (request.method === 'POST' && new TextEncoder().encode(postText).length > 256 * 1024) fail('Isian layanan terlalu panjang.', 413);
         if (request.method === 'GET' && !['list', 'entry'].includes(action)) fail('Tindakan layanan tidak dikenali.', 404);
