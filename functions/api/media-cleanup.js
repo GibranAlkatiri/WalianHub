@@ -27,7 +27,10 @@ export function createCleanupHandler(fetchProvider=fetch,fetchPeer=fetch) {
       let body;try{body=JSON.parse(text);}catch{return json({error:'Permintaan tidak valid.'},400);}
       if (!body || typeof body.dryRun!=='boolean' || Object.keys(body).some(key=>key!=='dryRun')) return json({error:'Permintaan tidak valid.'},400);
       return json({ok:true,...await cleanupMedia(env,{dryRun:body.dryRun,fetchProvider,fetchPeer})});
-    } catch { return json({error:'Pembersihan ditunda. Periksa konfigurasi dan database.'},503); }
+    } catch (error) {
+      const safeCodes=['CLEANUP_CONFIGURATION','CLEANUP_PEER','CLEANUP_DATABASE','CLEANUP_SCHEMA','CLEANUP_MEDIA_DATA'];
+      return json({error:'Pembersihan ditunda. Periksa konfigurasi dan database.',reason:safeCodes.includes(error?.message)?error.message:'CLEANUP_RUNTIME'},503);
+    }
   };
 }
 export const onRequest = createCleanupHandler();
