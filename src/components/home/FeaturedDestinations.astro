@@ -22,11 +22,11 @@ const destinasi = wisata.pilihan;
       description="Tempat-tempat menarik di Kelurahan Walian yang bisa Anda kunjungi."
     />
 
-    {destinasi.length === 0 ? (
-      <p class="mt-8 rounded-2xl bg-white p-8 text-center text-ink-muted shadow-card">Informasi destinasi wisata sedang disiapkan.</p>
-    ) : <div data-carousel class="mt-8 lg:mt-10">
+    <p data-cms-destinations-empty hidden={destinasi.length > 0} class="mt-8 rounded-2xl bg-white p-8 text-center text-ink-muted shadow-card">Informasi destinasi wisata sedang disiapkan.</p>
+    <div data-cms-destinations-carousel hidden={destinasi.length === 0} data-carousel class="mt-8 lg:mt-10">
       <div
         data-carousel-lintasan
+        data-cms-destination-cards
         id="carousel-destinasi"
         data-motion-group
         class:list={[
@@ -52,27 +52,23 @@ const destinasi = wisata.pilihan;
         <button type="button" data-carousel-sebelumnya aria-label="Destinasi sebelumnya" aria-controls="carousel-destinasi" class="grid size-10 place-items-center rounded-full border border-line bg-white text-forest-700 transition-colors hover:bg-sage-200 disabled:cursor-default disabled:opacity-40">
           <Icon name="arrow-right" class="size-4 rotate-180" />
         </button>
-        {
+        <div data-cms-destination-points class="contents">{
           destinasi.map((item, i) => (
             <button type="button" data-carousel-titik={i} data-aktif={i === 0 ? '' : undefined} aria-label={`Tampilkan destinasi ${i + 1}: ${item.data.nama}`} aria-current={i === 0 ? 'true' : undefined} aria-controls="carousel-destinasi" class="group/titik grid size-10 place-items-center rounded-full">
               <span class="size-2.5 rounded-full bg-line transition-colors group-data-[aktif]/titik:bg-forest-600"></span>
             </button>
           ))
-        }
+        }</div>
         <button type="button" data-carousel-berikutnya aria-label="Destinasi berikutnya" aria-controls="carousel-destinasi" class="grid size-10 place-items-center rounded-full border border-line bg-white text-forest-700 transition-colors hover:bg-sage-200 disabled:cursor-default disabled:opacity-40">
           <Icon name="arrow-right" class="size-4" />
         </button>
         <span data-carousel-status aria-live="polite" aria-atomic="true" class="sr-only">Destinasi 1 dari {destinasi.length}</span>
       </div>
-    </div>}
+    </div>
 
-    {
-      wisata.pakaiHalaman && (
-        <div class="mt-8 text-center sm:mt-10">
-          <Button href="/wisata" variant="outline">Semua Wisata</Button>
-        </div>
-      )
-    }
+    <div data-cms-all-destinations hidden={!wisata.pakaiHalaman} class="mt-8 text-center sm:mt-10">
+      <Button href="/wisata" variant="outline">Semua Wisata</Button>
+    </div>
   </Container>
 </section>
 

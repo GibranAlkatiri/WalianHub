@@ -32,11 +32,11 @@ export function validateLayanan(value, collection, publish = false) {
   if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== data.diperbarui) fail('Tanggal diperbarui tidak valid.');
   return data;
 }
-function entry(row, slug) {
+function entry(row, slug, collectionName = 'layanan') {
   const draft = !!row?.draft_action;
   const data = row?.draft_json || row?.published_json;
   return {
-    collection: 'layanan', slug, status: draft ? 'draft' : 'published',
+    collection: collectionName, slug, status: draft ? 'draft' : 'published',
     published: !!row?.published_json, revision: row?.draft_revision || null,
     publishedSha: row?.published_blob_sha || null,
     deleted: draft && (row.draft_action === 'delete' || (row.draft_action === 'withdraw' && !!row.published_json)),
@@ -45,24 +45,28 @@ function entry(row, slug) {
   };
 }
 
-export async function layananOperation(db, collection, action, slug, body) {
+// The revision/CAS engine is shared by migrated collections; their validators
+// retain separate contracts. Layanan keeps its original defaults and messages.
+export async function layananOperation(db, collection, action, slug, body, validate = validateLayanan) {
+  const name = collection.name;
+  const asEntry = (row, slug) => entry(row, slug, name);
   try {
     if (!db) fail('Penyimpanan layanan belum tersedia. Hubungi pengelola panel.', 503);
     if (action === 'list') {
-      const rows = await db.prepare('SELECT * FROM cms_content WHERE collection = ? ORDER BY slug').bind('layanan').all();
-      return { entries: rows.results.map((row) => { const item = entry(row, row.slug); return { ...item, title: item.data.judul || row.slug, summary: item.data.ringkasan || '' }; }) };
+      const rows = await db.prepare('SELECT * FROM cms_content WHERE collection = ? ORDER BY slug').bind(name).all();
+      return { entries: rows.results.map((row) => { const item = asEntry(row, row.slug); return { ...item, title: item.data[collection.identifier_field || 'judul'] || collection.files?.find((file) => file.name === row.slug)?.label || row.slug, summary: item.data.ringkasan || '' }; }) };
     }
-    const row = await db.prepare('SELECT * FROM cms_content WHERE collection = ? AND slug = ?').bind('layanan', slug).first();
-    if (action === 'entry') return entry(row, slug);
+    const row = await db.prepare('SELECT * FROM cms_content WHERE collection = ? AND slug = ?').bind(name, slug).first();
+    if (action === 'entry') return asEntry(row, slug);
     if (!['save', 'publish', 'discard', 'withdraw', 'delete'].includes(action)) fail('Tindakan layanan tidak dikenali.', 404);
     if ((row?.draft_revision || null) !== (body.revision || null) || (row?.published_blob_sha || null) !== (body.publishedSha || null)) conflict();
     if (body.uploads !== undefined && (!Array.isArray(body.uploads) || body.uploads.length)) fail('Unggahan foto layanan belum tersedia pada tahap ini. Simpan isian teks terlebih dahulu.');
     const where = 'collection = ? AND slug = ? AND version = ? AND draft_revision IS ? AND published_blob_sha IS ?';
-    const guard = ['layanan', slug, row?.version, row?.draft_revision || null, row?.published_blob_sha || null];
+    const guard = [name, slug, row?.version, row?.draft_revision || null, row?.published_blob_sha || null];
     const update = async (set, args) => {
       const result = await db.prepare(`UPDATE cms_content SET ${set}, version = version + 1, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE ${where} RETURNING *`).bind(...args, ...guard).first();
       if (!result) conflict();
-      return entry(result, slug);
+      return asEntry(result, slug);
     };
     const remove = async () => {
       const result = await db.prepare(`DELETE FROM cms_content WHERE ${where} RETURNING slug`).bind(...guard).first();
@@ -71,15 +75,15 @@ export async function layananOperation(db, collection, action, slug, body) {
     };
     if (action === 'save') {
       if (row?.draft_action === 'delete' || (row?.draft_action === 'withdraw' && row.published_json)) fail('Selesaikan atau batalkan penarikan/penghapusan terlebih dahulu.', 409);
-      const data = JSON.stringify(validateLayanan(body.data, collection));
+      const data = JSON.stringify(validate(body.data, collection));
       const revision = token();
       if (row) return update("draft_json = ?, draft_blob_sha = ?, draft_action = 'edit', draft_revision = ?", [data, revision, revision]);
       const source = await db.prepare('SELECT snapshot_id FROM cms_imports ORDER BY imported_at DESC LIMIT 1').first();
       if (!source) fail('Impor awal layanan belum selesai. Hubungi pengelola panel.', 503);
       const result = await db.prepare(`INSERT INTO cms_content(collection,slug,source_path,draft_json,draft_blob_sha,draft_action,draft_revision,snapshot_id)
-        VALUES ('layanan', ?, ?, ?, ?, 'edit', ?, ?) ON CONFLICT(collection,slug) DO NOTHING RETURNING *`).bind(slug, `src/content/layanan/${slug}.md`, data, revision, revision, source.snapshot_id).first();
+        VALUES (?, ?, ?, ?, ?, 'edit', ?, ?) ON CONFLICT(collection,slug) DO NOTHING RETURNING *`).bind(name, slug, collection.files?.find((file) => file.name === slug)?.file || `${collection.folder}/${slug}.${collection.extension || 'md'}`, data, revision, revision, source.snapshot_id).first();
       if (!result) conflict();
-      return entry(result, slug);
+      return asEntry(result, slug);
     }
     if (!row?.draft_revision && ['discard', 'publish'].includes(action)) fail(action === 'discard' ? 'Tidak ada draf untuk dibuang.' : 'Simpan draf terlebih dahulu.', 409);
     if (action === 'discard') {
@@ -100,7 +104,7 @@ export async function layananOperation(db, collection, action, slug, body) {
       await update('published_json = NULL, published_blob_sha = NULL, draft_revision = ?', [token()]);
       return { ok: true, message: 'Layanan ditarik ke draf. Isinya tetap tersimpan.' };
     }
-    const data = JSON.stringify(validateLayanan(JSON.parse(row.draft_json), collection, true));
+    const data = JSON.stringify(validate(JSON.parse(row.draft_json), collection, true));
     await update('published_json = ?, published_blob_sha = ?, draft_json = NULL, draft_blob_sha = NULL, draft_action = NULL, draft_revision = NULL', [data, token()]);
     return { ok: true, message: 'Layanan berhasil diterbitkan.' };
   } catch (error) {

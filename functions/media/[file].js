@@ -3,11 +3,12 @@ import { mediaEnabled, mediaPaths, downloadMedia, UUID, MediaError } from '../..
 import { readSession, SessionError } from '../../server/cms-session.js';
 import { PUBLIC_HEADERS } from '../../server/published-layanan.js';
 import { target, parseContent } from '../api/cms.js';
+import { collectionD1Enabled } from '../../server/cms-collections.js';
 
 // Until each content menu migrates, read its publication from the current main.
 // Only text metadata uses GitHub; image bytes always come from Cloudinary.
 async function published(row,request,env,fetchGitHub) {
-  if (row.collection === 'layanan' && env.CMS_LAYANAN_D1 === '1') {
+  if (collectionD1Enabled(env,row.collection)) {
     const content = await env.CMS_DB.prepare('SELECT published_json FROM cms_content WHERE collection = ? AND slug = ?').bind(row.collection,row.slug).first();
     return !!content?.published_json && mediaPaths(JSON.parse(content.published_json)).includes(row.public_path);
   }

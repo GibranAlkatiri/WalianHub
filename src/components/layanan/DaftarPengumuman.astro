@@ -1,6 +1,6 @@
 ---
 // Bagian Pengumuman di halaman Layanan: pengumuman atau surat pemberitahuan untuk warga, yang terbaru di atas.
-// Halaman Layanan hanya memanggil komponen ini jika ada pengumuman, jadi bagian ini tidak pernah tampil kosong.
+// Wadah selalu tersedia untuk pembaruan runtime; daftar kosong disembunyikan.
 import type { CollectionEntry } from 'astro:content';
 import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
@@ -10,22 +10,24 @@ import { formatTanggal, tanggalIso } from '../../lib/format';
 
 interface Props {
   pengumuman: CollectionEntry<'pengumuman'>['data']['daftar'];
+  runtimeTemplate?: boolean;
 }
 
-const { pengumuman } = Astro.props;
+const { pengumuman, runtimeTemplate = false } = Astro.props;
 ---
 
-<section id="pengumuman" class="bg-white py-12 sm:py-16 lg:py-20">
+<section data-cms-announcements hidden={pengumuman.length === 0} id="pengumuman" class="bg-white py-12 sm:py-16 lg:py-20">
   <Container>
     <SectionHeading overline="Pengumuman" title="Pengumuman untuk warga" />
-    <ul data-motion-group class="mt-8 grid gap-4 md:grid-cols-2 lg:gap-6">
+    <p data-cms-announcements-error hidden role="status" class="mt-8 text-ink-muted">Pengumuman belum dapat dimuat. Silakan muat ulang.</p>
+    <ul data-cms-announcement-list data-motion-group class="mt-8 grid gap-4 md:grid-cols-2 lg:gap-6">
       {
         pengumuman.map((item) => (
           <li data-motion="card" data-motion-card class="rounded-2xl bg-cream-50 p-5 ring-1 ring-line sm:p-6">
             <div class="flex min-h-7 flex-wrap items-center gap-3">
               <span class="inline-flex items-center gap-1.5 text-sm text-ink-subtle">
                 <Icon name="calendar" class="size-4" />
-                <time datetime={tanggalIso(item.tanggal)}>{formatTanggal(item.tanggal)}</time>
+                <time datetime={runtimeTemplate ? '__CMS_DATE__' : tanggalIso(item.tanggal)}>{runtimeTemplate ? '__CMS_DATE_LABEL__' : formatTanggal(item.tanggal)}</time>
               </span>
               {item.penting && <Badge variant="penting">Penting</Badge>}
             </div>
