@@ -41,6 +41,7 @@ describe('CRUD Layanan D1', () => {
     const s=await setup();try {
       s.env.GITHUB_TOKEN='';
       expect((await s.call('config')).status).toBe(200);
+      s.env.CMS_PUBLIC_LAYANAN_D1='1';expect((await (await s.call('config')).json()).site_url).toBe('https://cms.example/');
       expect((await (await s.call('list')).json()).entries).toHaveLength(1);
       const entry=await s.get(); const saved=await s.write('save',entry,{data:{...data,judul:'Revisi baru'}});
       expect(saved.status).toBe(200); const draft=await saved.json();

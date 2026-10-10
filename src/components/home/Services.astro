@@ -22,23 +22,18 @@ const adaLainnya = semuaLayanan.length > layanan.length;
         title="Layanan kelurahan"
         description="Persyaratan dan alur pengurusan surat yang paling sering dibutuhkan warga."
       />
-      {
-        adaLainnya && (
-          <div class="shrink-0">
-            <Button href="/layanan" variant="outline">Semua Layanan</Button>
-          </div>
-        )
-      }
+      <div data-cms-all-services hidden={!adaLainnya} class="shrink-0">
+        <Button href="/layanan" variant="outline">Semua Layanan</Button>
+      </div>
     </div>
 
-    {layanan.length === 0 ? (
-      <p class="mt-8 rounded-2xl bg-sage-100 p-6 text-ink-muted">{semuaLayanan.length === 0 ? 'Daftar layanan sedang disiapkan.' : 'Lihat daftar lengkap untuk informasi layanan kelurahan.'}</p>
-    ) : <div data-motion-group class="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 lg:gap-6">
+    <p data-cms-services-empty hidden={layanan.length > 0} class="mt-8 rounded-2xl bg-sage-100 p-6 text-ink-muted">{semuaLayanan.length === 0 ? 'Daftar layanan sedang disiapkan.' : 'Lihat daftar lengkap untuk informasi layanan kelurahan.'}</p>
+    <div data-cms-service-cards hidden={layanan.length === 0} data-motion-group class="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 lg:gap-6">
       {
         layanan.map((item) => (
           <ServiceCard judul={item.data.judul} ringkasan={item.data.ringkasan} ikon={item.data.ikon} href={`/layanan#${item.id}`} motion="card" />
         ))
       }
-    </div>}
+    </div>
   </Container>
 </section>

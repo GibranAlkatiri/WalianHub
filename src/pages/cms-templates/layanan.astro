@@ -1,0 +1,22 @@
+---
+// Artifact build frontend: Pages Function memakai markup komponen yang sama.
+// Semua penanda konstan diganti sekaligus dengan data terbit yang sudah di-escape.
+import type { CollectionEntry } from 'astro:content';
+import ServiceCard from '../../components/ui/ServiceCard.astro';
+import ItemLayanan from '../../components/layanan/ItemLayanan.astro';
+import Icon from '../../components/ui/Icon.astro';
+export const partial = true;
+const iconNames = Object.keys(import.meta.glob('../../icons/*.svg')).map((path) => path.split('/').at(-1)!.replace(/\.svg$/, ''));
+const layanan = {
+  id: '__CMS_SLUG__', collection: 'layanan', body: '__CMS_BODY__',
+  data: { judul: '__CMS_TITLE__', ringkasan: '__CMS_SUMMARY__', ikon: 'file-text', unggulan: false, urutan: 100, persyaratan: [], alur: [], diperbarui: new Date() },
+} satisfies CollectionEntry<'layanan'>;
+---
+<template id="cms-card"><ServiceCard judul="__CMS_TITLE__" ringkasan="__CMS_SUMMARY__" ikon="file-text" href="/layanan#__CMS_SLUG__" runtimeTemplate /></template>
+<template id="cms-item-note"><ItemLayanan layanan={layanan} runtimeTemplate /></template>
+<template id="cms-item"><ItemLayanan layanan={{ ...layanan, body: '' }} runtimeTemplate /></template>
+<template id="cms-requirements"><ul class="mt-2 list-disc space-y-1 pl-5 text-ink-muted marker:text-forest-600">__CMS_LIST_ITEMS__</ul></template>
+<template id="cms-requirements-empty"><p class="mt-2 text-ink-muted">Informasi persyaratan sedang disiapkan.</p></template>
+<template id="cms-steps"><ol class="mt-2 list-decimal space-y-1 pl-5 text-ink-muted marker:font-semibold marker:text-forest-600">__CMS_LIST_ITEMS__</ol></template>
+<template id="cms-steps-empty"><p class="mt-2 text-ink-muted">Informasi alur pengurusan sedang disiapkan.</p></template>
+{iconNames.map((name) => <><template id={`cms-icon-card-${name}`}><Icon name={name} class="size-6" /></template><template id={`cms-icon-item-${name}`}><Icon name={name} /></template></>)}

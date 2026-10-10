@@ -94,15 +94,15 @@ export async function layananOperation(db, collection, action, slug, body) {
       const data = action === 'withdraw' ? (row.draft_json || row.published_json) : null;
       return update('draft_json = ?, draft_blob_sha = ?, draft_action = ?, draft_revision = ?', [data, data ? revision : null, action, revision]);
     }
-    if (row.draft_action === 'delete') return { ...await remove(), message: 'Layanan berhasil dihapus dari penyimpanan D1.' };
+    if (row.draft_action === 'delete') return { ...await remove(), message: 'Layanan berhasil dihapus.' };
     if (row.draft_action === 'withdraw') {
       if (!row.published_json) fail('Layanan sudah ditarik. Simpan draf sebelum menerbitkan kembali.', 409);
       await update('published_json = NULL, published_blob_sha = NULL, draft_revision = ?', [token()]);
-      return { ok: true, message: 'Layanan ditarik ke draf. Isinya tetap tersimpan di D1.' };
+      return { ok: true, message: 'Layanan ditarik ke draf. Isinya tetap tersimpan.' };
     }
     const data = JSON.stringify(validateLayanan(JSON.parse(row.draft_json), collection, true));
     await update('published_json = ?, published_blob_sha = ?, draft_json = NULL, draft_blob_sha = NULL, draft_action = NULL, draft_revision = NULL', [data, token()]);
-    return { ok: true, message: 'Layanan berhasil diterbitkan di D1.' };
+    return { ok: true, message: 'Layanan berhasil diterbitkan.' };
   } catch (error) {
     if (error instanceof LayananError) throw error;
     throw new LayananError('Penyimpanan layanan belum dapat diproses. Coba kembali; isian Anda tetap ada.', 503);
