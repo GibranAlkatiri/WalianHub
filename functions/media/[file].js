@@ -31,7 +31,7 @@ export function createImageHandler(fetchProvider = fetch, fetchGitHub = fetch) {
     if (!mediaEnabled(env) || !new RegExp('^/media/' + UUID + '\\.(jpg|png|webp)$').test(path)) return new Response(null,{status:404,headers:PUBLIC_HEADERS});
     if (!['GET','HEAD'].includes(request.method)) return new Response(null,{status:405,headers:{...PUBLIC_HEADERS,allow:'GET, HEAD'}});
     try {
-      const row = await env.CMS_DB.prepare('SELECT * FROM cms_media WHERE public_path = ? AND ready = 1').bind(path).first();
+      const row = await env.CMS_DB.prepare("SELECT * FROM cms_media WHERE public_path = ? AND ready = 1 AND NOT EXISTS (SELECT 1 FROM cms_media_cleanup g WHERE g.provider_key=cms_media.provider_key AND g.state <> 'pending')").bind(path).first();
       if (!row) return new Response(null,{status:404,headers:PUBLIC_HEADERS});
       let authenticated = false;
       if (request.headers.has('cookie')) {

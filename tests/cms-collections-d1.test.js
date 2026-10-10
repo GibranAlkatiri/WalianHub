@@ -15,7 +15,7 @@ import {onRequest as publicDestinasi} from '../functions/api/destinasi.js';
 import {onRequest as publicPengumuman} from '../functions/api/pengumuman.js';
 import {collectionsImportSql} from '../scripts/lib/cms-collections-import.js';
 const configText=readFileSync(new URL('../public/admin/config.yml',import.meta.url),'utf8'),config=load(configText);
-const schema=['0001_content.sql','0002_sessions.sql','0003_media.sql'].map((name)=>readFileSync(new URL('../migrations/'+name,import.meta.url),'utf8')).join('\n');
+const schema=['0001_content.sql','0002_sessions.sql','0003_media.sql','0004_media_cleanup.sql'].map((name)=>readFileSync(new URL('../migrations/'+name,import.meta.url),'utf8')).join('\n');
 const wisata={nama:'Wisata Walian',kategori:'Alam',ringkasan:'Tujuan wisata warga',lokasi:{alamat:'Walian',lat:1.313,lng:124.838},gambar:'',unggulan:true,urutan:1,diperbarui:'2026-10-10',body:''};
 const news={daftar:[{judul:'Info warga',tanggal:'2026-10-10',isi:'Informasi pelayanan.\nBaris kedua.',penting:true}]};
 async function setup(){

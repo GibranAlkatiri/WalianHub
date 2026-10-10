@@ -1,0 +1,26 @@
+# Pembersihan foto CMS
+
+Backend ini membersihkan hanya objek immutable `walianhub/<uuid>-<sha256>` yang tercatat dalam `cms_media`. File website, unggahan Git lama, dan aset aplikasi lain tidak disentuh.
+
+Worker `walianhub-media-cleanup` berjalan setiap hari pukul 03.00 WITA (`0 19 * * *`, UTC). Worker mengirim POST terautentikasi ke `/api/media-cleanup` Production. Endpoint memakai kredensial Cloudinary Pages yang sudah ada; Worker hanya memerlukan token khusus penjadwal, sehingga API Secret Cloudinary tidak perlu disalin ke Worker.
+
+Endpoint membaca seluruh konten terbit dan draf dari database Production dan Preview. Foto tanpa referensi ditandai; file baru boleh dihapus setelah tujuh hari penuh tanpa pemakaian dan berumur minimal tujuh hari. Pemakaian di antara jadwal harian memulai ulang masa tunggu melalui trigger SQL. Foto dengan sumber cloud yang belum diketahui atau berbeda dipertahankan.
+
+Sebelum menghapus, endpoint memeriksa identitas cloud, status D1, dan schema Preview melalui endpoint metadata yang dilindungi token. Semua objek mendapat reservasi di kedua database sebelum API Destroy dipanggil. Trigger SQL mencegah penggunaan ulang upload-ID dan penulisan konten yang bersaing dengan penghapusan. Jika salah satu database, schema, konfigurasi, atau endpoint Preview tidak tersedia, pembersihan berhenti. Kegagalan provider mempertahankan reservasi dan dicoba ulang pada jadwal berikutnya; respons `not found` diterima untuk pemulihan respons yang hilang.
+
+Penghapusan memakai `type=authenticated` dan `invalidate=true`. Tombstone dan metadata D1 dipertahankan untuk mencegah upload-ID lama dipakai ulang. Maksimal sepuluh objek dihapus per eksekusi. Inventori di atas 5.000 baris per tabel menghentikan proses dan membutuhkan implementasi pagination sebelum kapasitas itu dinaikkan. Jika Cloudinary Automatic Backup aktif, retensi salinan backup mengikuti pengaturan layanan tersebut.
+
+## Konfigurasi
+
+1. Terapkan `migrations/0004_media_cleanup.sql` pada kedua database sebelum deployment kode baru. Migration menambah sumber cloud, tabel pencatatan, view referensi, lease, dan trigger perlindungan. Jangan menghapus tabel/trigger setelah fitur dimatikan karena tombstone melindungi ID lama.
+2. Media lama tanpa `provider_cloud` diverifikasi otomatis melalui pengiriman authenticated dan checksum berkas asli, maksimal tiga pemeriksaan per run, bergiliran berdasarkan pemeriksaan terakhir. Metadata hanya diperbarui jika berkas tepat ditemukan di cloud bersama. Jangan mengasumsikan seluruh foto berasal dari cloud yang sedang dipilih jika konfigurasi pernah berpindah. Objek yang tidak dapat diverifikasi tetap terlindungi.
+3. Buat token acak minimal 32 karakter di memori. Simpan sebagai secret `CMS_MEDIA_CLEANUP_TOKEN` pada Pages Production, Pages Preview, dan Worker. Jangan menulis token atau kredensial provider ke berkas, Git, log, screenshot, atau keluaran terminal.
+4. Pada Production, pertahankan binding `CMS_DB` dan tambahkan `CMS_MEDIA_CLEANUP_PEER_DB` yang menunjuk database Preview. Isi `CMS_MEDIA_CLEANUP_SHARED_CLOUD_NAME` dengan cloud bersama yang sudah diverifikasi. Kedua database wajib berbeda dan semua koleksi di kedua lingkungan wajib memakai D1.
+5. Deploy branch backend ke Preview. Isi `CMS_MEDIA_CLEANUP_PEER_URL` Production dengan URL stabil Preview diakhiri `/api/media-cleanup`. Pertahankan branch/deployment Preview tersebut atau ubah URL ke pengganti yang sudah diverifikasi. Preview memerlukan token dan binding CMS_DB, tetapi `CMS_MEDIA_CLEANUP_ENABLED` harus mati di Preview; hanya Production yang mengoordinasikan penghapusan.
+6. Deploy Production, isi `CMS_MEDIA_CLEANUP_ENABLED=1`, lalu deploy ulang bila konfigurasi berubah. Jalankan POST `{"dryRun":true}` melalui skrip lokal yang memegang token di memori. Jangan mengirim token melalui query URL. Dry-run tidak menulis penandaan atau menghapus file.
+7. Setelah pemeriksaan berhasil, lakukan eksekusi pertama `{"dryRun":false}` untuk memulai penandaan. Foto lama tetap mendapat masa tunggu tujuh hari sejak ditandai, sehingga aktivasi pertama tidak langsung menghapus file.
+8. Deploy Worker memakai `workers/wrangler.media-cleanup.jsonc` dengan secret penjadwal tersedia. Pastikan Cron Trigger aktif dan workers.dev serta Preview URL Worker mati. Worker hanya memiliki scheduled handler; tidak ada endpoint publik untuk menjalankan penghapusan.
+
+Log Worker hanya mencatat jumlah total, terlindungi, menunggu, memenuhi syarat, terhapus, gagal, dan sumber tidak diketahui. Ringkasan terakhir dan waktu eksekusi tersedia pada `cms_media_cleanup_run` Production. Matikan fitur dengan `CMS_MEDIA_CLEANUP_ENABLED=0` dan nonaktifkan jadwal; deploy ulang Pages diperlukan setelah perubahan variabel.
+
+Referensi: [Cron Cloudflare](https://developers.cloudflare.com/workers/configuration/cron-triggers/), [Destroy Cloudinary](https://cloudinary.com/documentation/image_upload_api_reference#destroy_method).
