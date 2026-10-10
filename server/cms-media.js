@@ -4,6 +4,13 @@ export const UUID = '[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f
 const mediaPattern = new RegExp('/media/' + UUID + '\\.(?:jpg|png|webp)(?![\\w./%])', 'g');
 export class MediaError extends Error { constructor(message, status = 503) { super(message); this.status = status; } }
 const unavailable = () => new MediaError('Foto belum dapat diproses. Coba kembali; isian Anda tetap ada.');
+function uploadFailure(status) {
+  if (status === 401 || status === 403) return new MediaError('Penyimpanan foto menolak akses. Hubungi pengelola panel untuk memeriksa kredensial dan izin Cloudinary.');
+  if (status === 400) return new MediaError('Penyimpanan foto menolak berkas ini. Coba foto lain atau hubungi pengelola panel.',422);
+  if (status === 413) return new MediaError('Ukuran foto melebihi batas penyimpanan. Coba foto yang lebih kecil.',413);
+  if (status === 429) return new MediaError('Penyimpanan foto sedang membatasi unggahan. Tunggu sebentar lalu coba kembali.',429);
+  return new MediaError('Layanan penyimpanan foto belum tersedia. Coba kembali; isian Anda tetap ada.');
+}
 export function mediaPaths(data) {
   const result = new Set();
   const visit = (value) => {
@@ -67,23 +74,33 @@ export async function uploadMedia(request, env, owner, fetchProvider = fetch) {
   // Include the content hash: separate environments cannot claim a different
   // existing object by reusing a known public upload ID.
   const path = `/media/${id}.${format}`, providerKey = `walianhub/${id}-${sha}`;
+  let phase = 'database';
   try {
     await env.CMS_DB.prepare(`INSERT INTO cms_media(id,public_path,collection,slug,source_path,provider_key,content_type,format,byte_length,sha256)
       VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO NOTHING`).bind(id,path,owner.collectionName,owner.slug,owner.path,providerKey,type,format,bytes.length,sha).run();
     const row = await env.CMS_DB.prepare('SELECT * FROM cms_media WHERE id = ?').bind(id).first();
     if (!row || row.sha256 !== sha || row.collection !== owner.collectionName || row.slug !== owner.slug || row.public_path !== path || row.source_path !== owner.path) throw new MediaError('Unggahan telah berubah. Pilih ulang foto agar tidak menimpa berkas lain.',409);
     if (!row.ready) {
+      phase = 'provider';
       const form = new FormData();
       form.set('file',new Blob([bytes],{type}),id + '.' + format);
       form.set('public_id',providerKey);form.set('type','authenticated');form.set('overwrite','false');
       const response = await fetchProvider(`https://api.cloudinary.com/v1_1/${auth.cloud}/image/upload`,{method:'POST',headers:{authorization:'Basic ' + btoa(auth.key + ':' + auth.secret)},body:form,signal:AbortSignal.timeout(25000)});
-      if (!response.ok) throw unavailable();
+      if (!response.ok) throw uploadFailure(response.status);
+      phase = 'response';
       const asset = await response.json();
-      if (asset.public_id !== providerKey || asset.type !== 'authenticated' || asset.resource_type !== 'image' || (asset.format === 'jpeg' ? 'jpg' : asset.format) !== format || asset.bytes !== bytes.length) throw unavailable();
+      if (asset.public_id !== providerKey || asset.type !== 'authenticated' || asset.resource_type !== 'image' || (asset.format === 'jpeg' ? 'jpg' : asset.format) !== format) throw new MediaError('Hasil penyimpanan foto tidak sesuai dengan unggahan. Hubungi pengelola panel.');
+      if (asset.bytes !== bytes.length) throw new MediaError('Ukuran foto berubah saat disimpan. Hubungi pengelola panel untuk memeriksa pemrosesan Cloudinary.');
+      phase = 'database';
       await env.CMS_DB.prepare('UPDATE cms_media SET ready = 1 WHERE id = ? AND sha256 = ?').bind(id,sha).run();
     }
     return {path,bytes:bytes.length};
-  } catch (error) { if (error instanceof MediaError) throw error; throw unavailable(); }
+  } catch (error) {
+    if (error instanceof MediaError) throw error;
+    if (phase === 'database') throw new MediaError('Pencatatan foto belum tersedia. Coba kembali; isian Anda tetap ada.');
+    if (phase === 'provider') throw new MediaError('Koneksi ke penyimpanan foto terputus atau terlalu lama. Coba kembali; isian Anda tetap ada.');
+    throw new MediaError('Respons penyimpanan foto tidak dapat dibaca. Coba kembali atau hubungi pengelola panel.');
+  }
 }
 export async function downloadMedia(row,env,fetchProvider = fetch) {
   const auth = credentials(env);

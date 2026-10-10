@@ -95,7 +95,10 @@ async function showList() {
   const loadId = ++loadSequence, collection = state.collection;
   cleanup(); state.entry = null; state.dirty = false; shell();
   const area = root.querySelector('#cms-content');
-  area.append(el('p', {}, 'Memuat konten…'));
+  area.append(el('div', { class: 'cms-loading', role: 'status', 'aria-live': 'polite' },
+    el('span', { class: 'cms-sr-only' }, 'Memuat konten…'),
+    el('div', { class: 'cms-loading-heading', 'aria-hidden': 'true' }, el('span', { class: 'cms-loading-line' }), el('span', { class: 'cms-loading-line' })),
+    [1, 2, 3].map(() => el('div', { class: 'cms-loading-row', 'aria-hidden': 'true' }, el('span', { class: 'cms-loading-line' }), el('span', { class: 'cms-loading-line' })))));
   try {
     const result = await request('list', { collection });
     if (loadId !== loadSequence) return;
@@ -103,7 +106,7 @@ async function showList() {
   } catch (error) { if (loadId === loadSequence) { area.replaceChildren(button('Coba lagi', showList)); message(error.message, true); } }
 }
 function drawList() {
-  const area = root.querySelector('#cms-content'); area.replaceChildren();
+  const area = root.querySelector('#cms-content'); area.replaceChildren(); area.classList.add('cms-content-ready');
   const heading = el('div', { class: 'cms-heading' }, el('div', {}, el('h1', {}, menu().label), el('p', {}, menu().description)));
   if (menu().create) heading.append(button('+ Tambah ' + (menu().label_singular || 'konten'), () => openEntry(null), 'cms-primary'));
   const filter = el('div', { class: 'cms-filters', role: 'group', 'aria-label': 'Status konten' });
@@ -189,7 +192,7 @@ async function openEntry(slug) {
       const orders = state.entries.map((item) => Number(item.data?.urutan)).filter(Number.isFinite);
       if ('urutan' in state.entry.data) state.entry.data.urutan = Math.max(0, ...orders) + 1;
     }
-    drawEditor();
+    drawEditor(true);
     if (state.entry.warning) message(state.entry.warning, true);
   } catch (error) { if (loadId === loadSequence) message(error.message, true); }
 }
@@ -244,13 +247,14 @@ function fieldControl(field, parent, key, path) {
     const preview = el('img', { class: 'cms-image', alt: 'Foto yang dipilih', hidden: true });
     const existing = parent[key];
     if (existing) {
+      label.removeAttribute('for');
       const pending = state.uploads.get(existing);
       if (pending) { preview.src = pending.url; preview.hidden = false; }
       else if (/^\/media\//.test(existing)) { preview.src = new URL(existing,location.origin);preview.hidden = false; }
       else if (/^\/uploads\//.test(existing) && state.entry.slug) imageUrl({ collection: state.collection, slug: state.entry.slug, path: existing, draft: state.entry.revision ? '1' : '0' }).then((url) => { state.urls.add(url); if (preview.isConnected) { preview.src = url; preview.hidden = false; } }).catch(() => { if (preview.isConnected) box.append(el('small', { class: 'cms-hint' }, 'Foto tersimpan, tetapi pratinjaunya belum dapat dimuat.')); });
       else if (/^(\/|https?:\/\/)/.test(existing)) { preview.src = existing.startsWith('/') ? new URL(existing, state.config.site_url) : existing; preview.hidden = false; }
     }
-    const input = el('input', { id, type: 'file', accept: 'image/jpeg,image/png,image/webp', onChange: async (event) => {
+    const input = el('input', { id, type: 'file', hidden: !!existing, 'data-image-field': path, accept: 'image/jpeg,image/png,image/webp', onChange: async (event) => {
       const file = event.target.files[0]; if (!file) return;
       if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) { event.target.value = ''; message('Pilih foto JPEG, PNG, atau WebP maksimal 5 MB.', true); return; }
       if (state.config.media_upload) {
@@ -273,7 +277,10 @@ function fieldControl(field, parent, key, path) {
       const url = URL.createObjectURL(file); state.urls.add(url); state.uploads.set(path, { path: 'public' + path, content, url }); set(path); drawEditor();
       } catch { message('Foto belum dapat dibaca. Pilih ulang file foto.', true); } finally { setBusy(false); }
     } });
-    box.append(preview, input, existing ? button('Hapus foto dari isian', () => { set(''); drawEditor(); }, 'cms-danger-text') : null);
+    box.append(preview, input, existing ? button('Hapus gambar', () => {
+      set(''); drawEditor();
+      [...root.querySelectorAll('input[type="file"]')].find((node) => node.dataset.imageField === path)?.focus();
+    }, 'cms-danger-text') : null);
   } else {
     const multiline = ['text', 'markdown'].includes(field.widget);
     const input = el(multiline ? 'textarea' : 'input', { id, ...(multiline ? { rows: 4 } : { type: field.widget === 'number' ? 'number' : field.widget === 'datetime' ? 'date' : 'text' }), 'aria-describedby': hint ? hintId : null, ...(field.widget === 'number' ? { step: field.value_type === 'float' ? 'any' : '1', min: field.min, max: field.max } : {}), onInput: (e) => set(field.widget === 'number' ? (e.target.value === '' ? null : Number(e.target.value)) : e.target.value) });
@@ -345,8 +352,9 @@ async function discard() {
 async function deletePublished() {
   await removeEntry(state.entry);
 }
-function drawEditor() {
+function drawEditor(animate = false) {
   shell(); const area = root.querySelector('#cms-content');
+  if (animate) area.classList.add('cms-content-ready');
   const actions = el('div', { class: 'cms-editor-actions' });
   if (!state.entry.deleted) actions.append(button('Simpan draf', () => save(), 'cms-secondary'));
   actions.append(button(state.entry.deleted ? state.entry.withdrawal ? 'Tarik ke draf' : 'Terbitkan penghapusan' : 'Terbitkan', async () => {
