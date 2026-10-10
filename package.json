@@ -10,6 +10,11 @@
     "build": "bunx --bun astro build",
     "preview": "bunx --bun astro preview",
     "preview:cms": "bun scripts/cms-preview.js",
+    "cms:backup": "bun scripts/cms-backup.js",
+    "cms:verify-backup": "bun scripts/cms-backup.js verify",
+    "cms:stage-sql": "bun scripts/cms-backup.js sql",
+    "cms:d1:init": "wrangler d1 migrations apply CMS_DB --local --config wrangler.migration.jsonc",
+    "preview:migration": "wrangler pages dev dist --d1 CMS_DB=00000000-0000-0000-0000-000000000002 --binding CMS_MIGRATION_PREVIEW=1 --compatibility-date 2026-10-10 --ip 127.0.0.1 --port 54587",
     "astro": "bunx --bun astro"
   },
   "dependencies": {
@@ -18,5 +23,8 @@
     "astro": "^7.3.5",
     "js-yaml": "4.3.2",
     "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "wrangler": "4.149.0"
   }
 }
