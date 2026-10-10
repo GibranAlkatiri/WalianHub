@@ -1,4 +1,4 @@
-import { request, imageUrl, logout } from './cms-client.js';
+import { request, imageUrl, logout } from './cms-client.js?v=20261010_04';
 
 const root = document.getElementById('cms-root');
 const state = { config: null, collection: 'layanan', filter: 'all', search: '', entries: [], entry: null, uploads: new Map(), dirty: false, busy: false, urls: new Set() };
@@ -86,7 +86,7 @@ function shell() {
   root.replaceChildren();
   const nav = el('nav', { class: 'cms-nav', 'aria-label': 'Jenis konten' });
   for (const collection of state.config.collections) nav.append(button(collection.label, async () => { if (await canLeave()) { state.collection = collection.name; state.filter = 'all'; state.search = ''; showList(); } }, state.collection === collection.name ? 'is-active' : ''));
-  const top = el('header', { class: 'cms-header' }, el('a', { href: './', class: 'cms-brand', onClick: async (event) => { event.preventDefault(); if (await canLeave()) showList(); } }, el('span', { 'aria-hidden': 'true' }, 'W'), el('strong', {}, 'Panel Konten', el('small', {}, 'Kelurahan Walian'))), el('div', { class: 'cms-account' }, el('a', { href: state.config.site_url, onClick: async (event) => { event.preventDefault(); if (await canLeave()) { state.dirty = false; location.assign(state.config.site_url); } } }, 'Lihat website'), button('Keluar', async () => { if (await canLeave()) logout(); })));
+  const top = el('header', { class: 'cms-header' }, el('a', { href: './', class: 'cms-brand', onClick: async (event) => { event.preventDefault(); if (await canLeave()) showList(); } }, el('span', { 'aria-hidden': 'true' }, 'W'), el('strong', {}, 'Panel Konten', el('small', {}, 'Kelurahan Walian'))), el('div', { class: 'cms-account' }, el('a', { href: state.config.site_url, onClick: async (event) => { event.preventDefault(); if (await canLeave()) { state.dirty = false; location.assign(state.config.site_url); } } }, 'Lihat website'), button('Keluar', async () => { if (await canLeave()) { try { await logout(); } catch (error) { message(error.message, true); } } })));
   root.append(top);
   if (window.WALIAN_DEMO) root.append(el('p', { class: 'cms-demo' }, 'Mode uji — perubahan hanya tersimpan selama pratinjau lokal ini berjalan.'));
   root.append(nav, el('main', { class: 'cms-main' }, el('p', { id: 'cms-message', class: 'cms-message', role: 'status', 'aria-live': 'polite', hidden: true }), el('div', { id: 'cms-content' })));
@@ -356,6 +356,7 @@ function drawEditor() {
 }
 
 window.addEventListener('beforeunload', (event) => { if (state.dirty) { event.preventDefault(); event.returnValue = ''; } });
+window.addEventListener('walian:logout', () => { state.dirty = false; });
 export async function start() {
   root.hidden = false;
   try { state.config = await request('config'); document.getElementById('panel').hidden = true; await showList(); }
