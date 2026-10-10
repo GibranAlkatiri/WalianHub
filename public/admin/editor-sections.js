@@ -46,6 +46,7 @@ export function createEditorSections({ form, collection, slug, fields, view }) {
   });
   function activate(item, focus = false) {
     view.section = item.key;
+    form.classList.toggle('is-organization-view', item.key === 'pemerintahan');
     for (const entry of items) {
       const active = entry === item;
       entry.tab.setAttribute('aria-selected', String(active));
