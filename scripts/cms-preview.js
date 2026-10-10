@@ -1,11 +1,12 @@
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 import { load } from 'js-yaml';
-import { createCmsHandler } from '../functions/api/cms.js';
+import { createCmsHandler, parseContent } from '../functions/api/cms.js';
 import { fakeGithub } from '../tests/helpers/cms-github.js';
 import { sqliteD1 } from '../tests/helpers/d1-sqlite.js';
 import { onRequestGet, onRequestPost, onRequestDelete } from '../functions/api/auth.js';
 import { sha256 } from '../server/cms-session.js';
+import { gitBlobSha } from './lib/cms-snapshot.js';
 
 const repo = resolve(import.meta.dir, '..');
 const files = {};
@@ -13,8 +14,14 @@ for await (const path of new Bun.Glob('src/content/**/*.{md,json}').scan({ cwd: 
 const config = await readFile(resolve(repo, 'public/admin/config.yml'), 'utf8');
 const github = fakeGithub(files, load(config).backend.repo);
 const handler = createCmsHandler(github.fetch);
-const sessions = sqliteD1(await readFile(resolve(repo, 'migrations/0002_sessions.sql'), 'utf8'));
-const env = { CMS_SESSION_AUTH: process.env.CMS_PREVIEW_AUTH === 'legacy' ? '0' : '1', CMS_DB: sessions, CMS_USERNAME: 'walian', CMS_PASSWORD_HASH: await sha256('demo'), GITHUB_TOKEN: 'local-preview-only', ASSETS: { fetch: async () => new Response(config) } };
+const sessions = sqliteD1(await readFile(resolve(repo, 'migrations/0001_content.sql'), 'utf8') + await readFile(resolve(repo, 'migrations/0002_sessions.sql'), 'utf8'));
+sessions.raw.query('INSERT INTO cms_imports(snapshot_id,repository,main_sha,captured_at) VALUES (?,?,?,?)').run('local-demo', 'local/demo', '0'.repeat(40), new Date().toISOString());
+for (const [path, raw] of Object.entries(files).filter(([path]) => path.startsWith('src/content/layanan/'))) {
+  const slug = path.split('/').at(-1).replace(/\.md$/, '');
+  sessions.raw.query('INSERT INTO cms_content(collection,slug,source_path,published_json,published_blob_sha,snapshot_id) VALUES (?,?,?,?,?,?)').run('layanan', slug, path, JSON.stringify(parseContent(raw, path)), gitBlobSha(Buffer.from(raw)), 'local-demo');
+}
+const legacy = process.env.CMS_PREVIEW_AUTH === 'legacy';
+const env = { CMS_LAYANAN_D1: legacy || process.env.CMS_PREVIEW_STORAGE === 'github' ? '0' : '1', CMS_SESSION_AUTH: legacy ? '0' : '1', CMS_DB: sessions, CMS_USERNAME: 'walian', CMS_PASSWORD_HASH: await sha256('demo'), GITHUB_TOKEN: 'local-preview-only', ASSETS: { fetch: async () => new Response(config) } };
 const types = { '.css': 'text/css', '.js': 'text/javascript', '.html': 'text/html', '.json': 'application/json', '.yml': 'text/yaml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml' };
 const server = Bun.serve({
   hostname: '127.0.0.1', port: Number(process.env.CMS_PREVIEW_PORT || 54584),

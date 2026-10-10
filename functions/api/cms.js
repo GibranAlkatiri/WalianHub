@@ -1,5 +1,6 @@
 import { load, dump, JSON_SCHEMA } from 'js-yaml';
 import { sessionEnabled, readSession, sameOrigin, SessionError } from '../../server/cms-session.js';
+import { layananD1Enabled, layananOperation, LayananError } from '../../server/cms-layanan.js';
 
 const HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' };
 const response = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: HEADERS });
@@ -48,7 +49,6 @@ export function createCmsHandler(fetchGitHub = fetch) {
       if (sessionEnabled(env)) {
         await readSession(request, env);
         if (request.method === 'POST') sameOrigin(request);
-        if (!secret) fail('Koneksi penyimpanan konten belum tersedia. Hubungi pengelola panel.', 503);
       } else {
         const supplied = request.headers.get('authorization') || '';
         let mismatch = supplied.length ^ (`Bearer ${secret}`).length;
@@ -60,6 +60,30 @@ export function createCmsHandler(fetchGitHub = fetch) {
       const asset = await env.ASSETS.fetch(new Request(new URL('/admin/config.yml', url)));
       if (!asset.ok) fail('Konfigurasi panel tidak tersedia.', 503);
       const config = load(await asset.text(), { schema: JSON_SCHEMA });
+      const d1 = layananD1Enabled(env);
+      if (d1 && !sessionEnabled(env)) fail('Mode layanan D1 memerlukan sesi server.', 503);
+      let postBody, postText;
+      if (request.method === 'POST') {
+        if (!request.headers.get('content-type')?.includes('application/json')) fail('Format permintaan tidak valid.', 415);
+        postText = await request.text();
+        if (postText.length > 36 * 1024 * 1024) fail('Ukuran unggahan terlalu besar.', 413);
+        postBody = JSON.parse(postText);
+        if (!postBody || Array.isArray(postBody) || typeof postBody !== 'object') fail('Isian konten tidak valid.');
+      }
+      const action = request.method === 'GET' ? (url.searchParams.get('action') || 'list') : postBody.action;
+      const collectionName = request.method === 'GET' ? url.searchParams.get('collection') : postBody.collection;
+      if (d1 && action === 'config' && request.method === 'GET') return response(publicConfig(config));
+      if (d1 && collectionName === 'layanan') {
+        if (request.method === 'POST' && new TextEncoder().encode(postText).length > 256 * 1024) fail('Isian layanan terlalu panjang.', 413);
+        if (request.method === 'GET' && !['list', 'entry'].includes(action)) fail('Tindakan layanan tidak dikenali.', 404);
+        if (request.method === 'POST' && !['save', 'publish', 'discard', 'withdraw', 'delete'].includes(action)) fail('Tindakan layanan tidak dikenali.', 404);
+        const slug = request.method === 'GET' ? url.searchParams.get('slug') : postBody.slug;
+        const collection = config.collections.find((item) => item.name === 'layanan');
+        if (!collection || collection.folder !== 'src/content/layanan' || collection.files) fail('Konfigurasi layanan tidak valid.', 503);
+        if (action !== 'list') target(config, 'layanan', slug);
+        return response(await layananOperation(env.CMS_DB, collection, action, slug, postBody));
+      }
+      if (!secret) fail('Koneksi penyimpanan konten belum tersedia. Hubungi pengelola panel.', 503);
       if (!/^[\w.-]+\/[\w.-]+$/.test(config.backend?.repo) || !/^[\w/-]+$/.test(config.backend?.branch || '')) fail('Konfigurasi repository tidak valid.', 503);
       const repo = config.backend.repo;
       const main = config.backend.branch;
@@ -158,10 +182,7 @@ export function createCmsHandler(fetchGitHub = fetch) {
         }));
         return response({ entries: entries.filter(Boolean) });
       }
-      if (!request.headers.get('content-type')?.includes('application/json')) fail('Format permintaan tidak valid.', 415);
-      const text = await request.text();
-      if (text.length > 36 * 1024 * 1024) fail('Ukuran unggahan terlalu besar.', 413);
-      const body = JSON.parse(text);
+      const body = postBody;
       const t = target(config, body.collection, body.slug);
       const current = await entry(t);
       if (current.revision !== (body.revision || null) || current.publishedSha !== (body.publishedSha || null)) fail('Konten telah berubah. Muat ulang agar perubahan lain tidak tertimpa.', 409);
@@ -275,7 +296,7 @@ export function createCmsHandler(fetchGitHub = fetch) {
       }
       return response(await entry(t));
     } catch (error) {
-      const expected = error instanceof CmsError || error instanceof SessionError;
+      const expected = error instanceof CmsError || error instanceof SessionError || error instanceof LayananError;
       return response({ error: expected ? error.message : 'Permintaan tidak dapat diproses. Periksa isian lalu coba kembali.' }, expected ? error.status : 400);
     }
   };
