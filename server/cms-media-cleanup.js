@@ -8,7 +8,9 @@ export async function cloudIdentity(cloud) {
   return [...bytes].map(value=>value.toString(16).padStart(2,'0')).join('');
 }
 const rows = async (db, sql, ...args) => {
-  const result = await db.prepare(sql).bind(...args).all();
+  let result;
+  try {const statement=db.prepare(sql);result=await(args.length?statement.bind(...args):statement).all();}
+  catch {throw new Error('CLEANUP_DATABASE');}
   if (!result.success || !Array.isArray(result.results) || result.results.length > MAX_ROWS) throw new Error('CLEANUP_DATABASE');
   return result.results;
 };
@@ -70,9 +72,11 @@ export async function cleanupMedia(env, { dryRun = true, now = Date.now(), fetch
   const peerURL=new URL(env.CMS_MEDIA_CLEANUP_PEER_URL);
   if(peerURL.protocol!=='https:' || peerURL.pathname!=='/api/media-cleanup' || peerURL.username || peerURL.password || peerURL.search
     || typeof env.CMS_MEDIA_CLEANUP_TOKEN!=='string' || env.CMS_MEDIA_CLEANUP_TOKEN.length<32) throw new Error('CLEANUP_CONFIGURATION');
-  const peerResponse=await fetchPeer(peerURL.href,{headers:{authorization:'Bearer '+env.CMS_MEDIA_CLEANUP_TOKEN},redirect:'error',signal:AbortSignal.timeout(10000)});
+  let peerResponse;
+  try {peerResponse=await fetchPeer(peerURL.href,{headers:{authorization:'Bearer '+env.CMS_MEDIA_CLEANUP_TOKEN},redirect:'error',signal:AbortSignal.timeout(10000)});}
+  catch {throw new Error('CLEANUP_PEER');}
   if(!peerResponse.ok){await peerResponse.body?.cancel();throw new Error('CLEANUP_PEER');}
-  const peer=await peerResponse.json();
+  let peer;try{peer=await peerResponse.json();}catch{throw new Error('CLEANUP_PEER');}
   if(peer.ok!==true || peer.schema!==1 || peer.collectionsD1!==true || peer.cloudIdentity!==await cloudIdentity(auth.cloud))throw new Error('CLEANUP_PEER');
   const databases = [env.CMS_DB, env.CMS_MEDIA_CLEANUP_PEER_DB], token = crypto.randomUUID();
   const report = {dryRun,busy:false,total:0,protected:0,pending:0,eligible:0,deleted:0,failed:0,unknownSource:0,verifiedSources:0};
