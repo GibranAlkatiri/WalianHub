@@ -62,7 +62,7 @@ async function destroy(key, auth, fetchProvider, now) {
   catch { return false; }
 }
 
-export async function cleanupMedia(env, { dryRun = true, now = Date.now(), fetchProvider = fetch, fetchPeer = fetch } = {}) {
+export async function cleanupMedia(env, { dryRun = true, now = Date.now(), fetchProvider = fetch, fetchPeer = fetch, peerMetadata } = {}) {
   const auth = {cloud:String(env.CLOUDINARY_CLOUD_NAME || '').trim(),key:String(env.CLOUDINARY_API_KEY || '').trim(),secret:String(env.CLOUDINARY_API_SECRET || '').trim()};
   if (env.CMS_MEDIA_CLEANUP_ENABLED !== '1' || !env.CMS_DB || !env.CMS_MEDIA_CLEANUP_PEER_DB
     || env.CMS_DB === env.CMS_MEDIA_CLEANUP_PEER_DB || env.CMS_MEDIA_CLOUDINARY !== '1'
@@ -72,11 +72,21 @@ export async function cleanupMedia(env, { dryRun = true, now = Date.now(), fetch
   const peerURL=new URL(env.CMS_MEDIA_CLEANUP_PEER_URL);
   if(peerURL.protocol!=='https:' || peerURL.pathname!=='/api/media-cleanup' || peerURL.username || peerURL.password || peerURL.search
     || typeof env.CMS_MEDIA_CLEANUP_TOKEN!=='string' || env.CMS_MEDIA_CLEANUP_TOKEN.length<32) throw new Error('CLEANUP_CONFIGURATION');
-  let peerResponse;
-  try {peerResponse=await fetchPeer(peerURL.href,{headers:{authorization:'Bearer '+env.CMS_MEDIA_CLEANUP_TOKEN},redirect:'error',signal:AbortSignal.timeout(10000)});}
-  catch {throw new Error('CLEANUP_PEER');}
-  if(!peerResponse.ok){await peerResponse.body?.cancel();throw new Error('CLEANUP_PEER');}
-  let peer;try{peer=await peerResponse.json();}catch{throw new Error('CLEANUP_PEER');}
+  // The authenticated scheduler checks Preview before contacting Production.
+  // Forward its fresh observation to avoid Pages-to-Pages fetch routing. This
+  // proof is accepted only on the separate bearer-token endpoint, never CMS login.
+  let peer=peerMetadata;
+  if(peer!==undefined){
+    if(!peer || peer.source!==peerURL.href || !Number.isSafeInteger(peer.observedAt)
+      || peer.observedAt>now || now-peer.observedAt>60000
+      || Object.keys(peer).some(key=>!['ok','schema','collectionsD1','cloudIdentity','source','observedAt'].includes(key)))throw new Error('CLEANUP_PEER');
+  }else{
+    let peerResponse;
+    try {peerResponse=await fetchPeer(peerURL.href,{headers:{authorization:'Bearer '+env.CMS_MEDIA_CLEANUP_TOKEN},redirect:'error',signal:AbortSignal.timeout(10000)});}
+    catch {throw new Error('CLEANUP_PEER');}
+    if(!peerResponse.ok){await peerResponse.body?.cancel();throw new Error('CLEANUP_PEER');}
+    try{peer=await peerResponse.json();}catch{throw new Error('CLEANUP_PEER');}
+  }
   if(peer.ok!==true || peer.schema!==1 || peer.collectionsD1!==true || peer.cloudIdentity!==await cloudIdentity(auth.cloud))throw new Error('CLEANUP_PEER');
   const databases = [env.CMS_DB, env.CMS_MEDIA_CLEANUP_PEER_DB], token = crypto.randomUUID();
   const report = {dryRun,busy:false,total:0,protected:0,pending:0,eligible:0,deleted:0,failed:0,unknownSource:0,verifiedSources:0};
