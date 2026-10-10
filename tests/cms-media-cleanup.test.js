@@ -92,7 +92,34 @@ test('foto yang sudah dibersihkan tidak dapat dibaca atau dipakai lagi dalam kon
 test('endpoint memerlukan token khusus, default dry-run eksplisit dan tidak membocorkan error provider/database',async()=>{
   const s=setup();try{const handler=createCleanupHandler(s.provider,s.peer),call=(body,authorization='Bearer '+s.env.CMS_MEDIA_CLEANUP_TOKEN,method='POST')=>handler({env:s.env,request:new Request('https://cms.example/api/media-cleanup',{method,headers:{authorization,'content-type':'application/json'},...(method==='POST'?{body:JSON.stringify(body)}:{})})});expect((await call({dryRun:false},'Bearer wrong')).status).toBe(401);expect((await call({})).status).toBe(400);expect((await call({dryRun:true},undefined,'GET')).status).toBe(200);expect((await call({dryRun:true})).status).toBe(200);s.env.CMS_MEDIA_CLEANUP_PEER_DB=null;const response=await call({dryRun:false});expect(response.status).toBe(503);expect(await response.text()).not.toContain('provider-test-secret');}finally{s.close();}
 });
-test('scheduler mengirim token server, menolak redirect/konfigurasi HTTP dan tidak mencatat respons berisi secret',async()=>{
-  const env={CMS_MEDIA_CLEANUP_URL:'https://cms.example/api/media-cleanup',CMS_MEDIA_CLEANUP_TOKEN:'test-token-'.repeat(5)};
-  const result=await scheduledCleanup(env,async(url,init)=>{expect(init.redirect).toBe('error');expect(JSON.parse(init.body)).toEqual({dryRun:false});expect(init.headers.authorization).toBe('Bearer '+env.CMS_MEDIA_CLEANUP_TOKEN);return Response.json({ok:true,dryRun:false,busy:false,total:1,protected:1,pending:0,eligible:0,deleted:0,failed:0,unknownSource:0,verifiedSources:0,secret:'provider-test-secret'});});expect(result.protected).toBe(1);expect(JSON.stringify(result)).not.toContain('secret');await expect(scheduledCleanup({...env,CMS_MEDIA_CLEANUP_URL:'http://cms.example/api/media-cleanup'})).rejects.toThrow();
+test('scheduler memeriksa Preview dahulu, mengirim token server dan hanya mencatat hitungan',async()=>{
+  const env={CMS_MEDIA_CLEANUP_URL:'https://cms.example/api/media-cleanup',CMS_MEDIA_CLEANUP_PEER_URL:'https://preview.example/api/media-cleanup',CMS_MEDIA_CLEANUP_TOKEN:'test-token-'.repeat(5)},calls=[];
+  const result=await scheduledCleanup(env,async(url,init)=>{
+    calls.push(url);expect(init.redirect).toBe('error');expect(init.headers.authorization).toBe('Bearer '+env.CMS_MEDIA_CLEANUP_TOKEN);
+    if(url===env.CMS_MEDIA_CLEANUP_PEER_URL)return Response.json({ok:true,schema:1,collectionsD1:true,cloudIdentity:await cloudIdentity('test-cloud'),secret:'provider-test-secret'});
+    const body=JSON.parse(init.body);expect(body.dryRun).toBe(false);expect(body.peerMetadata.source).toBe(env.CMS_MEDIA_CLEANUP_PEER_URL);expect(body.peerMetadata.observedAt).toBeGreaterThanOrEqual(now);expect(body.peerMetadata.secret).toBeUndefined();
+    return Response.json({ok:true,dryRun:false,busy:false,total:1,protected:1,pending:0,eligible:0,deleted:0,failed:0,unknownSource:0,verifiedSources:0,secret:'provider-test-secret'});
+  });expect(calls).toEqual([env.CMS_MEDIA_CLEANUP_PEER_URL,env.CMS_MEDIA_CLEANUP_URL]);expect(result.protected).toBe(1);expect(JSON.stringify(result)).not.toContain('secret');await expect(scheduledCleanup({...env,CMS_MEDIA_CLEANUP_URL:'http://cms.example/api/media-cleanup'})).rejects.toThrow();
+});
+test('scheduler tidak mengirim perintah Production jika Preview tidak tersedia atau metadata tidak valid',async()=>{
+  const env={CMS_MEDIA_CLEANUP_URL:'https://cms.example/api/media-cleanup',CMS_MEDIA_CLEANUP_PEER_URL:'https://preview.example/api/media-cleanup',CMS_MEDIA_CLEANUP_TOKEN:'test-token-'.repeat(5)};
+  for(const response of [new Response(null,{status:503}),Response.json({ok:true,schema:1,collectionsD1:false,cloudIdentity:'a'.repeat(64)})]){
+    let calls=0;await expect(scheduledCleanup(env,async(url)=>{calls++;expect(url).toBe(env.CMS_MEDIA_CLEANUP_PEER_URL);return response;})).rejects.toThrow();expect(calls).toBe(1);
+  }
+});
+test('hasil pemeriksaan Preview yang baru dari scheduler diterima tanpa fetch antar-Pages',async()=>{
+  const s=setup();try{
+    const p=photo(s.databases[0]);content(s.databases[1],p.path,{draft:true});
+    const peerMetadata={...await (await s.peer()).json(),source:s.env.CMS_MEDIA_CLEANUP_PEER_URL,observedAt:now};
+    const handler=createCleanupHandler(s.provider,async()=>{throw new Error('Pages fetch must not run');});
+    const call=(proof,authorization='Bearer '+s.env.CMS_MEDIA_CLEANUP_TOKEN)=>handler({env:s.env,request:new Request('https://cms.example/api/media-cleanup',{method:'POST',headers:{authorization,'content-type':'application/json'},body:JSON.stringify({dryRun:true,peerMetadata:proof})})});
+    const response=await call({...peerMetadata,observedAt:Date.now()});expect(response.status).toBe(200);expect((await response.json()).protected).toBe(1);expect((await call(peerMetadata,'Bearer CMS-login-session')).status).toBe(401);expect(s.requests).toHaveLength(0);
+  }finally{s.close();}
+});
+test('pemeriksaan Preview kedaluwarsa, dari URL/cloud lain atau schema rusak ditolak sebelum mutasi',async()=>{
+  const s=setup();try{
+    photo(s.databases[0]);const peerMetadata={...await (await s.peer()).json(),source:s.env.CMS_MEDIA_CLEANUP_PEER_URL,observedAt:now};
+    for(const change of [{observedAt:now-60001},{observedAt:now+1},{source:'https://other.example/api/media-cleanup'},{cloudIdentity:'a'.repeat(64)},{schema:2},{collectionsD1:false},{extra:'unexpected'}])await expect(collect(s,{peerMetadata:{...peerMetadata,...change}})).rejects.toThrow('CLEANUP_PEER');
+    expect(s.requests).toHaveLength(0);for(const db of s.databases)expect(db.raw.query('SELECT COUNT(*) n FROM cms_media_cleanup').get().n).toBe(0);
+  }finally{s.close();}
 });
