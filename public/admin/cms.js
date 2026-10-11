@@ -1,15 +1,15 @@
 import { request, imageUrl, uploadImage, logout } from './cms-client.js?v=20261010_05';
-import { createEditorPreview } from './editor-preview.js?v=20261010_ui02';
-import { createEditorSections } from './editor-sections.js?v=20261010_ui03';
+import { createEditorSections } from './editor-sections.js?v=20261010_ui04';
+import { createOrganizationEditor } from './organization-editor.js?v=20261010_ui04';
 
 const root = document.getElementById('cms-root');
 const state = { config: null, collection: 'layanan', filter: 'all', search: '', entries: [], entry: null, uploads: new Map(), dirty: false, busy: false, urls: new Set() };
 let sequence = 0;
 let loadSequence = 0;
 let toastTimer;
-let editorPreview;
+let organizationEditor;
 let editorSections;
-const editorView = { open: null, section: null };
+const editorView = { section: null };
 const el = (tag, attrs = {}, ...children) => {
   const node = document.createElement(tag);
   for (const [key, value] of Object.entries(attrs)) {
@@ -89,7 +89,7 @@ function defaults(list) {
     field.default ?? (field.widget === 'object' ? defaults(field.fields) : ['list', 'daftarNama', 'daftarTeks'].includes(field.widget) ? [] : field.widget === 'boolean' ? false : field.widget === 'number' ? null : field.widget === 'datetime' ? new Date().toISOString().slice(0, 10) : '')]));
 }
 function shell() {
-  editorPreview?.destroy(); editorPreview = null;
+  organizationEditor?.destroy(); organizationEditor = null;
   editorSections = null;
   root.replaceChildren();
   const nav = el('nav', { class: 'cms-nav', 'aria-label': 'Jenis konten' });
@@ -361,7 +361,7 @@ async function deletePublished() {
   await removeEntry(state.entry);
 }
 function drawEditor(animate = false) {
-  if (animate) { editorView.open = null; editorView.section = null; }
+  if (animate) editorView.section = null;
   shell(); const area = root.querySelector('#cms-content');
   if (animate) area.classList.add('cms-content-ready');
   const actions = el('div', { class: 'cms-editor-actions' });
@@ -376,13 +376,21 @@ function drawEditor(animate = false) {
   else {
     const form = el('form', { class: 'cms-editor', noValidate: true, onSubmit: (e) => { e.preventDefault(); save(); } });
     for (const field of fields()) {
-      const control = fieldControl(field, state.entry.data, field.name, field.name);
+      const profile = state.collection === 'pengaturan' && state.entry.slug === 'profil';
+      let control;
+      if (profile && field.name === 'strukturOrganisasi') {
+        organizationEditor = createOrganizationEditor({ data: state.entry.data, onChange: () => { state.dirty = true; } });
+        control = organizationEditor.element;
+      } else if (profile && field.name === 'lurah') {
+        if (!state.entry.data.lurah) state.entry.data.lurah = defaults(field.fields);
+        const photo = field.fields.find(child => child.name === 'foto');
+        control = el('div', { class: 'cms-field cms-org-photo' }, el('details', {}, el('summary', {}, 'Foto Lurah'), fieldControl(photo, state.entry.data.lurah, photo.name, 'lurah.foto')));
+      } else control = fieldControl(field, state.entry.data, field.name, field.name);
       if (control instanceof HTMLElement) control.dataset.fieldName = field.name;
       form.append(control);
     }
     editorSections = createEditorSections({ form, collection: state.collection, slug: state.entry.slug, fields: fields(), view: editorView });
-    editorPreview = createEditorPreview({ area, header, form, collection: state.collection, getTitle: name, getData: () => state.entry.data, fields: fields(), view: editorView });
-    area.append(editorPreview.layout);
+    area.append(form);
   }
   const bottom = el('div', { class: 'cms-editor-bottom' });
   if (state.entry.revision) bottom.append(button('Buang draf', discard, 'cms-danger-text'));

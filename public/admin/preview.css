@@ -49,22 +49,6 @@ body {
   gap: 1.25rem;
 }
 
-/* Pratinjau native CMS: teks pengguna tetap menjadi teks, tanpa HTML aktif. */
-.cms-preview-title { margin:0; font-size:1.5rem; overflow-wrap:anywhere; }
-.cms-preview-section { min-width:0; padding:1rem; border:1px solid var(--color-line); border-radius:12px; background:white; }
-.cms-preview-section h3 { margin:0 0 .5rem; font-size:1rem; overflow-wrap:anywhere; }
-.cms-preview-section .cms-preview-section { margin-top:.75rem; background:var(--color-cream-50); }
-.cms-preview-text { margin:.5rem 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }
-.cms-preview-list { margin:.5rem 0 0; padding-left:1.25rem; overflow-wrap:anywhere; }
-.cms-preview-list > li + li { margin-top:.75rem; }
-.cms-preview-image { display:block; max-width:100%; max-height:300px; border-radius:8px; object-fit:contain; }
-.nc-preview-root .judul-layanan, .nc-preview-root .ringkasan-layanan, .nc-preview-root li { overflow-wrap:anywhere; }
-@media(max-width:480px) {
-  body { padding:1rem .75rem 2rem; }
-  .cms-preview-section { padding:.75rem; }
-  .grid-layanan-detail { grid-template-columns:minmax(0,1fr); }
-}
-
 /* ── Banner Mode Pratinjau ────────────────────────────────────────── */
 .nc-preview-banner {
   display: flex;
