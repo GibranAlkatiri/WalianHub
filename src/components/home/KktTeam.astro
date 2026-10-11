@@ -1,0 +1,171 @@
+---
+// Section frontend tetap: tidak memakai koleksi konten, API, atau field CMS.
+import Container from '../ui/Container.astro';
+import Icon from '../ui/Icon.astro';
+import { anggotaKkt, identitasKkt } from '../../lib/anggota-kkt';
+import { url } from '../../lib/url';
+const foto = (id: string) => url(`/images/kkt/${id}-fokus.webp`);
+// Posisi berbeda mengikuti letak wajah pada masing-masing foto asli.
+const posisiFoto: Record<string, string> = {
+  aglen: '50% 40%', gin: '50% 48%', orica: '50% 52%', reyna: '50% 60%',
+  luna: '50% 62%', feitri: '50% 48%', gee: '50% 45%', karin: '50% 50%',
+  grace: '50% 50%', putri: '50% 10%', liv: '50% 30%', grey: '50% 45%',
+  afril: '50% 50%', gibran: '50% 45%', jess: '50% 48%',
+};
+---
+
+<section id="tim-kkt" class="kkt" aria-labelledby="judul-kkt" data-kkt>
+  <Container>
+    <div class="kkt-heading">
+      <div>
+        <p class="kkt-eyebrow"><span></span> KKT UNSRAT · WALIAN</p>
+        <h2 id="judul-kkt">Berkenalan dengan <span>tim kami.</span></h2>
+      </div>
+      <p class="kkt-description">Langkah kecil, semangat bersama.<br />Hadir dan bertumbuh bersama Walian.</p>
+    </div>
+
+    <div class="kkt-ribbon">
+      <div class="kkt-brand kkt-brand-university">
+        <div class="kkt-brand-mark"><img src={url('/images/kkt/unsrat.webp')} alt="Logo Universitas Sam Ratulangi" width="120" height="120" loading="lazy" decoding="async" /></div>
+        <span>UNSRAT</span><small>Universitas<br />Sam Ratulangi</small>
+      </div>
+
+      <div class="kkt-window">
+        <div class="kkt-viewport" data-kkt-viewport role="region" aria-label="Foto anggota tim KKT" tabindex="0">
+          <ul class="kkt-group" data-kkt-group>
+            {anggotaKkt.map((anggota, i) => (
+              <li class="kkt-member">
+                <a href={`#kkt-identitas-${anggota.id}`} data-kkt-member={anggota.id} class="kkt-portrait" style={`--kkt-thumb-scale: ${anggota.id === 'putri' ? 1 : 1.15}`} aria-label={`Kenali ${anggota.nama}, ${anggota.jabatan}`}>
+                  <img src={foto(anggota.id)} alt={anggota.nama} width="360" height="480" loading="lazy" decoding="async" />
+                  <span class="kkt-number" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="kkt-portrait-caption"><strong>{anggota.panggilan}</strong></span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div class="kkt-brand kkt-brand-team">
+        <div class="kkt-brand-mark"><img src={url('/images/kkt/tim.webp')} alt="Logo tim KKT Walian" width="160" height="120" loading="lazy" decoding="async" /></div>
+        <span>KKT WALIAN</span><small>Satu tim.<br />Banyak cerita.</small>
+      </div>
+    </div>
+
+    <noscript>
+      <p class="kkt-noscript">Geser deretan foto, lalu pilih nama untuk membaca identitas anggota.</p>
+      <div class="kkt-static-identities">
+        {anggotaKkt.map((anggota) => (
+          <details id={`kkt-identitas-${anggota.id}`}>
+            <summary>{anggota.nama}</summary><p>{anggota.jabatan}</p>
+            <dl>{identitasKkt(anggota).map(([label, nilai]) => <div><dt>{label}</dt><dd>{nilai}</dd></div>)}</dl>
+          </details>
+        ))}
+      </div>
+    </noscript>
+  </Container>
+
+  <dialog class="kkt-dialog" data-kkt-dialog aria-labelledby="kkt-card-name" aria-describedby="kkt-card-role">
+    <button type="button" class="kkt-close" data-kkt-close aria-label="Tutup identitas anggota" autofocus><Icon name="x" /></button>
+    <div data-kkt-card></div>
+  </dialog>
+
+  {anggotaKkt.map((anggota) => (
+    <template data-kkt-profile={anggota.id}>
+      <div class="kkt-card-photo" style={`--kkt-photo-position: ${posisiFoto[anggota.id]}`}><img src={foto(anggota.id)} alt={anggota.nama} width="360" height="480" decoding="async" /><span>KKT · WALIAN</span></div>
+      <div class="kkt-card-body">
+        <h3 id="kkt-card-name">{anggota.nama}</h3>
+        <p id="kkt-card-role" class="kkt-card-role">{anggota.jabatan}</p>
+        {identitasKkt(anggota).length > 0 && <dl class="kkt-card-identities">{identitasKkt(anggota).map(([label, nilai]) => <div><dt>{label}</dt><dd>{nilai}</dd></div>)}</dl>}
+      </div>
+    </template>
+  ))}
+</section>
+
+<style>
+  .kkt { padding-block: 2.5rem 1.5rem; background: var(--color-cream-50); }
+  .kkt-heading { display: flex; justify-content: space-between; align-items: end; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .kkt-eyebrow { display: flex; align-items: center; gap: .5rem; color: var(--color-forest-700); font-size: .65rem; font-weight: 800; letter-spacing: .17em; }
+  .kkt-eyebrow > span { width: .4rem; height: .4rem; border-radius: 50%; background: var(--color-forest-600); }
+  h2 { margin-top: .4rem; font-size: clamp(1.3rem, 2.4vw, 1.9rem); font-weight: 800; line-height: 1.25; letter-spacing: -.045em; }
+  h2 > span { color: var(--color-forest-600); }
+  .kkt-description { color: var(--color-ink-muted); font-size: .75rem; text-align: right; line-height: 1.7; }
+  .kkt-ribbon { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr) 8.5rem; align-items: center; padding: 1.25rem .75rem; border: 1px solid var(--color-line); border-radius: 1.5rem; background: linear-gradient(120deg, #eef3df, #f4f6ec 48%, #edf2e3); }
+  .kkt-brand { display: flex; flex-direction: column; align-items: center; gap: .35rem; text-align: center; }
+  .kkt-brand-mark { display: grid; place-items: center; width: 5rem; height: 5rem; margin-bottom: .35rem; }
+  .kkt-brand-mark img { width: 100%; height: 100%; object-fit: contain; }
+  .kkt-brand-team .kkt-brand-mark { width: 6rem; height: 5rem; overflow: hidden; border-radius: .75rem; background: white; }
+  .kkt-brand-team img { width: 135%; height: 135%; max-width: none; }
+  .kkt-brand > span { color: var(--color-forest-900); font-size: .65rem; font-weight: 800; letter-spacing: .09em; }
+  .kkt-brand > small { font-size: .6rem; color: var(--color-ink-muted); line-height: 1.5; }
+  .kkt-window { min-width: 0; position: relative; }
+  .kkt-window::before, .kkt-window::after { content: ''; position: absolute; inset-block: 0; width: 1.75rem; pointer-events: none; z-index: 1; }
+  .kkt-window::before { left: 0; background: linear-gradient(to right, #f0f4e5, transparent); }
+  .kkt-window::after { right: 0; background: linear-gradient(to left, #f0f4e5, transparent); }
+  .kkt-viewport { display: flex; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; border-radius: .75rem; }
+  .kkt-viewport::-webkit-scrollbar { display: none; }
+  .kkt-group { display: flex; flex: none; align-items: center; gap: .75rem; padding: .5rem .75rem .5rem 0; margin: 0; list-style: none; }
+  .kkt-group[hidden] { display: none; }
+  /* Untuk gerakan ke kanan, anggota berikutnya masuk dari kiri.
+     Tanpa animasi, urutan baca dan keyboard tetap 01 sampai 15. */
+  .kkt-viewport[data-kkt-loop] .kkt-group { flex-direction: row-reverse; }
+  .kkt-member { width: 8.5rem; flex: none; }
+  .kkt-portrait { position: relative; display: block; height: 11rem; overflow: hidden; border-radius: .85rem; background: var(--color-sage-200); box-shadow: 0 4px 10px #1f331617; }
+  .kkt-portrait::after { content: ''; position: absolute; inset: 35% 0 0; background: linear-gradient(transparent, #142011da); }
+  .kkt-portrait > img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; transform: scale(var(--kkt-thumb-scale, 1.15)); transform-origin: center; }
+  .kkt-number { position: absolute; top: .55rem; left: .55rem; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #fffdf3e6; color: var(--color-forest-900); font-size: .55rem; font-weight: 800; z-index: 1; }
+  .kkt-portrait-caption { position: absolute; bottom: .65rem; inset-inline: .7rem; color: white; z-index: 1; }
+  .kkt-portrait-caption > strong { display: block; font-size: .8rem; font-weight: 700; }
+  .kkt-portrait:focus-visible { outline-offset: -3px; outline-color: var(--color-sun-400); }
+  .kkt-dialog { position: fixed; inset: 0; margin: auto; padding: 0; width: min(26rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); overflow-y: auto; border: 1px solid var(--color-line); border-radius: 1.4rem; background: var(--color-cream-50); color: var(--color-ink); box-shadow: 0 24px 90px #14201150; }
+  .kkt-dialog::backdrop { background: #14201199; backdrop-filter: blur(6px); }
+  .kkt-close { position: absolute; top: .75rem; right: .75rem; z-index: 2; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; background: #f9f9f1f2; color: var(--color-forest-900); border-radius: 50%; cursor: pointer; box-shadow: 0 2px 12px #14201120; }
+  .kkt-close svg { width: 1.1rem; height: 1.1rem; }
+  .kkt-card-photo { position: relative; height: 14.5rem; overflow: hidden; background: var(--color-sage-200); }
+  .kkt-card-photo > img { width: 100%; height: 100%; object-fit: cover; object-position: var(--kkt-photo-position, center); }
+  .kkt-card-photo > span { position: absolute; bottom: .9rem; left: 1.4rem; padding: .25rem .65rem; border-radius: 2rem; background: #f9f9f1ef; color: var(--color-forest-800); font-size: .55rem; font-weight: 800; letter-spacing: .1em; }
+  .kkt-card-body { padding: 1.2rem; }
+  .kkt-card-body h3 { font-size: 1.3rem; font-weight: 800; line-height: 1.3; letter-spacing: -.03em; }
+  .kkt-card-role { display: inline-block; margin-top: .5rem; padding: .3rem .65rem; border: 1px solid var(--color-line); border-radius: 2rem; color: var(--color-forest-800); font-size: .7rem; font-weight: 600; line-height: 1.5; }
+  .kkt-card-identities { margin-top: 1rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; padding: .9rem; border-radius: .8rem; background: var(--color-sage-100); }
+  .kkt-card-identities > div { min-width: 0; }
+  .kkt-card-identities > div + div { padding-left: .9rem; border-left: 1px solid var(--color-line); }
+  .kkt-card-identities dt { color: var(--color-ink-muted); font-size: .55rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+  .kkt-card-identities dd { margin-top: .25rem; font-size: .8rem; line-height: 1.5; font-weight: 700; color: var(--color-forest-900); }
+  .kkt-noscript { margin-block: .75rem; font-size: .8rem; }
+  .kkt-static-identities { display: grid; gap: .5rem; }
+  .kkt-static-identities details { padding: .75rem; border: 1px solid var(--color-line); border-radius: .5rem; }
+  .kkt-static-identities dl > div { display: flex; gap: 1rem; font-size: .8rem; }
+  @media (max-width: 639px) {
+    .kkt { padding-block: 1.75rem .5rem; }
+    .kkt-heading { gap: .75rem; margin-bottom: 1rem; }
+    .kkt-eyebrow { font-size: .55rem; }
+    .kkt-description { display: none; }
+    .kkt-ribbon { grid-template-columns: 3.25rem minmax(0, 1fr) 3.25rem; gap: .4rem; padding: .75rem .4rem; border-radius: 1rem; }
+    .kkt-brand-mark { width: 2.75rem; height: 2.75rem; }
+    .kkt-brand-team .kkt-brand-mark { width: 3rem; height: 2.75rem; }
+    .kkt-brand > span { font-size: .42rem; letter-spacing: .02em; }
+    .kkt-brand > small { display: none; }
+    .kkt-group { gap: .5rem; padding-right: .5rem; }
+    .kkt-member { width: 6.5rem; }
+    .kkt-portrait { height: 8.75rem; border-radius: .65rem; }
+    .kkt-portrait-caption { inset-inline: .55rem; bottom: .5rem; }
+    .kkt-portrait-caption > strong { font-size: .7rem; }
+    .kkt-window::before, .kkt-window::after { width: .5rem; }
+    .kkt-card-identities { gap: .65rem; padding: .75rem; }
+    .kkt-card-identities > div + div { padding-left: .65rem; }
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .kkt-portrait > img { transition: filter 300ms ease; }
+    .kkt-portrait:hover > img { filter: brightness(1.06); }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .kkt-dialog[open] { animation: kkt-card-in 220ms ease-out; }
+    @keyframes kkt-card-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  }
+</style>
+
+<script>
+  import { mulaiTimKkt } from '../../lib/tim-kkt';
+  document.querySelectorAll<HTMLElement>('[data-kkt]').forEach(mulaiTimKkt);
+</script>
