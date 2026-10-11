@@ -21,15 +21,20 @@ const posisiFoto: Record<string, string> = {
         <p class="kkt-eyebrow"><span></span> KKT UNSRAT · WALIAN</p>
         <h2 id="judul-kkt">Berkenalan dengan <span>tim kami.</span></h2>
       </div>
-      <p class="kkt-description">Langkah kecil, semangat bersama.<br />Hadir dan bertumbuh bersama Walian.</p>
+      <div class="kkt-heading-right">
+        <p class="kkt-description">Langkah kecil, semangat bersama.<br />Hadir dan bertumbuh bersama Walian.</p>
+        <div class="kkt-brands">
+          <div class="kkt-brand kkt-brand-university">
+            <div class="kkt-brand-mark"><img src={url('/images/kkt/unsrat.webp')} alt="Logo Universitas Sam Ratulangi" width="120" height="120" loading="lazy" decoding="async" /></div>
+          </div>
+          <div class="kkt-brand kkt-brand-team">
+            <div class="kkt-brand-mark"><img src={url('/images/kkt/tim-transparan.png')} alt="Logo tim KKT Walian" width="160" height="120" loading="lazy" decoding="async" /></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="kkt-ribbon">
-      <div class="kkt-brand kkt-brand-university">
-        <div class="kkt-brand-mark"><img src={url('/images/kkt/unsrat.webp')} alt="Logo Universitas Sam Ratulangi" width="120" height="120" loading="lazy" decoding="async" /></div>
-        <span>UNSRAT</span><small>Universitas<br />Sam Ratulangi</small>
-      </div>
-
       <div class="kkt-window">
         <div class="kkt-viewport" data-kkt-viewport role="region" aria-label="Foto anggota tim KKT" tabindex="0">
           <ul class="kkt-group" data-kkt-group>
@@ -44,11 +49,6 @@ const posisiFoto: Record<string, string> = {
             ))}
           </ul>
         </div>
-      </div>
-
-      <div class="kkt-brand kkt-brand-team">
-        <div class="kkt-brand-mark"><img src={url('/images/kkt/tim.webp')} alt="Logo tim KKT Walian" width="160" height="120" loading="lazy" decoding="async" /></div>
-        <span>KKT WALIAN</span><small>Satu tim.<br />Banyak cerita.</small>
       </div>
     </div>
 
@@ -84,20 +84,21 @@ const posisiFoto: Record<string, string> = {
 
 <style>
   .kkt { padding-block: 2.5rem 1.5rem; background: var(--color-cream-50); }
-  .kkt-heading { display: flex; justify-content: space-between; align-items: end; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .kkt-heading { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .kkt-heading > div:first-child { min-width: 0; }
+  .kkt-heading-right { display: flex; align-items: center; gap: 1.5rem; }
+  .kkt-brands { display: flex; flex: none; align-items: center; gap: .75rem; }
   .kkt-eyebrow { display: flex; align-items: center; gap: .5rem; color: var(--color-forest-700); font-size: .65rem; font-weight: 800; letter-spacing: .17em; }
   .kkt-eyebrow > span { width: .4rem; height: .4rem; border-radius: 50%; background: var(--color-forest-600); }
   h2 { margin-top: .4rem; font-size: clamp(1.3rem, 2.4vw, 1.9rem); font-weight: 800; line-height: 1.25; letter-spacing: -.045em; }
   h2 > span { color: var(--color-forest-600); }
   .kkt-description { color: var(--color-ink-muted); font-size: .75rem; text-align: right; line-height: 1.7; }
-  .kkt-ribbon { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr) 8.5rem; align-items: center; padding: 1.25rem .75rem; border: 1px solid var(--color-line); border-radius: 1.5rem; background: linear-gradient(120deg, #eef3df, #f4f6ec 48%, #edf2e3); }
-  .kkt-brand { display: flex; flex-direction: column; align-items: center; gap: .35rem; text-align: center; }
-  .kkt-brand-mark { display: grid; place-items: center; width: 5rem; height: 5rem; margin-bottom: .35rem; }
+  .kkt-ribbon { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; padding: 1.25rem .75rem; border: 1px solid var(--color-line); border-radius: 1.5rem; background: linear-gradient(120deg, #eef3df, #f4f6ec 48%, #edf2e3); }
+  .kkt-brand { display: flex; justify-content: center; align-items: center; }
+  .kkt-brand-mark { display: grid; place-items: center; width: 3.5rem; height: 3.5rem; }
   .kkt-brand-mark img { width: 100%; height: 100%; object-fit: contain; }
-  .kkt-brand-team .kkt-brand-mark { width: 6rem; height: 5rem; overflow: hidden; border-radius: .75rem; background: white; }
-  .kkt-brand-team img { width: 135%; height: 135%; max-width: none; }
-  .kkt-brand > span { color: var(--color-forest-900); font-size: .65rem; font-weight: 800; letter-spacing: .09em; }
-  .kkt-brand > small { font-size: .6rem; color: var(--color-ink-muted); line-height: 1.5; }
+  .kkt-brand-team .kkt-brand-mark { width: 4.25rem; height: 3.5rem; overflow: hidden; }
+  .kkt-brand-team img { transform: scale(1.35); }
   .kkt-window { min-width: 0; position: relative; }
   .kkt-window::before, .kkt-window::after { content: ''; position: absolute; inset-block: 0; width: 1.75rem; pointer-events: none; z-index: 1; }
   .kkt-window::before { left: 0; background: linear-gradient(to right, #f0f4e5, transparent); }
@@ -136,16 +137,17 @@ const posisiFoto: Record<string, string> = {
   .kkt-static-identities { display: grid; gap: .5rem; }
   .kkt-static-identities details { padding: .75rem; border: 1px solid var(--color-line); border-radius: .5rem; }
   .kkt-static-identities dl > div { display: flex; gap: 1rem; font-size: .8rem; }
+  @media (max-width: 1023px) {
+    .kkt-description { display: none; }
+  }
   @media (max-width: 639px) {
     .kkt { padding-block: 1.75rem .5rem; }
     .kkt-heading { gap: .75rem; margin-bottom: 1rem; }
     .kkt-eyebrow { font-size: .55rem; }
-    .kkt-description { display: none; }
-    .kkt-ribbon { grid-template-columns: 3.25rem minmax(0, 1fr) 3.25rem; gap: .4rem; padding: .75rem .4rem; border-radius: 1rem; }
-    .kkt-brand-mark { width: 2.75rem; height: 2.75rem; }
-    .kkt-brand-team .kkt-brand-mark { width: 3rem; height: 2.75rem; }
-    .kkt-brand > span { font-size: .42rem; letter-spacing: .02em; }
-    .kkt-brand > small { display: none; }
+    .kkt-brands { gap: .35rem; }
+    .kkt-ribbon { padding: .75rem .4rem; border-radius: 1rem; }
+    .kkt-brand-mark { width: 2.25rem; height: 2.25rem; }
+    .kkt-brand-team .kkt-brand-mark { width: 2.75rem; height: 2.25rem; }
     .kkt-group { gap: .5rem; padding-right: .5rem; }
     .kkt-member { width: 6.5rem; }
     .kkt-portrait { height: 8.75rem; border-radius: .65rem; }
