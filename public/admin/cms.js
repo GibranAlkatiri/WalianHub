@@ -1,6 +1,7 @@
 import { request, imageUrl, uploadImage, logout } from './cms-client.js?v=20261010_05';
 import { createEditorSections } from './editor-sections.js?v=20261010_ui04';
 import { createOrganizationEditor } from './organization-editor.js?v=20261010_ui04';
+import { createTextListControl } from './compact-fields.js?v=20261012_01';
 
 const root = document.getElementById('cms-root');
 const state = { config: null, collection: 'layanan', filter: 'all', search: '', entries: [], entry: null, uploads: new Map(), dirty: false, busy: false, urls: new Set() };
@@ -205,6 +206,9 @@ async function openEntry(slug) {
   } catch (error) { if (loadId === loadSequence) message(error.message, true); }
 }
 function fieldControl(field, parent, key, path) {
+  const textList = field.widget === 'list' && field.field?.widget === 'string'
+    && ['persyaratan', 'alur', 'misi', 'programUnggulan'].includes(field.name);
+  if (textList) field = { ...field, hint: 'Satu baris satu item. Tekan Enter untuk menambah; hapus baris untuk menghapus. Bisa tempel beberapa baris sekaligus.' };
   const id = `cms-field-${++sequence}`;
   const box = el('div', { class: `cms-field cms-field-${field.widget}` });
   if (field.widget === 'hidden') return document.createDocumentFragment();
@@ -213,7 +217,9 @@ function fieldControl(field, parent, key, path) {
   const hintId = `${id}-hint`;
   const hint = field.hint ? el('small', { id: hintId, class: 'cms-hint' }, field.hint) : null;
   box.append(label);
-  if (field.widget === 'object') {
+  if (textList) {
+    box.append(createTextListControl({ id, value: Array.isArray(parent[key]) ? parent[key] : [], onChange: set, hintId }));
+  } else if (field.widget === 'object') {
     label.removeAttribute('for');
     const optional = field.required === false;
     if (!parent[key] && !optional) parent[key] = defaults(field.fields);

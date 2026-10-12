@@ -65,6 +65,7 @@
 .cms-field > label { display:block; margin-bottom:.45rem; font-weight:600; }
 .cms-required { color:#8c4737; }
 .cms-hint { display:block; color:#63745b; font-size:.8rem; margin:.4rem 0 0; }
+.cms-text-list { resize:vertical; line-height:1.7; }
 .cms-field-object { margin-top:1.75rem; border-top:1px solid var(--cms-line); padding-top:1rem; }
 .cms-field-object > .cms-field { margin-left:.5rem; }
 .cms-list-item { padding:.75rem 0; border-bottom:1px solid var(--cms-line); }
