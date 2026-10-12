@@ -1,7 +1,7 @@
 ---
 // Section Wilayah pada halaman Profil: data setiap lingkungan. Ringkasan kelurahan tampil di bawah hero Beranda.
 // Total kelurahan dijumlahkan dari angka lingkungan yang sudah diisi. Angka yang belum diisi tidak ikut dihitung.
-// Data lingkungan: tabel dengan baris total mulai lebar 768px, dan satu kartu untuk setiap lingkungan di HP.
+// Data lingkungan: tabel mulai 768px; di HP, pilih lingkungan untuk melihat satu kartu.
 import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
 import { formatAngka } from '../../lib/format';
@@ -92,12 +92,20 @@ const nama = (isi: string) => isi.trim() || '[kosong]';
             </table>
           </div>
 
-          {/* HP: satu kartu untuk setiap lingkungan. */}
-          <ul data-motion-group class="mt-4 grid gap-3 sm:grid-cols-2 sm:gap-4 md:hidden">
+          {/* Dropdown diaktifkan setelah skrip siap; tanpa JavaScript semua kartu tetap terbaca. */}
+          <div data-lingkungan-pemilih hidden class="mt-4 md:hidden">
+            <label for="pilih-lingkungan" class="block text-sm font-semibold text-ink">Pilih lingkungan</label>
+            <select
+              id="pilih-lingkungan"
+              aria-controls="daftar-lingkungan"
+              class="mt-2 min-h-12 w-full rounded-xl border border-line-strong bg-white px-3 py-2 text-base text-ink"
+            />
+          </div>
+          <ul id="daftar-lingkungan" data-motion-group aria-live="polite" class="mt-4 grid gap-3 md:hidden">
             {runtimeTemplate ? '__CMS_ENVIRONMENT_CARDS__' : lingkungan.map((item) => (
               <li data-motion="card" data-motion-card class="rounded-2xl bg-white p-4 shadow-card">
                 <h4 class="font-bold text-ink">{item.nama}</h4>
-                <dl class="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+                <dl class="mt-2 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-sm">
                   <dt class="text-ink-subtle">Kepala</dt>
                   <dd class:list={['font-semibold', item.kepala.trim() ? 'text-ink' : 'text-ink-subtle']}>{nama(item.kepala)}</dd>
                   <dt class="text-ink-subtle">Wakil</dt>
@@ -125,3 +133,28 @@ const nama = (isi: string) => isi.trim() || '[kosong]';
     }
   </Container>
 </section>
+
+<script>
+  const wilayah = document.querySelector('#wilayah');
+  const pemilih = wilayah?.querySelector<HTMLElement>('[data-lingkungan-pemilih]');
+  const pilihan = pemilih?.querySelector('select');
+  const kartu = Array.from(wilayah?.querySelectorAll<HTMLElement>('#daftar-lingkungan > li') ?? []);
+
+  if (pemilih && pilihan && kartu.length > 1) {
+    kartu.forEach((item, index) => {
+      pilihan.add(new Option(item.querySelector('h4')!.textContent ?? '', String(index)));
+    });
+
+    const layarHp = window.matchMedia('(max-width: 767px)');
+    const tampilkanPilihan = () => {
+      kartu.forEach((item, index) => {
+        item.hidden = layarHp.matches && index !== pilihan.selectedIndex;
+      });
+    };
+
+    pilihan.addEventListener('change', tampilkanPilihan);
+    layarHp.addEventListener('change', tampilkanPilihan);
+    tampilkanPilihan();
+    pemilih.hidden = false;
+  }
+</script>
