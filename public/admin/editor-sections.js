@@ -74,6 +74,7 @@ export function createEditorSections({ form, collection, slug, fields, view }) {
       const item = items.find(item => item.fields.some(field => {
         const label = field.label || field.name;
         return text.includes(`${label} perlu diisi.`) || text.includes(`${label}:`)
+          || text.includes(`${field.name}.`) || text.startsWith(`${field.name}:`)
           || text.includes(`${label} berada di luar`) || text.includes(`${label} —`)
           || new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ' \\d+ —').test(text);
       }));

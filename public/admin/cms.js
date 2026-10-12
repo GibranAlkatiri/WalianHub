@@ -1,6 +1,7 @@
 import { request, imageUrl, uploadImage, logout } from './cms-client.js?v=20261010_05';
-import { createEditorSections } from './editor-sections.js?v=20261010_ui04';
+import { createEditorSections } from './editor-sections.js?v=20261012_03';
 import { createOrganizationEditor } from './organization-editor.js?v=20261010_ui04';
+import { createTextListControl, createWeeklySchedule, listItemSummary, revealCompactErrors } from './compact-fields.js?v=20261012_03';
 
 const root = document.getElementById('cms-root');
 const state = { config: null, collection: 'layanan', filter: 'all', search: '', entries: [], entry: null, uploads: new Map(), dirty: false, busy: false, urls: new Set() };
@@ -9,7 +10,7 @@ let loadSequence = 0;
 let toastTimer;
 let organizationEditor;
 let editorSections;
-const editorView = { section: null };
+const editorView = { section: null, openRows: new Map() };
 const el = (tag, attrs = {}, ...children) => {
   const node = document.createElement(tag);
   for (const [key, value] of Object.entries(attrs)) {
@@ -28,7 +29,7 @@ const button = (text, onClick, className = '') => el('button', { type: 'button',
 function message(text, error = false) {
   const node = root.querySelector('#cms-message');
   node.textContent = text; node.className = `cms-message${error ? ' is-error' : ''}`; node.hidden = !text;
-  if (error) editorSections?.revealError(text);
+  if (error) { editorSections?.revealError(text); revealCompactErrors(root, text); }
 }
 function notify(text) {
   clearTimeout(toastTimer);
@@ -205,15 +206,26 @@ async function openEntry(slug) {
   } catch (error) { if (loadId === loadSequence) message(error.message, true); }
 }
 function fieldControl(field, parent, key, path) {
+  const textList = field.widget === 'list' && field.field?.widget === 'string'
+    && ['persyaratan', 'alur', 'misi', 'programUnggulan'].includes(field.name);
+  if (textList) field = { ...field, hint: 'Satu baris satu item. Tekan Enter untuk menambah; hapus baris untuk menghapus. Bisa tempel beberapa baris sekaligus.' };
+  const weeklySchedule = field.widget === 'list' && path === 'jamLayanan.jadwal';
+  if (path === 'jamLayanan') field = { ...field, hint: 'Pilih Buka atau Tutup untuk setiap hari. Jam memakai titik, contoh 08.00. Jadwal dapat disalin ke hari yang Anda pilih.' };
   const id = `cms-field-${++sequence}`;
   const box = el('div', { class: `cms-field cms-field-${field.widget}` });
+  box.dataset.fieldPath = path;
   if (field.widget === 'hidden') return document.createDocumentFragment();
   const set = (value) => { parent[key] = value; state.dirty = true; };
   const label = el('label', { for: id }, field.label || field.name, field.required !== false ? el('span', { class: 'cms-required' }, ' *') : null);
   const hintId = `${id}-hint`;
   const hint = field.hint ? el('small', { id: hintId, class: 'cms-hint' }, field.hint) : null;
   box.append(label);
-  if (field.widget === 'object') {
+  if (textList) {
+    box.append(createTextListControl({ id, value: Array.isArray(parent[key]) ? parent[key] : [], onChange: set, hintId }));
+  } else if (weeklySchedule) {
+    label.removeAttribute('for');
+    box.append(createWeeklySchedule({ id, value: Array.isArray(parent[key]) ? parent[key] : [], onChange: set, openRows: editorView.openRows }));
+  } else if (field.widget === 'object') {
     label.removeAttribute('for');
     const optional = field.required === false;
     if (!parent[key] && !optional) parent[key] = defaults(field.fields);
@@ -225,24 +237,77 @@ function fieldControl(field, parent, key, path) {
     const list = parent[key];
     const simple = !!field.field || ['daftarNama', 'daftarTeks'].includes(field.widget);
     const childField = field.field || { label: field.label, widget: 'string', required: false };
-    const redraw = () => { state.dirty = true; drawEditor(); };
+    const folded = !simple && ['tanggalLibur', 'mediaSosial', 'tautanPenting', 'daftar', 'foto', 'lingkungan'].includes(field.name);
+    const redraw = (focusIndex) => {
+      state.dirty = true; drawEditor();
+      if (focusIndex != null) requestAnimationFrame(() => {
+        const item = [...root.querySelectorAll('[data-list-path]')].find(node => node.dataset.listPath === `${path}.${focusIndex}`);
+        (item?.querySelector('input:not([type="file"]), textarea, select') || item?.querySelector('summary'))?.focus();
+      });
+    };
+    const move = (from, to) => {
+      [list[from], list[to]] = [list[to], list[from]];
+      const fromKey = `${path}.${from}`, toKey = `${path}.${to}`;
+      const fromOpen = editorView.openRows.get(fromKey) ?? false, toOpen = editorView.openRows.get(toKey) ?? false;
+      editorView.openRows.set(fromKey, toOpen); editorView.openRows.set(toKey, fromOpen);
+      redraw(to);
+    };
     list.forEach((item, index) => {
       const row = el('section', { class: 'cms-list-item', 'aria-label': `${field.label} ${index + 1}` });
-      const actions = el('div', { class: 'cms-item-actions' }, el('strong', {}, `${field.label} ${index + 1}`));
+      const itemPath = `${path}.${index}`;
+      row.dataset.listPath = itemPath;
+      const actions = el('div', { class: 'cms-item-actions' }, folded ? null : el('strong', {}, `${field.label} ${index + 1}`));
       if (field.allow_add !== false) {
-        if (index > 0) actions.append(button('Naik', () => { [list[index - 1], list[index]] = [list[index], list[index - 1]]; redraw(); }));
-        if (index < list.length - 1) actions.append(button('Turun', () => { [list[index + 1], list[index]] = [list[index], list[index + 1]]; redraw(); }));
-        actions.append(button('Hapus', () => { list.splice(index, 1); redraw(); }, 'cms-danger-text'));
+        if (index > 0) actions.append(button('Naik', () => move(index, index - 1)));
+        if (index < list.length - 1) actions.append(button('Turun', () => move(index, index + 1)));
+        actions.append(button('Hapus', () => {
+          list.splice(index, 1);
+          for (let next = index; next < list.length; next++) editorView.openRows.set(`${path}.${next}`, editorView.openRows.get(`${path}.${next + 1}`) ?? false);
+          editorView.openRows.delete(`${path}.${list.length}`);
+          redraw();
+          requestAnimationFrame(() => {
+            const next = [...root.querySelectorAll('[data-list-path]')].find(node => node.dataset.listPath === `${path}.${Math.min(index, list.length - 1)}`);
+            (next?.querySelector('summary') || [...root.querySelectorAll('[data-field-path]')].find(node => node.dataset.fieldPath === path)?.querySelector('.cms-add'))?.focus();
+          });
+        }, 'cms-danger-text'));
       }
-      row.append(actions);
+      let container = row;
+      if (folded) {
+        const detail = el('details', { class: 'cms-fold-item', open: editorView.openRows.get(itemPath) === true });
+        detail.dataset.errorLabel = `${field.label} ${index + 1} —`;
+        detail.dataset.errorPath = itemPath;
+        detail.addEventListener('toggle', () => { if (detail.isConnected) editorView.openRows.set(itemPath, detail.open); });
+        const title = el('span', { class: 'cms-item-summary' }, listItemSummary(field, item, index));
+        const summary = el('summary', {}, title);
+        const updateSummary = () => { title.textContent = listItemSummary(field, item, index); };
+        row.addEventListener('input', updateSummary); row.addEventListener('change', updateSummary);
+        container = el('div', { class: 'cms-item-fields' + (['tanggalLibur', 'mediaSosial', 'tautanPenting', 'lingkungan'].includes(field.name) ? ' cms-inline-fields' : '') });
+        detail.append(summary, el('div', { class: 'cms-item-body' }, actions, container)); row.append(detail);
+      } else row.append(actions);
       if (simple) {
         const control = fieldControl({ ...childField, label: `${field.label} ${index + 1}` }, list, index, `${path}.${index}`);
-        control.querySelector('label')?.classList.add('cms-sr-only'); row.append(control);
+        control.querySelector('label')?.classList.add('cms-sr-only'); container.append(control);
       }
-      else for (const child of field.fields || []) row.append(fieldControl(child, item, child.name, `${path}.${index}.${child.name}`));
+      else for (const child of field.fields || []) {
+        const control = fieldControl(child, item, child.name, `${itemPath}.${child.name}`);
+        if (folded && field.name === 'foto' && child.name === 'posisi') container.append(el('details', { class: 'cms-photo-options', 'data-error-label': child.label, 'data-error-path': `${itemPath}.${child.name}` }, el('summary', {}, 'Posisi fokus foto'), control));
+        else container.append(control);
+      }
+      if (folded && field.name === 'foto') {
+        const preview = container.querySelector('.cms-image');
+        if (preview) {
+          const thumb = el('img', { class: 'cms-item-thumb', alt: '', hidden: true });
+          row.querySelector('.cms-fold-item > summary').prepend(thumb);
+          const sync = () => { if (preview.src && !preview.hidden) { thumb.src = preview.src; thumb.hidden = false; } };
+          preview.addEventListener('load', sync); sync();
+        }
+      }
       box.append(row);
     });
-    if (field.allow_add !== false && (!field.max || list.length < field.max)) box.append(button('+ Tambah ' + (field.label || 'item'), () => { list.push(simple ? '' : defaults(field.fields)); redraw(); }, 'cms-add'));
+    if (field.allow_add !== false && (!field.max || list.length < field.max)) box.append(button('+ Tambah ' + (field.label || 'item'), () => {
+      const index = list.length;
+      list.push(simple ? '' : defaults(field.fields)); editorView.openRows.set(`${path}.${index}`, true); redraw(index);
+    }, 'cms-add'));
     if (!list.length) box.append(el('p', { class: 'cms-hint' }, 'Belum ada item.'));
   } else if (field.widget === 'boolean') {
     box.replaceChildren(el('label', { class: 'cms-checkbox', for: id }, el('input', { id, type: 'checkbox', checked: parent[key] === true, onChange: (e) => set(e.target.checked) }), field.label));
@@ -361,7 +426,7 @@ async function deletePublished() {
   await removeEntry(state.entry);
 }
 function drawEditor(animate = false) {
-  if (animate) editorView.section = null;
+  if (animate) { editorView.section = null; editorView.openRows.clear(); }
   shell(); const area = root.querySelector('#cms-content');
   if (animate) area.classList.add('cms-content-ready');
   const actions = el('div', { class: 'cms-editor-actions' });
