@@ -41,9 +41,10 @@ export function createWeeklySchedule({ id, value, onChange, openRows }) {
   const rows = value.map((day, index) => {
     const row = node('details', 'cms-week-row');
     row.dataset.errorLabel = `Jam Layanan — Jadwal Mingguan ${index + 1} —`;
+    row.dataset.errorPath = `jamLayanan.jadwal.${index}`;
     const rowKey = `jadwal-${index}`;
     row.open = openRows.has(rowKey) ? openRows.get(rowKey) : matchMedia('(min-width:701px)').matches;
-    row.addEventListener('toggle', () => openRows.set(rowKey, row.open));
+    row.addEventListener('toggle', () => { if (row.isConnected) openRows.set(rowKey, row.open); });
     const summary = node('summary');
     const description = node('span', 'cms-day-summary');
     summary.append(node('strong', '', day.hari), description);
@@ -148,4 +149,19 @@ export function createWeeklySchedule({ id, value, onChange, openRows }) {
   });
   controls.append(sourceLabel, destinations, apply, result); copy.append(controls); group.append(copy);
   return group;
+}
+
+export function listItemSummary(field, item, index) {
+  if (field.summary) {
+    const summary = field.summary.replace(/\{\{fields\.(\w+)\}\}/g, (_, name) => item[name] == null || item[name] === '' ? '…' : String(item[name]));
+    if (Object.values(item).some(value => typeof value === 'string' && value.trim())) return summary;
+  }
+  return `${field.label || field.name} ${index + 1} · lengkapi isian`;
+}
+
+export function revealCompactErrors(root, text) {
+  for (const detail of root.querySelectorAll('details[data-error-label]')) {
+    const path = detail.dataset.errorPath;
+    if (text.includes(detail.dataset.errorLabel) || (path && (text.includes(`${path}.`) || text.includes(`${path}:`)))) detail.open = true;
+  }
 }
