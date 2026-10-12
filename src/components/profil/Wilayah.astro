@@ -1,10 +1,9 @@
 ---
-// Section Wilayah pada halaman Profil: ringkasan kelurahan dan data setiap lingkungan.
+// Section Wilayah pada halaman Profil: data setiap lingkungan. Ringkasan kelurahan tampil di bawah hero Beranda.
 // Total kelurahan dijumlahkan dari angka lingkungan yang sudah diisi. Angka yang belum diisi tidak ikut dihitung.
 // Data lingkungan: tabel dengan baris total mulai lebar 768px, dan satu kartu untuk setiap lingkungan di HP.
 import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
-import StatCard from '../ui/StatCard.astro';
 import { formatAngka } from '../../lib/format';
 
 interface Lingkungan {
@@ -45,15 +44,6 @@ const nama = (isi: string) => isi.trim() || '[kosong]';
   <Container>
     <SectionHeading overline="Wilayah" title="Wilayah dan penduduk" />
 
-    <h3 class="mt-8 text-lg font-bold text-ink">Ringkasan kelurahan</h3>
-    <div data-motion-group class="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
-      {runtimeTemplate ? '__CMS_STATS__' : <>
-      <StatCard ikon="map" label="Lingkungan" angka={lingkungan.length > 0 ? String(lingkungan.length) : null} />
-      <StatCard ikon="house" label="Kepala keluarga" angka={formatAngka(total.kepalaKeluarga)} />
-      <StatCard ikon="users" label="Jumlah penduduk" angka={formatAngka(total.jumlahPenduduk)} satuan="jiwa" />
-      <StatCard ikon="land-plot" label="Luas wilayah" angka={formatAngka(total.luasKm2)} satuan="km²" />
-      </>}
-    </div>
     <p class="mt-4 text-sm text-ink-subtle">
       Sumber data: {sumberData.sumber}, {sumberData.tahun}. Total dijumlahkan dari data lingkungan yang sudah diisi.
     </p>
@@ -61,7 +51,7 @@ const nama = (isi: string) => isi.trim() || '[kosong]';
     {
       lingkungan.length > 0 && (
         <>
-          <h3 class="mt-12 text-lg font-bold text-ink lg:mt-16">Data lingkungan</h3>
+          <h3 class="mt-8 text-lg font-bold text-ink">Data lingkungan</h3>
 
           {/* Mulai 768px: tabel */}
           <div data-motion="card" data-motion-card class="mt-4 hidden overflow-x-auto rounded-2xl bg-white shadow-card md:block">
@@ -102,7 +92,7 @@ const nama = (isi: string) => isi.trim() || '[kosong]';
             </table>
           </div>
 
-          {/* HP: satu kartu untuk setiap lingkungan. Total ada di ringkasan kelurahan di atas. */}
+          {/* HP: satu kartu untuk setiap lingkungan. */}
           <ul data-motion-group class="mt-4 grid gap-3 sm:grid-cols-2 sm:gap-4 md:hidden">
             {runtimeTemplate ? '__CMS_ENVIRONMENT_CARDS__' : lingkungan.map((item) => (
               <li data-motion="card" data-motion-card class="rounded-2xl bg-white p-4 shadow-card">
