@@ -1,7 +1,7 @@
 import { request, imageUrl, uploadImage, logout } from './cms-client.js?v=20261010_05';
 import { createEditorSections } from './editor-sections.js?v=20261010_ui04';
 import { createOrganizationEditor } from './organization-editor.js?v=20261010_ui04';
-import { createTextListControl } from './compact-fields.js?v=20261012_01';
+import { createTextListControl, createWeeklySchedule } from './compact-fields.js?v=20261012_02';
 
 const root = document.getElementById('cms-root');
 const state = { config: null, collection: 'layanan', filter: 'all', search: '', entries: [], entry: null, uploads: new Map(), dirty: false, busy: false, urls: new Set() };
@@ -10,7 +10,7 @@ let loadSequence = 0;
 let toastTimer;
 let organizationEditor;
 let editorSections;
-const editorView = { section: null };
+const editorView = { section: null, openRows: new Map() };
 const el = (tag, attrs = {}, ...children) => {
   const node = document.createElement(tag);
   for (const [key, value] of Object.entries(attrs)) {
@@ -209,6 +209,8 @@ function fieldControl(field, parent, key, path) {
   const textList = field.widget === 'list' && field.field?.widget === 'string'
     && ['persyaratan', 'alur', 'misi', 'programUnggulan'].includes(field.name);
   if (textList) field = { ...field, hint: 'Satu baris satu item. Tekan Enter untuk menambah; hapus baris untuk menghapus. Bisa tempel beberapa baris sekaligus.' };
+  const weeklySchedule = field.widget === 'list' && path === 'jamLayanan.jadwal';
+  if (path === 'jamLayanan') field = { ...field, hint: 'Pilih Buka atau Tutup untuk setiap hari. Jam memakai titik, contoh 08.00. Jadwal dapat disalin ke hari yang Anda pilih.' };
   const id = `cms-field-${++sequence}`;
   const box = el('div', { class: `cms-field cms-field-${field.widget}` });
   if (field.widget === 'hidden') return document.createDocumentFragment();
@@ -219,6 +221,9 @@ function fieldControl(field, parent, key, path) {
   box.append(label);
   if (textList) {
     box.append(createTextListControl({ id, value: Array.isArray(parent[key]) ? parent[key] : [], onChange: set, hintId }));
+  } else if (weeklySchedule) {
+    label.removeAttribute('for');
+    box.append(createWeeklySchedule({ id, value: Array.isArray(parent[key]) ? parent[key] : [], onChange: set, openRows: editorView.openRows }));
   } else if (field.widget === 'object') {
     label.removeAttribute('for');
     const optional = field.required === false;
@@ -367,7 +372,7 @@ async function deletePublished() {
   await removeEntry(state.entry);
 }
 function drawEditor(animate = false) {
-  if (animate) editorView.section = null;
+  if (animate) { editorView.section = null; editorView.openRows.clear(); }
   shell(); const area = root.querySelector('#cms-content');
   if (animate) area.classList.add('cms-content-ready');
   const actions = el('div', { class: 'cms-editor-actions' });
