@@ -3,7 +3,20 @@
     "judul": "Selamat Datang di Kelurahan Walian",
     "subjudul": "Informasi resmi layanan, profil wilayah, dan wisata Kelurahan Walian.",
     "foto": [
-      { "gambar": "/images/beranda/kantor-kelurahan-walian.webp", "keterangan": "Kantor Kelurahan Walian", "posisi": "tengah" }
+      {
+        "gambar": "/images/beranda/kantor-kelurahan-walian.webp",
+        "keterangan": "Kantor Kelurahan Walian",
+        "posisi": "tengah"
+      }
     ]
+  },
+  "jumlahPenduduk": null,
+  "demografiAgama": {
+    "kristen": 0,
+    "katolik": 0,
+    "islam": 0,
+    "hindu": 0,
+    "buddha": 0,
+    "konghucu": 0
   }
 }

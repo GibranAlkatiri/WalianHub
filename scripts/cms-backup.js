@@ -9,7 +9,7 @@ try {
     const directory = resolve('.cms-backups', target || new Date().toISOString().replaceAll(':', '-'));
     if (!directory.startsWith(resolve('.cms-backups') + '\\') && !directory.startsWith(resolve('.cms-backups') + '/')) throw new Error('Cadangan harus berada di .cms-backups/.');
     await mkdir(resolve('.cms-backups'), { recursive: true });
-    const snapshot = await captureSnapshot('GibranAlkatiri/WalianHub', 'main', fetch, process.env.GITHUB_TOKEN || '');
+    const snapshot = await captureSnapshot('gleey/WalianHub', 'main', fetch, process.env.GITHUB_TOKEN || '');
     await writeSnapshot(snapshot, directory);
     const verified = await readSnapshot(directory);
     console.log(JSON.stringify({ directory, ...summary(verified.manifest), verified: true }, null, 2));

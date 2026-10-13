@@ -9,7 +9,7 @@
 
 backend:
   name: github
-  repo: GibranAlkatiri/WalianHub
+  repo: gleey/WalianHub
   branch: main
   squash_merges: true
 
@@ -19,8 +19,8 @@ publish_mode: editorial_workflow
 media_folder: public/uploads
 public_folder: /uploads
 
-site_url: https://walianhub-8ib.pages.dev
-display_url: https://walianhub-8ib.pages.dev
+site_url: https://walianhub.pages.dev
+display_url: https://walianhub.pages.dev
 
 # favikon kelurahan + nama, supaya staf langsung tahu sedang mengedit
 # situsnya sendiri, bukan aplikasi lain.
@@ -488,6 +488,27 @@ collections:
                       - { label: Kiri, value: kiri }
                       - { label: Tengah, value: tengah }
                       - { label: Kanan, value: kanan }
+
+          - label: Jumlah Penduduk
+            name: jumlahPenduduk
+            widget: number
+            value_type: int
+            min: 0
+            required: false
+            hint: "Total jumlah penduduk di kartu ringkasan Beranda. Kosongkan jika ingin dihitung otomatis dari jumlah pemeluk agama."
+
+          - label: Demografi Agama
+            name: demografiAgama
+            widget: object
+            collapsed: false
+            hint: "Tinggal isi jumlah tiap agama. Kolom sudah tetap 6 agama. Isi 0 jika belum ada datanya."
+            fields:
+              - { label: Kristen, name: kristen, widget: number, value_type: int, min: 0, required: false, default: 0 }
+              - { label: Katolik, name: katolik, widget: number, value_type: int, min: 0, required: false, default: 0 }
+              - { label: Islam, name: islam, widget: number, value_type: int, min: 0, required: false, default: 0 }
+              - { label: Hindu, name: hindu, widget: number, value_type: int, min: 0, required: false, default: 0 }
+              - { label: Buddha, name: buddha, widget: number, value_type: int, min: 0, required: false, default: 0 }
+              - { label: Konghucu, name: konghucu, widget: number, value_type: int, min: 0, required: false, default: 0 }
 
       # ── Profil ──
       - name: profil
