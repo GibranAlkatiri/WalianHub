@@ -27,6 +27,7 @@ const totalJiwaAgama = demografiAgama.reduce((acc, item) => acc + (item.jumlah |
 const totalPenduduk = jumlahPenduduk ?? totalPendudukLingkungan ?? (totalJiwaAgama > 0 ? totalJiwaAgama : null);
 
 const WARNA_AGAMA: Record<string, string> = {
+  'Kristen': '#2563eb',
   'Kristen Protestan': '#2563eb',
   'Katolik': '#7c3aed',
   'Islam': '#059669',

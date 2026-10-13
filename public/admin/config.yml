@@ -503,9 +503,16 @@ collections:
             summary: "{{fields.agama}}: {{fields.jumlah}} jiwa"
             collapsed: false
             required: false
-            hint: "Jumlah pemeluk agama di Beranda. Persentase dihitung otomatis pada website."
+            min: 6
+            max: 6
+            allow_add: false
+            allow_delete: false
+            allow_reorder: false
+            hint: "Tinggal isi jumlah tiap agama. Baris sudah tetap 6 agama, tidak perlu tambah/hapus. Isi 0 jika belum ada datanya."
             fields:
-              - { label: Agama, name: agama, widget: string, required: true }
+              - label: Agama
+                name: agama
+                widget: hidden
               - label: Jumlah Jiwa
                 name: jumlah
                 widget: number

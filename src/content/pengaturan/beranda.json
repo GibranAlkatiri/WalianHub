@@ -11,5 +11,30 @@
     ]
   },
   "jumlahPenduduk": null,
-  "demografiAgama": []
+  "demografiAgama": [
+    {
+      "agama": "Kristen",
+      "jumlah": 0
+    },
+    {
+      "agama": "Katolik",
+      "jumlah": 0
+    },
+    {
+      "agama": "Islam",
+      "jumlah": 0
+    },
+    {
+      "agama": "Hindu",
+      "jumlah": 0
+    },
+    {
+      "agama": "Buddha",
+      "jumlah": 0
+    },
+    {
+      "agama": "Konghucu",
+      "jumlah": 0
+    }
+  ]
 }
