@@ -1,5 +1,5 @@
 ---
-// Penyajian frontend untuk total wilayah dari data Profil yang sudah tersedia.
+// Penyajian frontend untuk total wilayah dan demografi agama dari data Profil.
 // Marker runtime memakai total yang sudah dihitung oleh publikasi CMS.
 import type { CollectionEntry } from 'astro:content';
 import Container from '../ui/Container.astro';
@@ -9,25 +9,136 @@ import { formatAngka } from '../../lib/format';
 type Profil = CollectionEntry<'profil'>['data'];
 interface Props {
   lingkungan: Profil['lingkungan'];
+  demografiAgama?: Profil['demografiAgama'];
   runtimeTemplate?: boolean;
 }
-const { lingkungan, runtimeTemplate = false } = Astro.props;
-const jumlahkan = (key: 'kepalaKeluarga' | 'jumlahPenduduk' | 'luasKm2') => {
+const { lingkungan, demografiAgama = [], runtimeTemplate = false } = Astro.props;
+
+const jumlahkan = (key: 'jumlahPenduduk' | 'luasKm2') => {
   const terisi = lingkungan.map(item => item[key]).filter((angka): angka is number => angka != null);
   return terisi.length ? terisi.reduce((a, b) => a + b, 0) : null;
 };
+
+// Hitung total penduduk dan persentase agama
+const totalPendudukLingkungan = jumlahkan('jumlahPenduduk');
+const totalJiwaAgama = demografiAgama.reduce((acc, item) => acc + (item.jumlah || 0), 0);
+const totalPenduduk = totalPendudukLingkungan ?? (totalJiwaAgama > 0 ? totalJiwaAgama : null);
+
+const WARNA_AGAMA: Record<string, string> = {
+  'Kristen Protestan': '#2563eb',
+  'Katolik': '#7c3aed',
+  'Islam': '#059669',
+  'Hindu': '#d97706',
+  'Buddha': '#db2777',
+  'Konghucu': '#dc2626',
+};
+const WARNA_CADANGAN = ['#2563eb', '#7c3aed', '#059669', '#d97706', '#db2777', '#dc2626', '#0891b2', '#4f46e5'];
+
+const radius = 38;
+const keliling = 2 * Math.PI * radius; // ~238.76
+
+const basisTotal = totalJiwaAgama > 0 ? totalJiwaAgama : 1;
+let offsetBerjalan = 0;
+
+const dataAgama = demografiAgama.map((item, index) => {
+  const persen = totalJiwaAgama > 0 ? (item.jumlah / basisTotal) * 100 : 0;
+  const panjangBusur = (persen / 100) * keliling;
+  const offset = offsetBerjalan;
+  if (persen > 0) {
+    offsetBerjalan += panjangBusur;
+  }
+  const warna = WARNA_AGAMA[item.agama] || WARNA_CADANGAN[index % WARNA_CADANGAN.length];
+  return {
+    ...item,
+    persen,
+    persenLabel: persen >= 10 ? persen.toFixed(1).replace(/\.0$/, '') : (persen > 0 ? persen.toFixed(1) : '0'),
+    panjangBusur,
+    offset,
+    warna,
+  };
+});
 ---
 
 <section id="ringkasan-kelurahan" aria-label="Ringkasan kelurahan" class="village-summary">
   <Container>
+    <!-- Ringkasan Lingkungan dan Luas Wilayah -->
     <div class="village-summary-content">
       <div class="village-summary-stats">
         {runtimeTemplate ? '__CMS_STATS__' : <>
           <StatCard ikon="map" label="Lingkungan" angka={lingkungan.length ? String(lingkungan.length) : null} />
-          <StatCard ikon="house" label="Kepala keluarga" angka={formatAngka(jumlahkan('kepalaKeluarga'))} />
-          <StatCard ikon="users" label="Jumlah penduduk" angka={formatAngka(jumlahkan('jumlahPenduduk'))} satuan="jiwa" />
           <StatCard ikon="land-plot" label="Luas wilayah" angka={formatAngka(jumlahkan('luasKm2'))} satuan="km²" />
         </>}
+      </div>
+    </div>
+
+    <!-- Card Demografi Penduduk & Agama (Siluet Bulatan + Persegi Panjang) -->
+    <div class="demografi-card">
+      <!-- Bulatan Kiri: Donut chart agama + total penduduk di tengah -->
+      <div class="demografi-bulatan" aria-label={`Total penduduk: ${formatAngka(totalPenduduk) ?? '–'} jiwa`}>
+        <div class="demografi-donut-wrap">
+          <svg class="demografi-donut-svg" viewBox="0 0 100 100" aria-hidden="true">
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="none"
+              stroke="rgb(226 232 240 / 0.8)"
+              stroke-width="9"
+            />
+            {dataAgama.map((item) => item.persen > 0 && (
+              <circle
+                cx="50"
+                cy="50"
+                r={radius}
+                fill="none"
+                stroke={item.warna}
+                stroke-width="9"
+                stroke-dasharray={`${item.panjangBusur} ${keliling - item.panjangBusur}`}
+                stroke-dashoffset={-item.offset}
+                transform="rotate(-90 50 50)"
+                class="demografi-slice"
+              />
+            ))}
+          </svg>
+
+          <div class="demografi-pusat">
+            <span class="demografi-angka">{formatAngka(totalPenduduk) ?? '–'}</span>
+            <span class="demografi-satuan">Jiwa</span>
+            <span class="demografi-label">Jumlah Penduduk</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Persegi Panjang Kanan: Garis lurus berwarna & nama agama -->
+      <div class="demografi-persegi">
+        <div class="demografi-header">
+          <span class="demografi-judul">Demografi Agama</span>
+          <span class="demografi-subjudul">Proporsi pemeluk agama di Kelurahan Walian</span>
+        </div>
+        <div class="demografi-daftar">
+          {dataAgama.map((item) => (
+            <div class="demografi-item">
+              <div class="demografi-baris-teks">
+                <span class="demografi-nama-agama">
+                  <span class="demografi-dot" style={`background-color: ${item.warna};`}></span>
+                  <span class="demografi-nama">{item.agama}</span>
+                </span>
+                <span class="demografi-nilai">
+                  <strong class="demografi-persen">{item.persenLabel}%</strong>
+                  {item.jumlah > 0 && (
+                    <span class="demografi-jiwa">({formatAngka(item.jumlah)} jiwa)</span>
+                  )}
+                </span>
+              </div>
+              <div class="demografi-garis-track">
+                <div
+                  class="demografi-garis-isi"
+                  style={`width: ${Math.max(item.persen, item.jumlah > 0 ? 2 : 0)}%; background-color: ${item.warna};`}
+                ></div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   </Container>
@@ -82,17 +193,240 @@ const jumlahkan = (key: 'kepalaKeluarga' | 'jumlahPenduduk' | 'luasKm2') => {
     line-height: 1.5;
   }
   @media (min-width: 640px) {
-    .village-summary-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .village-summary-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .village-summary-stats :global([data-stat-card] + [data-stat-card]) {
       border-left: 1px solid var(--color-line);
-      padding-left: 1rem;
+      padding-left: 1.5rem;
     }
   }
   @media (min-width: 1024px) {
     .village-summary-content { padding: 1.5rem; }
     .village-summary-stats :global([data-stat-card]) { column-gap: 0.875rem; }
     .village-summary-stats :global([data-stat-card] > span) { width: 2.5rem; height: 2.5rem; }
-    .village-summary-stats :global([data-stat-card] + [data-stat-card]) { padding-left: 1.5rem; }
+    .village-summary-stats :global([data-stat-card] + [data-stat-card]) { padding-left: 2rem; }
     .village-summary-stats :global([data-stat-label]) { font-size: 0.8125rem; }
+  }
+
+  /* ── Demografi Card (Bentuk Bulatan + Persegi Panjang) ── */
+  .demografi-card {
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin-top: 1.25rem;
+  }
+
+  .demografi-bulatan {
+    position: relative;
+    width: 14.5rem;
+    height: 14.5rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background: var(--color-cream-50);
+    border: 1px solid rgb(255 255 255 / 0.85);
+    box-shadow: 0 12px 32px rgb(31 51 22 / 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+
+  .demografi-donut-wrap {
+    position: relative;
+    width: 12rem;
+    height: 12rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .demografi-donut-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.04));
+  }
+
+  .demografi-slice {
+    transition: stroke-dashoffset 0.6s ease, stroke-dasharray 0.6s ease;
+  }
+
+  .demografi-pusat {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none;
+    z-index: 1;
+    padding: 0.5rem;
+  }
+
+  .demografi-angka {
+    font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--color-ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .demografi-satuan {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-forest-700);
+    margin-top: 0.15rem;
+  }
+
+  .demografi-label {
+    font-size: 0.6875rem;
+    color: var(--color-ink-muted);
+    margin-top: 0.1rem;
+  }
+
+  .demografi-persegi {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    background: var(--color-cream-50);
+    border: 1px solid rgb(255 255 255 / 0.85);
+    border-left: none;
+    border-radius: 0 1.5rem 1.5rem 0;
+    box-shadow: 0 12px 32px rgb(31 51 22 / 0.12);
+    margin-left: -2.75rem;
+    padding: 1.35rem 1.75rem 1.35rem 4rem;
+    z-index: 1;
+  }
+
+  .demografi-header {
+    margin-bottom: 0.875rem;
+  }
+
+  .demografi-judul {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-ink);
+    line-height: 1.3;
+  }
+
+  .demografi-subjudul {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-ink-muted);
+    line-height: 1.4;
+    margin-top: 0.125rem;
+  }
+
+  .demografi-daftar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 900px) {
+    .demografi-daftar {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 1.5rem;
+      row-gap: 0.75rem;
+    }
+  }
+
+  .demografi-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .demografi-baris-teks {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  .demografi-nama-agama {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .demografi-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    flex-shrink: 0;
+  }
+
+  .demografi-nilai {
+    display: flex;
+    align-items: baseline;
+    gap: 0.375rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .demografi-persen {
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+
+  .demografi-jiwa {
+    font-size: 0.75rem;
+    color: var(--color-ink-muted);
+  }
+
+  .demografi-garis-track {
+    width: 100%;
+    height: 0.375rem;
+    background: rgb(0 0 0 / 0.06);
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+
+  .demografi-garis-isi {
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 0.5s ease;
+  }
+
+  @media (max-width: 639px) {
+    .demografi-card {
+      flex-direction: column;
+      align-items: stretch;
+      background: var(--color-cream-50);
+      border: 1px solid rgb(255 255 255 / 0.85);
+      border-radius: 1.5rem;
+      box-shadow: 0 12px 32px rgb(31 51 22 / 0.12);
+      padding: 1.25rem 1rem;
+      gap: 1rem;
+    }
+    .demografi-bulatan {
+      width: 12.5rem;
+      height: 12.5rem;
+      align-self: center;
+      box-shadow: none;
+      border: none;
+      background: transparent;
+    }
+    .demografi-donut-wrap {
+      width: 11rem;
+      height: 11rem;
+    }
+    .demografi-persegi {
+      margin-left: 0;
+      padding: 0;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      background: transparent;
+    }
+    .demografi-daftar {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

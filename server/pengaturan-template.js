@@ -84,7 +84,7 @@ export function renderPengaturan(data,t,wisataHref) {
   const sum=(key)=>{const numbers=p.lingkungan.map((item)=>item[key]).filter((number)=>number!==null);return numbers.length?numbers.reduce((a,b)=>a+b,0):null;};
   const totals={__CMS_FAMILY__:sum('kepalaKeluarga'),__CMS_POPULATION__:sum('jumlahPenduduk'),__CMS_AREA__:sum('luasKm2')};
   Object.assign(values,Object.fromEntries(Object.entries(totals).map(([key,number])=>[key,escapeHtml(formatAngka(number)??'–')])));
-  values.__CMS_STATS__=[p.lingkungan.length||null,totals.__CMS_FAMILY__,totals.__CMS_POPULATION__,totals.__CMS_AREA__].map((number,index)=>fill(t['cms-stat-'+(number===null?'empty-':'')+['environment','family','population','area'][index]],{__CMS_NUMBER__:escapeHtml(formatAngka(number))})).join('');
+  values.__CMS_STATS__=[p.lingkungan.length||null,totals.__CMS_AREA__].map((number,index)=>fill(t['cms-stat-'+(number===null?'empty-':'')+['environment','area'][index]],{__CMS_NUMBER__:escapeHtml(formatAngka(number))})).join('');
   const environment=(item,template)=>{
     for(const [name,marker] of [['kepala','__CMS_HEAD__'],['wakil','__CMS_DEPUTY__']])if(!item[name])template=template.replace(new RegExp('(<(?:td|dd) class="[^"]*)\\btext-ink(?=")[^"]*">'+marker,'g'),'$1text-ink-subtle">'+marker);
     return fill(template,{__CMS_ENVIRONMENT_NAME__:escapeHtml(item.nama),__CMS_HEAD__:escapeHtml(item.kepala||'[kosong]'),__CMS_DEPUTY__:escapeHtml(item.wakil||'[kosong]'),__CMS_FAMILY__:escapeHtml(formatAngka(item.kepalaKeluarga)??'–'),__CMS_POPULATION__:escapeHtml(formatAngka(item.jumlahPenduduk)??'–'),__CMS_AREA__:escapeHtml(formatAngka(item.luasKm2)??'–')});

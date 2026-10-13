@@ -97,6 +97,15 @@ export const profilSchema = z.object({
         }),
       )
       .default([]),
+    /** Demografi pemeluk agama di kelurahan. */
+    demografiAgama: z
+      .array(
+        z.object({
+          agama: teksWajib,
+          jumlah: z.number().int().nonnegative().default(0),
+        }),
+      )
+      .default([]),
     /** Visi dan misi Pemerintah Kota Tomohon, yang diikuti Kelurahan Walian. */
     visi: teksWajib,
     misi: z.array(teksWajib),

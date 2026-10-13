@@ -15,7 +15,7 @@ import { JEDA_HURUF_SUBJUDUL, jedaSubjudulKetik } from '../../lib/teks-ketik';
 
 interface Props {
   hero: CollectionEntry<'beranda'>['data']['hero'];
-  ringkasanKelurahan?: Pick<CollectionEntry<'profil'>['data'], 'lingkungan'>;
+  ringkasanKelurahan?: Pick<CollectionEntry<'profil'>['data'], 'lingkungan' | 'demografiAgama'>;
   runtimeTemplate?: boolean;
 }
 

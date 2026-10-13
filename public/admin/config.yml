@@ -576,6 +576,24 @@ collections:
                 required: false
                 hint: "Boleh desimal, contoh 1.5. Kosongkan jika belum diketahui."
 
+          - label: Demografi Agama
+            name: demografiAgama
+            widget: list
+            summary: "{{fields.agama}}: {{fields.jumlah}} jiwa"
+            collapsed: false
+            required: false
+            hint: "Jumlah pemeluk agama di Walian. Persentase dihitung otomatis pada website."
+            fields:
+              - { label: Agama, name: agama, widget: string, required: true }
+              - label: Jumlah Jiwa
+                name: jumlah
+                widget: number
+                value_type: int
+                min: 0
+                required: true
+                default: 0
+                hint: "Jumlah pemeluk agama (dalam jiwa)."
+
           - { label: Visi, name: visi, widget: text, required: true }
 
           - label: Misi
