@@ -29,13 +29,13 @@ export async function onRequest(context) {
     return new Response(request.method === 'HEAD' ? null : '<!doctype html><html lang="id"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Informasi belum tersedia</title><main><h1>Informasi website belum dapat dimuat.</h1><p>Silakan muat ulang sebentar lagi.</p><a href="">Muat ulang</a></main></html>',{status:503,headers:{...PUBLIC_HEADERS,'content-type':'text/html; charset=utf-8','retry-after':'5'}});
   };
   if (settingsD1) try {
-    const [data,template] = await Promise.all([publishedPengaturan(env),env.ASSETS.fetch(new Request(new URL('/cms-templates/pengaturan',request.url)))]);
+    const [data,template] = await Promise.all([publishedPengaturan(env),env.ASSETS.fetch(new Request(new URL('/cms-templates/pengaturan/',request.url)))]);
     if (!template.ok) throw new Error('Template tidak tersedia.');settings=data;settingsTemplates=parsePengaturanTemplates(await template.text());
   } catch {return settingsUnavailable();}
   let content, status = 200, error = false;
   if (serviceD1) try {
     const [entries, template] = await Promise.all([
-      publishedLayanan(env), env.ASSETS.fetch(new Request(new URL('/cms-templates/layanan', request.url))),
+      publishedLayanan(env), env.ASSETS.fetch(new Request(new URL('/cms-templates/layanan/', request.url))),
     ]);
     if (!template.ok) throw new Error('Template tidak tersedia.');
     content = renderLayanan(entries, parseLayananTemplates(await template.text()), home ? 'home' : 'list');
@@ -48,7 +48,7 @@ export async function onRequest(context) {
   let templates;
   if ((destinationD1 && (home || destinations)) || announcementD1) {
     try {
-      const asset = await env.ASSETS.fetch(new Request(new URL('/cms-templates/collections',request.url)));
+      const asset = await env.ASSETS.fetch(new Request(new URL('/cms-templates/collections/',request.url)));
       if (!asset.ok) throw new Error('Template tidak tersedia.');templates = parseCollectionTemplates(await asset.text());
     } catch { templates = null; }
   }

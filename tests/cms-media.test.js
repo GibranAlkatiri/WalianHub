@@ -1,5 +1,6 @@
 import { describe,test,expect } from 'bun:test';
 import { readFileSync } from 'node:fs';
+import { load } from 'js-yaml';
 import { createCmsHandler,serializeContent } from '../functions/api/cms.js';
 import { createMediaHandler } from '../functions/api/media.js';
 import { createImageHandler } from '../functions/media/[file].js';
@@ -17,7 +18,7 @@ async function setup(wrapProvider = (fetch) => fetch) {
   const db = sqliteD1(schema),provider = fakeCloudinary();
   db.raw.query('INSERT INTO cms_imports(snapshot_id,repository,main_sha,captured_at) VALUES (?,?,?,?)').run('fixture','test/repo','a'.repeat(40),'2026-10-10');
   db.raw.query('INSERT INTO cms_content(collection,slug,source_path,published_json,published_blob_sha,snapshot_id) VALUES (?,?,?,?,?,?)').run('layanan','contoh','src/content/layanan/contoh.md',JSON.stringify(data),'b'.repeat(40),'fixture');
-  const github = fakeGithub({'src/content/destinasi/contoh.md':serializeContent(destinasi,'contoh.md')},'gleey/WalianHub');
+  const github = fakeGithub({'src/content/destinasi/contoh.md':serializeContent(destinasi,'contoh.md')},load(config).backend.repo);
   const env = {CMS_SESSION_AUTH:'1',CMS_LAYANAN_D1:'1',CMS_MEDIA_CLOUDINARY:'1',CMS_DB:db,CMS_USERNAME:'walian',CMS_PASSWORD_HASH:await sha256('demo'),CLOUDINARY_CLOUD_NAME:'test-cloud',CLOUDINARY_API_KEY:'123456',CLOUDINARY_API_SECRET:'provider-test-secret',GITHUB_TOKEN:'github-test-only',ASSETS:{fetch:async()=>new Response(config)}};
   const login = await onRequestPost({env,request:new Request('https://cms.example/api/auth',{method:'POST',headers:{origin:'https://cms.example','content-type':'application/json'},body:JSON.stringify({username:'walian',password:'demo'})})});
   const cookie = login.headers.get('set-cookie').split(';')[0],cms = createCmsHandler(github.fetch),upload = createMediaHandler(wrapProvider(provider.fetch)),image = createImageHandler(provider.fetch,github.fetch);

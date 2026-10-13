@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 // - site: URL Cloudflare Pages (ganti setelah project dibuat, atau setelah pakai custom domain).
 // - base: "/" karena Cloudflare Pages melayani dari root.
 export default defineConfig({
-  site: 'https://walianhub.pages.dev',
+  site: 'https://walianhub-8ib.pages.dev',
   vite: {
     plugins: [tailwindcss()],
   },
