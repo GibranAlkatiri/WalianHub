@@ -20,7 +20,7 @@ const lurah = {nama:'__CMS_LURAH_NAME__',foto:'/__CMS_IMAGE__'};
 const node = {jabatan:'__CMS_JOB__',nama:['__CMS_NAMES__'],samping:[],bawahan:[]};
 const lingkungan = {nama:'__CMS_ENVIRONMENT_NAME__',kepala:'__CMS_HEAD__',wakil:'__CMS_DEPUTY__',kepalaKeluarga:1234567,jumlahPenduduk:2345678,luasKm2:3456789};
 ---
-<template id="cms-hero"><Hero {hero} ringkasanKelurahan={{lingkungan: []}} runtimeTemplate /></template>
+<template id="cms-hero"><Hero {hero} ringkasanKelurahan={{lingkungan: [], demografiAgama: { kristen: 0, katolik: 0, islam: 0, hindu: 0, buddha: 0, konghucu: 0 }}} runtimeTemplate /></template>
 <template id="cms-hero-slide"><Hero hero={{...hero,foto:[foto]}} /></template>
 <template id="cms-hero-empty"><Hero hero={{...hero,foto:[]}} /></template>
 <template id="cms-hero-point"><Hero {hero} /></template>
