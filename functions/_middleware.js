@@ -8,6 +8,14 @@ import { parsePengaturanTemplates, renderPengaturan } from '../server/pengaturan
 export async function onRequest(context) {
   const { request, env } = context;
   const path = new URL(request.url).pathname;
+  // Access and static assets can interpret encoded separators differently.
+  // Redirect alternate CMS paths before assets or API handlers can serve them.
+  const canonicalUrl = new URL(request.url);
+  try { canonicalUrl.pathname = decodeURIComponent(path).replace(/\\/g, '/').replace(/\/+/g, '/'); }
+  catch { return new Response(null, { status:400, headers:PUBLIC_HEADERS }); }
+  if (canonicalUrl.pathname !== path && /^\/(?:admin(?:\/|$)|api\/(?:auth|cms|media)(?:\/|$))/.test(canonicalUrl.pathname)) {
+    return new Response(null, { status:308, headers:{...PUBLIC_HEADERS, location:canonicalUrl.href} });
+  }
   const home = ['/', '/index.html'].includes(path);
   const services = ['/layanan', '/layanan/', '/layanan/index.html'].includes(path);
   const destinations = ['/wisata','/wisata/','/wisata/index.html'].includes(path);
