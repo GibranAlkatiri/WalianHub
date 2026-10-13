@@ -47,9 +47,9 @@ function environment(template = () => templateHtml) {
   };
 }
 
-test('template build terbaru dapat dirender tanpa statistik keluarga dan penduduk yang tidak dipakai', async () => {
-  expect(templateHtml).not.toContain('id="cms-stat-family"');
-  expect(templateHtml).not.toContain('id="cms-stat-population"');
+test('template Pengaturan hasil build dapat dirender dengan empat statistik ringkasan', async () => {
+  expect(templateHtml).toContain('id="cms-stat-family"');
+  expect(templateHtml).toContain('id="cms-stat-population"');
   const parts = renderPengaturan(await publishedPengaturan(environment()), parsePengaturanTemplates(templateHtml));
   for (const part of ['hero', 'intro', 'contact', 'footer', 'complaint', 'heading', 'structure', 'region', 'vision']) {
     expect(parts[part]).toBeString();
