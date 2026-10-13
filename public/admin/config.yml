@@ -501,7 +501,6 @@ collections:
             name: demografiAgama
             widget: object
             collapsed: false
-            required: false
             hint: "Tinggal isi jumlah tiap agama. Kolom sudah tetap 6 agama. Isi 0 jika belum ada datanya."
             fields:
               - { label: Kristen, name: kristen, widget: number, value_type: int, min: 0, required: false, default: 0 }

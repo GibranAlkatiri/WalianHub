@@ -61,15 +61,15 @@ export const berandaSchema = z.object({
     }),
     /** Jumlah penduduk kelurahan. Kosongkan jika dihitung otomatis dari pemeluk agama. */
     jumlahPenduduk: z.number().int().nonnegative().nullable().optional(),
-    /** Demografi 6 agama di Beranda sebagai kolom tetap. */
+    /** Demografi 6 agama di Beranda sebagai kolom tetap. Kosong dianggap 0. */
     demografiAgama: z
       .object({
-        kristen: z.number().int().nonnegative().default(0),
-        katolik: z.number().int().nonnegative().default(0),
-        islam: z.number().int().nonnegative().default(0),
-        hindu: z.number().int().nonnegative().default(0),
-        buddha: z.number().int().nonnegative().default(0),
-        konghucu: z.number().int().nonnegative().default(0),
+        kristen: z.number().int().nonnegative().nullish().transform((v) => v ?? 0),
+        katolik: z.number().int().nonnegative().nullish().transform((v) => v ?? 0),
+        islam: z.number().int().nonnegative().nullish().transform((v) => v ?? 0),
+        hindu: z.number().int().nonnegative().nullish().transform((v) => v ?? 0),
+        buddha: z.number().int().nonnegative().nullish().transform((v) => v ?? 0),
+        konghucu: z.number().int().nonnegative().nullish().transform((v) => v ?? 0),
       })
       .default({
         kristen: 0,
