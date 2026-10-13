@@ -15,7 +15,8 @@ import { JEDA_HURUF_SUBJUDUL, jedaSubjudulKetik } from '../../lib/teks-ketik';
 
 interface Props {
   hero: CollectionEntry<'beranda'>['data']['hero'];
-  ringkasanKelurahan?: Pick<CollectionEntry<'profil'>['data'], 'lingkungan'>;
+  ringkasanKelurahan?: Pick<CollectionEntry<'profil'>['data'], 'lingkungan'> &
+    Partial<Pick<CollectionEntry<'beranda'>['data'], 'jumlahPenduduk' | 'demografiAgama'>>;
   runtimeTemplate?: boolean;
 }
 
@@ -129,7 +130,13 @@ const posisiFoto = {
 <style>
   .hero-shell {
     display: grid;
-    grid-template-rows: minmax(22rem, 1fr) auto;
+    grid-template-rows: minmax(22rem, 100svh) auto;
+  }
+
+  /* Baris visual setinggi viewport agar kartu ringkasan/demografi di
+  baris 2 tidak menjepit teks selamat datang ke atas. */
+  .hero-shell .hero-visual {
+    min-height: 22rem;
   }
 
   .hero-shell.has-summary .hero-content { padding-block: 7rem 5rem; }
@@ -137,7 +144,10 @@ const posisiFoto = {
   .hero-shell.has-summary .hero-bottom-fade { height: 8rem; }
 
   @media (min-width: 1024px) {
-    .hero-shell { grid-template-rows: minmax(28rem, 1fr) auto; }
+    .hero-shell { grid-template-rows: minmax(28rem, 100svh) auto; }
+    .hero-shell .hero-visual {
+      min-height: 28rem;
+    }
   }
 
   [data-slide] {

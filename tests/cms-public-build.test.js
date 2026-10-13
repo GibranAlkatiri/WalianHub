@@ -47,14 +47,18 @@ function environment(template = () => templateHtml) {
   };
 }
 
-test('template Pengaturan hasil build dapat dirender dengan empat statistik ringkasan', async () => {
-  expect(templateHtml).toContain('id="cms-stat-family"');
-  expect(templateHtml).toContain('id="cms-stat-population"');
+test('template Pengaturan hasil build dapat dirender dengan dua statistik ringkasan dan demografi', async () => {
+  expect(templateHtml).toContain('id="cms-stat-environment"');
+  expect(templateHtml).toContain('id="cms-stat-area"');
+  expect(templateHtml).not.toContain('id="cms-stat-family"');
+  expect(templateHtml).not.toContain('id="cms-stat-population"');
+  expect(templateHtml).toContain('__CMS_DEMOGRAFI__');
   const parts = renderPengaturan(await publishedPengaturan(environment()), parsePengaturanTemplates(templateHtml));
   for (const part of ['hero', 'intro', 'contact', 'footer', 'complaint', 'heading', 'structure', 'region', 'vision']) {
     expect(parts[part]).toBeString();
     expect(parts[part]).not.toContain('__CMS_');
   }
+  expect(parts.hero).toContain('demografi-card');
 });
 
 test('empat halaman publik memakai Pengaturan D1 dan template hasil build tanpa 503', async () => {

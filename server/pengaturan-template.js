@@ -19,7 +19,7 @@ function row(html,marker,tag='li') {
 }
 export function parsePengaturanTemplates(html) {
   const t = Object.fromEntries([...html.matchAll(/<template id="([a-z-]+)">([\s\S]*?)<\/template>/g)].map(([,id,body])=>[id,body.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replaceAll('/__CMS_IMAGE__','__CMS_IMAGE__').replaceAll('https://cms.invalid/','').replaceAll('Kelurahan Walian','__CMS_SITE_NAME__').replaceAll('Lurah Walian','__CMS_LURAH_LABEL__').replaceAll('Kota Tomohon','Kota __CMS_CITY_NAME__')]));
-  for(const name of ['hero','hero-slide','hero-empty','hero-point','intro-photo','intro-empty','contact','footer','complaint','profile-heading','structure','node-root','node-child','node-side','node-empty-root','node-empty-child','node-empty-side','region','region-empty','region-row','vision',...['environment','family','population','area'].flatMap((kind)=>['stat-'+kind,'stat-empty-'+kind])])if(!t['cms-'+name])throw new Error('Template Pengaturan belum tersedia.');
+  for(const name of ['hero','hero-slide','hero-empty','hero-point','intro-photo','intro-empty','contact','footer','complaint','profile-heading','structure','node-root','node-child','node-side','node-empty-root','node-empty-child','node-empty-side','region','region-empty','region-row','vision',...['environment','area'].flatMap((kind)=>['stat-'+kind,'stat-empty-'+kind])])if(!t['cms-'+name])throw new Error('Template Pengaturan belum tersedia.');
   t.slide=element(t['cms-hero-slide'],/<div\b[^>]*id="hero-foto-0"[^>]*>/).replaceAll('hero-foto-0','hero-foto-__CMS_INDEX__').replaceAll('object-center','object-__CMS_POSITION__');
   t.point=element(t['cms-hero-point'],/<button\b[^>]*data-hero-pilih="0"[^>]*>/).replaceAll('data-hero-pilih="0"','data-hero-pilih="__CMS_INDEX__"').replaceAll('hero-foto-0','hero-foto-__CMS_INDEX__').replace(/aria-label="[^"]*"/,'aria-label="__CMS_POINT_LABEL__"');
   t.fallback=element(t['cms-hero-empty'],/<div\b[^>]*class="absolute inset-0 overflow-hidden bg-sage-100"[^>]*>/);
@@ -56,6 +56,31 @@ export function typedText(text,delay=0,interval=JEDA_HURUF_JUDUL) {
     return '<span class="inline-block max-w-full">'+Array.from(segmenter.segment(word),({segment})=>'<span class="hero-huruf" style="--jeda-huruf: '+(delay+index++*interval)+'ms">'+escapeHtml(segment)+'</span>').join('')+'</span>';
   }).join('');
 }
+const WARNA_AGAMA={'Kristen':'#2563eb','Katolik':'#7c3aed','Islam':'#059669','Hindu':'#d97706','Buddha':'#db2777','Konghucu':'#dc2626'};
+const WARNA_CADANGAN=['#2563eb','#7c3aed','#059669','#d97706','#db2777','#dc2626','#0891b2','#4f46e5'];
+const LABEL_AGAMA={kristen:'Kristen',katolik:'Katolik',islam:'Islam',hindu:'Hindu',buddha:'Buddha',konghucu:'Konghucu'};
+function renderDemografi(beranda) {
+  const mentah=beranda.demografiAgama||{};
+  const daftar=Object.entries(mentah).map(([k,v])=>({agama:LABEL_AGAMA[k]||k,jumlah:v||0}));
+  const totalJiwa=daftar.reduce((a,i)=>a+i.jumlah,0);
+  const totalPddk=beranda.jumlahPenduduk??(totalJiwa>0?totalJiwa:null);
+  const radius=38,keliling=2*Math.PI*radius,basis=totalJiwa>0?totalJiwa:1;
+  const terurut=[...daftar].sort((a,b)=>b.jumlah-a.jumlah);
+  const top3=terurut.slice(0,3),sisa=terurut.slice(3);
+  const tampilan=sisa.length>0?[...top3,{agama:'Lainnya',jumlah:sisa.reduce((a,i)=>a+i.jumlah,0)}]:top3;
+  let offset=0;
+  const data=tampilan.map((item,i)=>{
+    const persen=totalJiwa>0?(item.jumlah/basis)*100:0;
+    const busur=(persen/100)*keliling,off=offset;if(persen>0)offset+=busur;
+    const warna=item.agama==='Lainnya'?'#94a3b8':(WARNA_AGAMA[item.agama]||WARNA_CADANGAN[i%WARNA_CADANGAN.length]);
+    const label=persen>=10?persen.toFixed(1).replace(/\.0$/,''):(persen>0?persen.toFixed(1):'0');
+    return {...item,persen,label,busur,off,warna};
+  });
+  const arcs=data.filter(i=>i.persen>0).map(i=>`<circle cx="50" cy="50" r="${radius}" fill="none" stroke="${escapeHtml(i.warna)}" stroke-width="9" stroke-dasharray="${i.busur} ${keliling-i.busur}" stroke-dashoffset="${-i.off}" transform="rotate(-90 50 50)" class="demografi-slice"/>`).join('');
+  const rows=data.map(i=>`<div class="demografi-row"><div class="demografi-nama-wrap"><span class="demografi-dot" style="background-color: ${escapeHtml(i.warna)};"></span><span class="demografi-nama">${escapeHtml(i.agama)}</span></div><div class="demografi-track"><div class="demografi-bar" style="width: ${Math.max(i.persen,i.jumlah>0?2:0)}%; background-color: ${escapeHtml(i.warna)};"></div></div><span class="demografi-persen">${escapeHtml(i.label)}%</span></div>`).join('');
+  const angka=escapeHtml(formatAngka(totalPddk)??'–');
+  return `<div class="demografi-card"><div class="demografi-head"><div class="demografi-donut-wrap" aria-label="Total penduduk: ${angka} jiwa"><svg class="demografi-donut-svg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${radius}" fill="none" stroke="rgb(226 232 240 / 0.8)" stroke-width="9"/>${arcs}</svg><div class="demografi-pusat"><span class="demografi-label-atas">Total</span><span class="demografi-angka">${angka}</span><span class="demografi-label-bawah">Jumlah Jiwa</span></div></div></div><div class="demografi-body"><div class="demografi-daftar">${rows}</div></div></div>`;
+}
 export function renderPengaturan(data,t,wisataHref) {
   const {situs:s,beranda:b,profil:p}=data,photos=b.hero.foto.filter((foto)=>foto.gambar.trim());
   const values={__CMS_SITE_NAME__:escapeHtml(s.namaKelurahan),__CMS_DISTRICT__:escapeHtml(s.kecamatan),__CMS_CITY_NAME__:escapeHtml(s.kota),__CMS_PROVINCE__:escapeHtml(s.provinsi),__CMS_ADDRESS__:escapeHtml(s.alamat),__CMS_CREDIT__:escapeHtml(s.kredit),__CMS_LURAH_LABEL__:escapeHtml('Lurah '+s.namaKelurahan.replace(/^Kelurahan\s+/i,'')),__CMS_LURAH_NAME__:escapeHtml(p.lurah.nama),__CMS_SUMMARY__:escapeHtml(p.ringkasan),__CMS_IMAGE__:escapeHtml(p.lurah.foto||''),__CMS_PHONE__:escapeHtml(s.whatsapp),__CMS_PHONE_LABEL__:escapeHtml(formatNomorWhatsapp(s.whatsapp||'')),__CMS_EMAIL__:escapeHtml(s.email),__CMS_SCHEDULE__:escapeHtml(JSON.stringify(s.jamLayanan)),__CMS_DIRECTIONS__:escapeHtml(s.googleMapsUrl||`https://www.google.com/maps/dir/?api=1&destination=${s.koordinat.lat},${s.koordinat.lng}`),__CMS_MAP_EMBED__:escapeHtml(`https://www.google.com/maps/embed?origin=mfe&pb=!1m3!2m1!1s${s.koordinat.lat},${s.koordinat.lng}!6i15`),__CMS_YEAR__:escapeHtml(p.sumberData.tahun),__CMS_SOURCE__:escapeHtml(p.sumberData.sumber),__CMS_VISION__:escapeHtml(p.visi),__CMS_VISION_SOURCE__:escapeHtml(p.sumberVisiMisi||'')};
@@ -84,7 +109,8 @@ export function renderPengaturan(data,t,wisataHref) {
   const sum=(key)=>{const numbers=p.lingkungan.map((item)=>item[key]).filter((number)=>number!==null);return numbers.length?numbers.reduce((a,b)=>a+b,0):null;};
   const totals={__CMS_FAMILY__:sum('kepalaKeluarga'),__CMS_POPULATION__:sum('jumlahPenduduk'),__CMS_AREA__:sum('luasKm2')};
   Object.assign(values,Object.fromEntries(Object.entries(totals).map(([key,number])=>[key,escapeHtml(formatAngka(number)??'–')])));
-  values.__CMS_STATS__=[p.lingkungan.length||null,totals.__CMS_FAMILY__,totals.__CMS_POPULATION__,totals.__CMS_AREA__].map((number,index)=>fill(t['cms-stat-'+(number===null?'empty-':'')+['environment','family','population','area'][index]],{__CMS_NUMBER__:escapeHtml(formatAngka(number))})).join('');
+  values.__CMS_STATS__=[p.lingkungan.length||null,totals.__CMS_AREA__].map((number,index)=>fill(t['cms-stat-'+(number===null?'empty-':'')+['environment','area'][index]],{__CMS_NUMBER__:escapeHtml(formatAngka(number))})).join('');
+  values.__CMS_DEMOGRAFI__=renderDemografi(b);
   const environment=(item,template)=>{
     for(const [name,marker] of [['kepala','__CMS_HEAD__'],['wakil','__CMS_DEPUTY__']])if(!item[name])template=template.replace(new RegExp('(<(?:td|dd) class="[^"]*)\\btext-ink(?=")[^"]*">'+marker,'g'),'$1text-ink-subtle">'+marker);
     return fill(template,{__CMS_ENVIRONMENT_NAME__:escapeHtml(item.nama),__CMS_HEAD__:escapeHtml(item.kepala||'[kosong]'),__CMS_DEPUTY__:escapeHtml(item.wakil||'[kosong]'),__CMS_FAMILY__:escapeHtml(formatAngka(item.kepalaKeluarga)??'–'),__CMS_POPULATION__:escapeHtml(formatAngka(item.jumlahPenduduk)??'–'),__CMS_AREA__:escapeHtml(formatAngka(item.luasKm2)??'–')});
