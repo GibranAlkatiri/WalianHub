@@ -1,17 +1,17 @@
 # Serah-terima keamanan admin WalianHub
 
-Tanggal: 13 Oktober 2026. Branch: `backend/staff-approval-preview`. Status: kode uji untuk dilanjutkan rekan, belum siap merge atau publikasi produksi. Pengguna secara eksplisit meminta commit/push branch ini untuk kolaborasi malam ini.
+Tanggal: 13 Oktober 2026. Branch: `backend/staff-approval-preview`. **Keputusan terbaru: prototipe akun staf diarsipkan.** Pengguna mengikuti arahan ketua tim untuk kembali ke username/password awal, termasuk menghapus verifikasi Cloudflare pada CMS produksi. Baca [LOGIN-AWAL-SERAH-TERIMA.md](LOGIN-AWAL-SERAH-TERIMA.md) terlebih dahulu. Catatan di bawah adalah riwayat pekerjaan yang dipertahankan, bukan instruksi melanjutkan atau menerapkannya sekarang.
 
 ## Mulai di sini untuk rekan dan AI
 
 1. Baca [AGENTS.md](AGENTS.md), dokumen ini, dan [ADMIN-AKUN-STAF.md](ADMIN-AKUN-STAF.md).
 2. Periksa branch, status, diff, dan commit terbaru sebelum mengedit. Simpan perubahan lokal rekan. Gunakan fetch dan fast-forward bila memungkinkan; jangan reset atau force push untuk menghilangkan pekerjaan baru.
 3. Pertahankan keputusan produk di bawah. Jika pengguna atau rekan mengusulkan ide baru, catat alasan dan dampaknya, lalu integrasikan dengan pekerjaan terbaru. Jangan otomatis mengembalikan kode dari commit lama atau mengganti mekanisme login karena dokumen historis berbeda.
-4. Kerjakan kelanjutan pada branch ini atau branch turunan. Commit/push/draft PR diizinkan untuk kolaborasi. Publikasi produksi adalah langkah terpisah setelah uji pengguna berhasil, CI lulus, dan izin publikasi terpenuhi.
+4. Branch ini menjadi arsip prototipe. Mulai pekerjaan keamanan ketua tim dari `main` terbaru pada branch baru; jangan menggabungkan atau mengaktifkan prototipe tanpa penugasan baru. Instruksi uji/deploy di bawah hanya berlaku jika prototipe diaktifkan kembali atas keputusan pengguna.
 
 Pemilik proyek menangani frontend dan backend; rekan melanjutkan sesuai penugasan pemilik. Lingkup integrasi yang sudah diizinkan adalah autentikasi, sesi, akun staf, email, formulir login, dan halaman pengelolaan akses staf. Perubahan tampilan website publik di luar lingkup itu tetap mengikuti aturan koordinasi pada AGENTS.
 
-## Keputusan produk yang sudah disepakati
+## Keputusan produk sebelumnya, kini menjadi riwayat
 
 | Bagian | Keputusan |
 |---|---|
@@ -112,3 +112,4 @@ Gunakan nama environment dan panduan [ADMIN-AKUN-STAF.md](ADMIN-AKUN-STAF.md). J
 Tambahkan entri bertanggal di sini: masalah yang diperiksa, keputusan baru dari pengguna, berkas yang diubah, bukti tes/browser/email, serta pekerjaan yang masih tersisa. Pertahankan entri lama sebagai riwayat; tandai temuan yang sudah diselesaikan dengan bukti yang baru.
 
 - 13 Oktober 2026: kode dan dokumentasi disiapkan untuk commit/push branch kolaborasi atas permintaan pengguna. Uji pengguna masih berhenti pada persetujuan staf. Produksi belum diubah oleh pekerjaan akun staf ini; draft PR bukan izin merge/deploy.
+- 13 Oktober 2026, keputusan berikutnya: pengguna memilih kembali ke username/password saja dan menyerahkan kelanjutan keamanan kepada ketua tim. Cakupan Access pada jalur CMS produksi sudah dilepas setelah cadangan dibuat; perlindungan preview tetap ada. Akun staf tetap menjadi arsip terpisah dan tidak diterapkan pada produksi. Baca catatan terbaru sebelum mengambil langkah dari riwayat ini.

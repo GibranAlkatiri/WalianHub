@@ -1,6 +1,6 @@
 # Akun staf dengan persetujuan pengelola
 
-Status: perubahan untuk preview; belum mengganti autentikasi produksi.
+Status terbaru 13 Oktober 2026: prototipe diarsipkan atas keputusan pengguna/ketua tim. Produksi memakai username/password awal. Jangan menerapkan panduan aktivasi di bawah tanpa penugasan baru. Baca [LOGIN-AWAL-SERAH-TERIMA.md](LOGIN-AWAL-SERAH-TERIMA.md); isi berikut menyimpan rancangan historis, belum mengganti autentikasi produksi.
 
 Catatan kelanjutan dan batas izin publikasi: [SERAH-TERIMA-ADMIN.md](SERAH-TERIMA-ADMIN.md).
 

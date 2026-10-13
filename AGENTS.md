@@ -2,7 +2,7 @@
 
 Baca dokumen ini sebelum mengubah berkas. Aturan berlaku untuk seluruh repository, termasuk salinannya di fork. Jika memakai asisten AI lain, minta asisten tersebut membaca `AGENTS.md` terlebih dahulu.
 
-Untuk melanjutkan pekerjaan keamanan admin pada branch `backend/staff-approval-preview`, baca [SERAH-TERIMA-ADMIN.md](SERAH-TERIMA-ADMIN.md), lalu [ADMIN-AKUN-STAF.md](ADMIN-AKUN-STAF.md). Catatan tersebut mencatat keputusan pengguna, hasil uji, dan pekerjaan yang masih terbuka. Periksa catatan serta diff terbaru sebelum mengedit; jangan mengganti rancangan yang sudah disepakati dengan alur historis pada dokumen lama.
+Keputusan terbaru 13 Oktober 2026: pengguna mengikuti arahan ketua tim untuk memakai login username/password awal dan menyerahkan kelanjutan keamanan kepada ketua tim. Baca [LOGIN-AWAL-SERAH-TERIMA.md](LOGIN-AWAL-SERAH-TERIMA.md) terlebih dahulu. Branch `backend/staff-approval-preview` sekarang menjadi arsip prototipe; jangan merge atau mengaktifkan akun staf, email login, maupun Turnstile dari branch ini tanpa penugasan baru. [SERAH-TERIMA-ADMIN.md](SERAH-TERIMA-ADMIN.md) dan [ADMIN-AKUN-STAF.md](ADMIN-AKUN-STAF.md) menyimpan riwayat rancangan sebelumnya. Pertahankan pekerjaan dan ide terbaru saat memulai kelanjutan; periksa branch, status, dan diff sebelum mengedit.
 
 ## 1. Pembagian yang disepakati
 
@@ -89,7 +89,7 @@ Kondisi yang dikonfirmasi pada 7 Oktober 2026:
 
 Pembaruan 13 Oktober 2026: produksi aktif adalah `https://walianhub-8ib.pages.dev`, project Cloudflare `walianhub`, repository `GibranAlkatiri/WalianHub`, branch `main`. Keterangan 7 Oktober di atas bersifat historis. Titik awal branch keamanan admin ini adalah commit `039fa5af95803b9be21bf51e8b668ab19ceb46d5` (PR #45, foto lurah tanpa latar). Periksa SHA terbaru sebelum publikasi. Fork `gleey/WalianHub` bukan tujuan produksi aktif untuk pekerjaan ini.
 
-Pengguna mengizinkan commit/push pekerjaan yang belum selesai ke branch uji untuk serah-terima kepada rekan malam ini. Izin ini mencakup draft PR untuk pemeriksaan dan kolaborasi. Merge ke `main`, migrasi database produksi, aktivasi login baru pada produksi, dan perubahan Access produksi tetap menunggu uji pengguna berhasil serta izin publikasi yang berlaku.
+Izin commit/push prototipe untuk serah-terima merupakan keputusan sebelumnya. Keputusan terbaru mengarsipkan prototipe dan mempertahankan kode login username/password pada `main`; pengguna secara eksplisit memilih menghapus langkah verifikasi Cloudflare pada CMS produksi. Perubahan tersebut hanya menghapus cakupan jalur produksi dari aplikasi Access. Merge prototipe, migrasi akun staf, dan publikasi fitur keamanan baru tetap memerlukan penugasan serta izin baru.
 
 Perubahan pada repo kode bersama belum otomatis masuk ke fork atau situs Cloudflare. Periksa SHA terbaru; commit di atas hanya menjadi titik awal, bukan commit yang harus selalu dipakai.
 
