@@ -97,6 +97,8 @@ function shell() {
   for (const collection of state.config.collections) nav.append(button(collection.label, async () => { if (await canLeave()) { state.collection = collection.name; state.filter = 'all'; state.search = ''; showList(); } }, state.collection === collection.name ? 'is-active' : ''));
   const top = el('header', { class: 'cms-header' }, el('a', { href: './', class: 'cms-brand', onClick: async (event) => { event.preventDefault(); if (await canLeave()) showList(); } }, el('span', { 'aria-hidden': 'true' }, 'W'), el('strong', {}, 'Panel Konten', el('small', {}, 'Kelurahan Walian'))), el('div', { class: 'cms-account' }, el('a', { href: state.config.site_url, onClick: async (event) => { event.preventDefault(); if (await canLeave()) { state.dirty = false; location.assign(state.config.site_url); } } }, 'Lihat website'), button('Keluar', async () => { if (await canLeave()) { try { await logout(); } catch (error) { message(error.message, true); } } })));
   root.append(top);
+  if(window.WALIAN_CMS_IDENTITY?.role==='owner')top.querySelector('.cms-account').prepend(el('a',{href:'./staf.html'},'Akses staf'));
+  if(window.WALIAN_CMS_PREVIEW)root.append(el('p',{class:'cms-demo'},'Pratinjau keamanan — akun dan konten uji terpisah dari website produksi.'));
   if (window.WALIAN_DEMO) root.append(el('p', { class: 'cms-demo' }, 'Mode uji — perubahan hanya tersimpan selama pratinjau lokal ini berjalan.'));
   root.append(nav, el('main', { class: 'cms-main' }, el('p', { id: 'cms-message', class: 'cms-message', role: 'status', 'aria-live': 'polite', hidden: true }), el('div', { id: 'cms-content' })));
 }

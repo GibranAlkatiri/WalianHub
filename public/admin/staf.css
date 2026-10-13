@@ -1,0 +1,8 @@
+.staff-page { max-width:64rem; margin:auto; padding:2rem 1rem; }
+.staff-card { background:white; border:1px solid #d9dfcb; border-radius:1rem; padding:1rem; margin-top:1rem; overflow-wrap:anywhere; }
+.staff-card h2 { margin:0; font-size:1.15rem; }
+.staff-card p { margin:.4rem 0; }
+.staff-actions { display:flex; flex-wrap:wrap; gap:.6rem; }
+.staff-actions button, #staff-reload { padding:.65rem 1rem; border:1px solid #45742f; border-radius:.6rem; background:white; color:#25411b; cursor:pointer; font:inherit; }
+.staff-actions button[data-action=approve] { background:#45742f; color:white; }
+.staff-actions button:focus-visible, #staff-reload:focus-visible { outline:3px solid #809854; outline-offset:3px; }

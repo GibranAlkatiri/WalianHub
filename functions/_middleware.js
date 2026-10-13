@@ -13,7 +13,7 @@ export async function onRequest(context) {
   const canonicalUrl = new URL(request.url);
   try { canonicalUrl.pathname = decodeURIComponent(path).replace(/\\/g, '/').replace(/\/+/g, '/'); }
   catch { return new Response(null, { status:400, headers:PUBLIC_HEADERS }); }
-  if (canonicalUrl.pathname !== path && /^\/(?:admin(?:\/|$)|api\/(?:auth|cms|media)(?:\/|$))/.test(canonicalUrl.pathname)) {
+  if (canonicalUrl.pathname !== path && /^\/(?:admin(?:\/|$)|api\/(?:auth|cms|media|staff)(?:\/|$))/.test(canonicalUrl.pathname)) {
     return new Response(null, { status:308, headers:{...PUBLIC_HEADERS, location:canonicalUrl.href} });
   }
   const home = ['/', '/index.html'].includes(path);

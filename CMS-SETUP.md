@@ -1,5 +1,7 @@
 # Panduan Setup CMS — Kelurahan Walian
 
+> Pembaruan 13 Oktober 2026: beberapa bagian panduan ini masih menggambarkan login satu username/password, Decap, repository `gleey`, dan penyimpanan GitHub yang historis. Produksi aktif memakai repository `GibranAlkatiri/WalianHub` dan konten CMS D1. Rancangan akun staf baru sedang diuji pada branch terpisah, belum aktif di produksi. Untuk pekerjaan tersebut, baca [SERAH-TERIMA-ADMIN.md](SERAH-TERIMA-ADMIN.md) dan [ADMIN-AKUN-STAF.md](ADMIN-AKUN-STAF.md), lalu periksa kode serta konfigurasi layanan terbaru. Jangan mengembalikan alur login lama berdasarkan contoh dalam panduan ini.
+
 Dokumen ini untuk **penanggung jawab teknis** (maintainer). Berisi langkah instalasi, konfigurasi autentikasi, deploy Cloudflare Pages, CI, pemeliharaan, dan pemulihan.
 
 ## 1. Arsitektur

@@ -2,12 +2,16 @@
 
 Baca dokumen ini sebelum mengubah berkas. Aturan berlaku untuk seluruh repository, termasuk salinannya di fork. Jika memakai asisten AI lain, minta asisten tersebut membaca `AGENTS.md` terlebih dahulu.
 
+Untuk melanjutkan pekerjaan keamanan admin pada branch `backend/staff-approval-preview`, baca [SERAH-TERIMA-ADMIN.md](SERAH-TERIMA-ADMIN.md), lalu [ADMIN-AKUN-STAF.md](ADMIN-AKUN-STAF.md). Catatan tersebut mencatat keputusan pengguna, hasil uji, dan pekerjaan yang masih terbuka. Periksa catatan serta diff terbaru sebelum mengedit; jangan mengganti rancangan yang sudah disepakati dengan alur historis pada dokumen lama.
+
 ## 1. Pembagian yang disepakati
 
 | Peran | Penanggung jawab | Tugas |
 |---|---|---|
 | Frontend | Pemilik proyek, `GibranAlkatiri` | Tampilan website, animasi, tampilan panel CMS, kenyamanan penggunaan, dan aksesibilitas |
-| Backend | Rekan pengembang, `gleey` | Login, API, sesi, koneksi GitHub, penyimpanan konten/media, dan publikasi CMS |
+| Backend | Pemilik proyek, `GibranAlkatiri` | Login, API, sesi, koneksi GitHub, penyimpanan konten/media, dan publikasi CMS |
+
+Pembaruan 13 Oktober 2026: pengguna menyatakan bahwa `gleey` menyerahkan tanggung jawab website kepada pemilik proyek. GitHub, Cloudflare, dan Cloudinary dikelola melalui akun pemilik. Rekan dapat melanjutkan pekerjaan yang ditugaskan pemilik; perubahan tanggung jawab ini tidak memberi izin otomatis untuk merge atau publikasi produksi. Untuk pekerjaan akun staf, pemilik sudah mengizinkan integrasi backend dan formulir/tampilan login serta pengelolaan akses staf.
 
 Tentukan peran dari penugasan pengguna dan konteks pekerjaan. Nama branch membantu mengenali pekerjaan, tetapi tidak memberikan izin mengubah area orang lain. Jangan mengganti peran sendiri untuk melewati batas ini.
 
@@ -83,6 +87,10 @@ Kondisi yang dikonfirmasi pada 7 Oktober 2026:
 - Repository yang terhubung ke Cloudflare `walianhub.pages.dev`: `gleey/WalianHub`, branch `main`.
 - `backend.repo` CMS tetap `gleey/WalianHub`, sesuai tujuan produksi tersebut.
 
+Pembaruan 13 Oktober 2026: produksi aktif adalah `https://walianhub-8ib.pages.dev`, project Cloudflare `walianhub`, repository `GibranAlkatiri/WalianHub`, branch `main`. Keterangan 7 Oktober di atas bersifat historis. Titik awal branch keamanan admin ini adalah commit `039fa5af95803b9be21bf51e8b668ab19ceb46d5` (PR #45, foto lurah tanpa latar). Periksa SHA terbaru sebelum publikasi. Fork `gleey/WalianHub` bukan tujuan produksi aktif untuk pekerjaan ini.
+
+Pengguna mengizinkan commit/push pekerjaan yang belum selesai ke branch uji untuk serah-terima kepada rekan malam ini. Izin ini mencakup draft PR untuk pemeriksaan dan kolaborasi. Merge ke `main`, migrasi database produksi, aktivasi login baru pada produksi, dan perubahan Access produksi tetap menunggu uji pengguna berhasil serta izin publikasi yang berlaku.
+
 Perubahan pada repo kode bersama belum otomatis masuk ke fork atau situs Cloudflare. Periksa SHA terbaru; commit di atas hanya menjadi titik awal, bukan commit yang harus selalu dipakai.
 
 ### Jika memakai repository kode bersama secara langsung
@@ -129,7 +137,7 @@ Frontend memakai branch tersendiri, misalnya `frontend/cms-ui`. Backend memakai 
 4. Commit/push hanya berkas pekerjaan sendiri; jangan memasukkan perubahan lokal rekan.
 5. Buka PR ke repository dan branch tujuan yang disepakati. Reviewer memeriksa lingkup berkas, hasil tes, serta dampak ke peran lain.
 6. Merge dan publikasi produksi dilakukan setelah izin pengguna, pemeriksaan yang diperlukan, dan CI berhasil. Jangan melewati proteksi branch atau memakai force push.
-7. Sinkronisasi ke repo produksi `gleey` dan deployment merupakan langkah tersendiri, dengan izin pengelola repo produksi.
+7. Periksa repository/project produksi aktif sebelum deployment. Sinkronisasi ke fork `gleey` hanya dilakukan bila diminta secara terpisah oleh pengelolanya; fork tersebut bukan tujuan produksi aktif pada pekerjaan ini.
 
 ## 8. Batas kemampuan aturan ini
 

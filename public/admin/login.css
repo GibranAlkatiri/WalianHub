@@ -11,6 +11,16 @@
 :root {
   color-scheme: light;
 }
+.staff-auth-actions { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:1rem; }
+.staff-auth-actions[hidden] { display:none; }
+#masuk .staff-remember { display:flex; align-items:center; gap:.6rem; font-weight:400; }
+#masuk .staff-remember input { width:auto; margin:0; flex:none; }
+#staff-auth button { padding:.65rem .9rem; min-height:2.75rem; border:1px solid #45742f; border-radius:.6rem; background:white; color:#25411b; font:inherit; cursor:pointer; }
+#staff-auth button[type=submit] { background:#45742f; color:white; }
+#staff-auth button:disabled { opacity:.6; cursor:wait; }
+#staff-auth button:focus-visible { outline:3px solid #809854; outline-offset:3px; }
+#staff-auth button { margin-top:.5rem; }
+#staff-auth h2 { font-size:1.2rem; }
 * {
   box-sizing: border-box;
 }

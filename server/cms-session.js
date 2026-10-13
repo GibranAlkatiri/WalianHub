@@ -1,7 +1,8 @@
 export const COOKIE = '__Host-walian-cms-session';
 export const SESSION_SECONDS = 8 * 60 * 60;
 const encoder = new TextEncoder();
-export const sessionEnabled = (env) => env.CMS_SESSION_AUTH === '1';
+export const sessionEnabled = (env) => env.CMS_SESSION_AUTH === '1' || env.CMS_STAFF_AUTH === '1';
+export const staffEnabled = (env) => env.CMS_STAFF_AUTH === '1';
 export class SessionError extends Error {
   constructor(message, status) { super(message); this.status = status; }
 }
@@ -18,7 +19,7 @@ function database(env) {
   if (!env.CMS_DB) throw new SessionError('Penyimpanan sesi belum tersedia. Hubungi pengelola panel.', 503);
   return env.CMS_DB;
 }
-function cookieToken(request) {
+export function cookieToken(request) {
   const matches = (request.headers.get('cookie') || '').split(';').map((part) => part.trim()).filter((part) => part.startsWith(COOKIE + '='));
   if (matches.length !== 1) return null;
   const token = matches[0].slice(COOKIE.length + 1);
@@ -30,6 +31,14 @@ const credentialVersion = (env) => sha256(`${String(env.CMS_USERNAME || '').trim
 export async function readSession(request, env, now = Date.now()) {
   const db = database(env), token = cookieToken(request);
   if (!token) throw new SessionError('Sesi berakhir. Silakan masuk kembali.', 401);
+  if(staffEnabled(env)) {
+    if(env.CMS_SESSION_AUTH!=='1') throw new SessionError('Konfigurasi sesi staf belum lengkap.',503);
+    let identity;
+    try { identity=await db.prepare(`SELECT u.id,u.email,u.name,u.role,s.created_at,s.expires_at FROM cms_staff_sessions s JOIN cms_users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND u.status='approved' AND u.email_verified_at IS NOT NULL AND s.credential_version=u.credential_version`).bind(await sha256(token),now).first(); }
+    catch { throw new SessionError('Sesi belum dapat diperiksa. Coba kembali.',503); }
+    if(!identity || (identity.role==='owner' && identity.email!==String(env.CMS_OWNER_EMAIL||'').trim().toLowerCase())) throw new SessionError('Sesi berakhir. Silakan masuk kembali.',401);
+    return {userId:identity.id,username:identity.email,email:identity.email,name:identity.name,role:identity.role,createdAt:identity.created_at,expiresAt:identity.expires_at};
+  }
   let session;
   try { session = await db.prepare('SELECT username, credential_version, expires_at FROM cms_sessions WHERE token_hash = ? AND expires_at > ?').bind(await sha256(token), now).first(); }
   catch { throw new SessionError('Sesi belum dapat diperiksa. Coba kembali.', 503); }
@@ -61,5 +70,9 @@ export async function createSession(request, env, now = Date.now()) {
 }
 export async function revokeSession(request, env) {
   const db = database(env), token = cookieToken(request);
+  if(staffEnabled(env)) {
+    if(token)await db.prepare('DELETE FROM cms_staff_sessions WHERE token_hash=?').bind(await sha256(token)).run();
+    return;
+  }
   if (token) await db.prepare('DELETE FROM cms_sessions WHERE token_hash = ?').bind(await sha256(token)).run();
 }

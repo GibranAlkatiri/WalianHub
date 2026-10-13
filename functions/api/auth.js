@@ -1,4 +1,7 @@
 import { sessionEnabled, sameOrigin, sha256, equal, readSession, createSession, revokeSession, checkLoginLimit, failedLogin, cookieHeader, SESSION_SECONDS, SessionError } from '../../server/cms-session.js';
+import {staffEnabled} from '../../server/cms-session.js';
+import {createStaffHandler} from '../../server/cms-staff.js';
+const staffLogin=createStaffHandler();
 
 const HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' };
 const json = (data, status = 200, cookie) => new Response(JSON.stringify(data), { status, headers: { ...HEADERS, ...(cookie ? { 'set-cookie': cookie } : {}) } });
@@ -19,11 +22,17 @@ async function credentials(request) {
   return body;
 }
 export async function onRequestGet({ request, env } = { env: {} }) {
+  if(staffEnabled(env)) {
+    const setup={staffAuth:true,turnstileSiteKey:env.CMS_TURNSTILE_SITE_KEY||'',preview:env.CMS_AUTH_PREVIEW==='1'};
+    try{return json({ok:true,mode:'session',...setup,...await readSession(request,env)});}
+    catch(error){const response=failure(error);const data=await response.json();return json({...data,...setup},response.status);}
+  }
   if (!sessionEnabled(env)) return json({ ok: false, mode: 'legacy', error: 'Gunakan form login di /admin/.' }, 405);
   try { return json({ ok: true, mode: 'session', ...await readSession(request, env) }); }
   catch (error) { return failure(error); }
 }
 export async function onRequestPost({ request, env }) {
+  if(staffEnabled(env))return staffLogin({request,env},'login');
   const sessions = sessionEnabled(env);
   try {
     if (sessions) sameOrigin(request);

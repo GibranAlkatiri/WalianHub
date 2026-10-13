@@ -17,6 +17,10 @@
   var tombolIntip = document.getElementById('tombol-intip');
   var kolomSandi = document.getElementById('kolom-sandi');
   window.WALIAN_CMS_AUTH = null;
+  window.WALIAN_CMS_IDENTITY = null;
+  var alurTautan = new URLSearchParams(location.search).get('flow');
+  var punyaTautanAkun = ['verify','password','owner-login'].indexOf(alurTautan) !== -1 && new URLSearchParams(location.hash.slice(1)).has('token');
+  var perluKonfirmasiPengelola = new URLSearchParams(location.search).get('reauth') === 'staff';
   function hapusSesiLama() { try { localStorage.removeItem(KUNCI); } catch (e) { /* penyimpanan diblokir */ } }
   function perluMasuk() {
     if (window.WALIAN_CMS_AUTH === 'session') hapusSesiLama();
@@ -61,7 +65,7 @@
     if (root && root.querySelector('.cms-header')) { root.hidden = false; if (panel) panel.hidden = true; return; }
     if (window.__walianPanelDimuat) return;
     window.__walianPanelDimuat = true;
-    import('./cms.js?v=20261010_05')
+    import('./cms.js?v=20261013_staff01')
       .then(function (cms) { return cms.start(); })
       .catch(function () {
         window.__walianPanelDimuat = false;
@@ -95,9 +99,15 @@
   fetch('/api/auth', { credentials: 'same-origin', cache: 'no-store', signal: periksaSesi.signal })
     .then(function (res) { return res.json().then(function (data) { return { status: res.status, data: data }; }); })
     .then(function (result) {
+      if(result.data.staffAuth) {
+        if(perluKonfirmasiPengelola && formMasuk?.username)formMasuk.username.value=result.data.email||result.data.username||'';
+        window.WALIAN_CMS_PREVIEW=result.data.preview===true;
+        window.WALIAN_CMS_IDENTITY=result.data.ok?result.data:null;
+        import('./staff-auth-client.js?v=20261013_01').then(function(module){module.setup({openPanel:bukaPanel,settings:result.data});}).catch(function(){if(galat){galat.textContent='Form akun staf belum dapat dimuat. Muat ulang halaman.';galat.hidden=false;}});
+      }
       if (result.data.mode === 'session') {
         window.WALIAN_CMS_AUTH = 'session'; hapusSesiLama();
-        if (result.status === 200 && result.data.ok) bukaPanel();
+        if (result.status === 200 && result.data.ok) { if(!(result.data.staffAuth && (punyaTautanAkun || perluKonfirmasiPengelola))) bukaPanel(); }
         else if (result.status !== 401 && galat) { galat.textContent = result.data.error || 'Sesi belum dapat diperiksa. Coba kembali.'; galat.hidden = false; }
       } else if (result.status === 405 && result.data.mode === 'legacy') {
         window.WALIAN_CMS_AUTH = 'legacy';
@@ -135,6 +145,11 @@
           });
         })
         .then(function (r) {
+          if(r.j.challenge) {
+            if(galat){galat.textContent=r.j.message;galat.hidden=false;}
+            if(kolomSandi)kolomSandi.value='';
+            return;
+          }
           if (!r.ok || !r.j.ok || (r.j.mode !== 'session' && !r.j.token)) {
             if (galat) {
               galat.textContent = (r.j && r.j.error) || 'Username atau password salah.';
@@ -143,6 +158,8 @@
             return;
           }
           window.WALIAN_CMS_AUTH = r.j.mode === 'session' ? 'session' : 'legacy';
+          window.WALIAN_CMS_IDENTITY=r.j.staffAuth?r.j:null;
+          window.dispatchEvent(new CustomEvent('walian:staff-login',{detail:{email:username}}));
           if (window.WALIAN_CMS_AUTH === 'session') hapusSesiLama();
           else localStorage.setItem(KUNCI, JSON.stringify({ token: r.j.token, backendName: 'github' }));
           if (kolomSandi) kolomSandi.value = '';
