@@ -11,30 +11,5 @@
     ]
   },
   "jumlahPenduduk": null,
-  "demografiAgama": [
-    {
-      "agama": "Kristen Protestan",
-      "jumlah": 6120
-    },
-    {
-      "agama": "Katolik",
-      "jumlah": 1450
-    },
-    {
-      "agama": "Islam",
-      "jumlah": 320
-    },
-    {
-      "agama": "Hindu",
-      "jumlah": 12
-    },
-    {
-      "agama": "Buddha",
-      "jumlah": 8
-    },
-    {
-      "agama": "Konghucu",
-      "jumlah": 2
-    }
-  ]
+  "demografiAgama": []
 }
