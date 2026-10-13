@@ -7,12 +7,14 @@ import StatCard from '../ui/StatCard.astro';
 import { formatAngka } from '../../lib/format';
 
 type Profil = CollectionEntry<'profil'>['data'];
+type Beranda = CollectionEntry<'beranda'>['data'];
 interface Props {
   lingkungan: Profil['lingkungan'];
-  demografiAgama?: Profil['demografiAgama'];
+  jumlahPenduduk?: number | null;
+  demografiAgama?: Beranda['demografiAgama'];
   runtimeTemplate?: boolean;
 }
-const { lingkungan, demografiAgama = [], runtimeTemplate = false } = Astro.props;
+const { lingkungan, jumlahPenduduk = null, demografiAgama = [], runtimeTemplate = false } = Astro.props;
 
 const jumlahkan = (key: 'jumlahPenduduk' | 'luasKm2') => {
   const terisi = lingkungan.map(item => item[key]).filter((angka): angka is number => angka != null);
@@ -22,7 +24,7 @@ const jumlahkan = (key: 'jumlahPenduduk' | 'luasKm2') => {
 // Hitung total penduduk dan persentase agama
 const totalPendudukLingkungan = jumlahkan('jumlahPenduduk');
 const totalJiwaAgama = demografiAgama.reduce((acc, item) => acc + (item.jumlah || 0), 0);
-const totalPenduduk = totalPendudukLingkungan ?? (totalJiwaAgama > 0 ? totalJiwaAgama : null);
+const totalPenduduk = jumlahPenduduk ?? totalPendudukLingkungan ?? (totalJiwaAgama > 0 ? totalJiwaAgama : null);
 
 const WARNA_AGAMA: Record<string, string> = {
   'Kristen Protestan': '#2563eb',

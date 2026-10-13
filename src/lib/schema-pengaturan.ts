@@ -59,6 +59,17 @@ export const berandaSchema = z.object({
         .max(5)
         .default([]),
     }),
+    /** Jumlah penduduk kelurahan. Kosongkan jika dihitung otomatis dari pemeluk agama. */
+    jumlahPenduduk: z.number().int().nonnegative().nullable().optional(),
+    /** Demografi pemeluk agama di Beranda. */
+    demografiAgama: z
+      .array(
+        z.object({
+          agama: teksWajib,
+          jumlah: z.number().int().nonnegative().default(0),
+        }),
+      )
+      .default([]),
   });
 
 export const profilSchema = z.object({
@@ -97,7 +108,7 @@ export const profilSchema = z.object({
         }),
       )
       .default([]),
-    /** Demografi pemeluk agama di kelurahan. */
+    /** Demografi pemeluk agama di kelurahan (opsional, kini dikelola di Beranda). */
     demografiAgama: z
       .array(
         z.object({
@@ -105,6 +116,7 @@ export const profilSchema = z.object({
           jumlah: z.number().int().nonnegative().default(0),
         }),
       )
+      .optional()
       .default([]),
     /** Visi dan misi Pemerintah Kota Tomohon, yang diikuti Kelurahan Walian. */
     visi: teksWajib,

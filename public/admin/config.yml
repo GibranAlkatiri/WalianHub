@@ -489,6 +489,32 @@ collections:
                       - { label: Tengah, value: tengah }
                       - { label: Kanan, value: kanan }
 
+          - label: Jumlah Penduduk
+            name: jumlahPenduduk
+            widget: number
+            value_type: int
+            min: 0
+            required: false
+            hint: "Total jumlah penduduk di kartu ringkasan Beranda. Kosongkan jika ingin dihitung otomatis dari jumlah pemeluk agama."
+
+          - label: Demografi Agama
+            name: demografiAgama
+            widget: list
+            summary: "{{fields.agama}}: {{fields.jumlah}} jiwa"
+            collapsed: false
+            required: false
+            hint: "Jumlah pemeluk agama di Beranda. Persentase dihitung otomatis pada website."
+            fields:
+              - { label: Agama, name: agama, widget: string, required: true }
+              - label: Jumlah Jiwa
+                name: jumlah
+                widget: number
+                value_type: int
+                min: 0
+                required: true
+                default: 0
+                hint: "Jumlah pemeluk agama (dalam jiwa)."
+
       # ── Profil ──
       - name: profil
         label: Profil
@@ -575,24 +601,6 @@ collections:
                 min: 0
                 required: false
                 hint: "Boleh desimal, contoh 1.5. Kosongkan jika belum diketahui."
-
-          - label: Demografi Agama
-            name: demografiAgama
-            widget: list
-            summary: "{{fields.agama}}: {{fields.jumlah}} jiwa"
-            collapsed: false
-            required: false
-            hint: "Jumlah pemeluk agama di Walian. Persentase dihitung otomatis pada website."
-            fields:
-              - { label: Agama, name: agama, widget: string, required: true }
-              - label: Jumlah Jiwa
-                name: jumlah
-                widget: number
-                value_type: int
-                min: 0
-                required: true
-                default: 0
-                hint: "Jumlah pemeluk agama (dalam jiwa)."
 
           - { label: Visi, name: visi, widget: text, required: true }
 
