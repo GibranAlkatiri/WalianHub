@@ -105,16 +105,23 @@ export function createCmsHandler(fetchGitHub = fetch) {
           ...(body ? { body: JSON.stringify(body) } : {}),
         }).catch(() => fail('GitHub belum dapat dihubungi. Coba kembali.', 502));
         let res = await send(headers);
+        let anonymous = false;
         if (res.status === 403 && method === 'GET' && publicReadFallback) {
           // Fine-grained PATs cannot grant Checks access. Public repositories
           // expose read-only check results anonymously; never retry writes.
           const { Authorization, ...publicHeaders } = headers;
           res = await send(publicHeaders);
+          anonymous = true;
         }
         if (res.status === 404 && allow404) return null;
         if (!res.ok) {
           if ([409, 422].includes(res.status)) fail('Konten berubah atau mengalami konflik. Muat ulang sebelum menyimpan.', 409);
-          fail([401, 403].includes(res.status) ? 'Akses GitHub ditolak. Hubungi pengelola panel.' : 'GitHub belum dapat dihubungi. Coba kembali.', 502);
+          console.warn(`WalianHub CMS GitHub ${method} ${path} -> ${res.status}`);
+          if (!anonymous) {
+            if (res.status === 401) fail('Token GitHub tidak valid atau kedaluwarsa. Minta pengelola panel memeriksa GITHUB_TOKEN lalu redeploy.', 502);
+            if (res.status === 403) fail('Izin token GitHub ditolak untuk repo ini. Minta pengelola panel memeriksa akses Contents + Pull requests tulis lalu redeploy.', 502);
+          }
+          fail('GitHub belum dapat dihubungi. Coba kembali.', 502);
         }
         return res.status === 204 ? null : res.json();
       };
