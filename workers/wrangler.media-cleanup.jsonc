@@ -8,8 +8,8 @@
   "preview_urls": false,
   "triggers": { "crons": ["0 19 * * *"] },
   "vars": {
-    "CMS_MEDIA_CLEANUP_URL": "https://walianhub-8ib.pages.dev/api/media-cleanup",
-    "CMS_MEDIA_CLEANUP_PEER_URL": "https://backend-media-cleanup-cron.walianhub-8ib.pages.dev/api/media-cleanup"
+    "CMS_MEDIA_CLEANUP_URL": "https://walianhub.pages.dev/api/media-cleanup",
+    "CMS_MEDIA_CLEANUP_PEER_URL": "https://backend-media-cleanup-cron.walianhub.pages.dev/api/media-cleanup"
   },
   "observability": { "enabled": true }
 }

@@ -3,7 +3,7 @@ export async function onRequest({ request, env }) {
   const url = new URL(request.url);
   // A preview flag never opens this probe on the production domain.
   const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
-  const preview = url.hostname.endsWith('.walianhub-8ib.pages.dev') && env.CF_PAGES_BRANCH && env.CF_PAGES_BRANCH !== 'main';
+  const preview = url.hostname.endsWith('.walianhub.pages.dev') && env.CF_PAGES_BRANCH && env.CF_PAGES_BRANCH !== 'main';
   if (env.CMS_MIGRATION_PREVIEW !== '1' || (!local && !preview)) return new Response(null, { status: 404, headers });
   if (request.method !== 'GET') return new Response(JSON.stringify({ error: 'Metode tidak didukung.' }), { status: 405, headers: { ...headers, allow: 'GET' } });
   if (!env.CMS_DB) return new Response(JSON.stringify({ error: 'D1 pengujian belum terhubung.' }), { status: 503, headers });

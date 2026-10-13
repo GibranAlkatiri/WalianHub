@@ -15,7 +15,7 @@ const data = { judul: 'Contoh layanan', ringkasan: 'Layanan warga', persyaratan:
 function setup() {
   const db = sqliteD1(schema);
   const env = { CMS_SESSION_AUTH: '1', CMS_DB: db, CMS_USERNAME: 'walian', CMS_PASSWORD_HASH: createHash('sha256').update(password).digest('hex'), GITHUB_TOKEN: 'server-github-test-only', ASSETS: { fetch: async () => new Response(config) } };
-  const github = fakeGithub({ [path]: serializeContent(data, path) }, 'GibranAlkatiri/WalianHub');
+  const github = fakeGithub({ [path]: serializeContent(data, path) }, 'gleey/WalianHub');
   const githubHeaders = [];
   const cms = createCmsHandler(async (url, init) => { githubHeaders.push(init.headers.Authorization); return github.fetch(url, init); });
   const req = (method, body, cookie, headers = {}) => new Request('https://cms.example/api/auth', { method, headers: { ...(method === 'POST' ? { 'content-type': 'application/json' } : {}), ...(['POST', 'DELETE'].includes(method) ? { origin: 'https://cms.example' } : {}), ...(cookie ? { cookie } : {}), ...headers }, ...(body !== undefined ? { body: JSON.stringify(body) } : {}) });

@@ -9,7 +9,7 @@ import { captureSnapshot, writeSnapshot, readSnapshot, snapshotSql } from '../sc
 import { onRequest } from '../functions/api/migration-preview.js';
 import { onRequest as renderPreview } from '../functions/migration-preview.js';
 
-const repo = 'GibranAlkatiri/WalianHub';
+const repo = 'gleey/WalianHub';
 const path = 'src/content/layanan/contoh.md';
 const data = { judul: "Surat warga 'Walian'", persyaratan: ['KTP'], body: 'Catatan\n' };
 const config = `backend:\n  repo: ${repo}\n  branch: main\ncollections:\n  - name: layanan\n    folder: src/content/layanan\n    fields:\n      - {name: judul}\n      - {name: persyaratan}\n      - {name: body}\n`;
@@ -126,13 +126,13 @@ describe('Fondasi migrasi CMS', () => {
   test('probe tertutup di produksi, tanpa flag, tanpa binding, dan menolak penulisan', async () => {
     const db = new Database(':memory:');
     try {
-      expect((await probe(db, 'https://walianhub-8ib.pages.dev/api/migration-preview', { CF_PAGES_BRANCH: 'feature' })).status).toBe(404);
-      expect((await probe(db, 'https://abc.walianhub-8ib.pages.dev/api/migration-preview', { CF_PAGES_BRANCH: 'main' })).status).toBe(404);
+      expect((await probe(db, 'https://walianhub.pages.dev/api/migration-preview', { CF_PAGES_BRANCH: 'feature' })).status).toBe(404);
+      expect((await probe(db, 'https://abc.walianhub.pages.dev/api/migration-preview', { CF_PAGES_BRANCH: 'main' })).status).toBe(404);
       expect((await probe(db, undefined, { CMS_MIGRATION_PREVIEW: '0' })).status).toBe(404);
       expect((await probe(db, undefined, { CMS_DB: undefined })).status).toBe(503);
       expect((await probe(db, undefined, {}, 'POST')).status).toBe(405);
-      expect((await probe(db, 'https://abc.walianhub-8ib.pages.dev/api/migration-preview', { CF_PAGES_BRANCH: 'backend/cms-migration-foundation' })).status).toBe(503);
-      expect((await renderPreview({ request: new Request('https://walianhub-8ib.pages.dev/migration-preview'), env: { CMS_MIGRATION_PREVIEW: '1', CMS_DB: sqliteBinding(db) } })).status).toBe(404);
+      expect((await probe(db, 'https://abc.walianhub.pages.dev/api/migration-preview', { CF_PAGES_BRANCH: 'backend/cms-migration-foundation' })).status).toBe(503);
+      expect((await renderPreview({ request: new Request('https://walianhub.pages.dev/migration-preview'), env: { CMS_MIGRATION_PREVIEW: '1', CMS_DB: sqliteBinding(db) } })).status).toBe(404);
     } finally { db.close(); }
   });
 });
