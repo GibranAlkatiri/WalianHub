@@ -14,7 +14,20 @@ interface Props {
   demografiAgama?: Beranda['demografiAgama'];
   runtimeTemplate?: boolean;
 }
-const { lingkungan, jumlahPenduduk = null, demografiAgama = [], runtimeTemplate = false } = Astro.props;
+const { lingkungan, jumlahPenduduk = null, demografiAgama: mentahAgama = { kristen: 0, katolik: 0, islam: 0, hindu: 0, buddha: 0, konghucu: 0 }, runtimeTemplate = false } = Astro.props;
+
+// Normalisasi object 6 agama (+fallback array lama) ke daftar tampilan.
+const labelAgama: Record<string, string> = {
+  kristen: 'Kristen',
+  katolik: 'Katolik',
+  islam: 'Islam',
+  hindu: 'Hindu',
+  buddha: 'Buddha',
+  konghucu: 'Konghucu',
+};
+const demografiAgama = Array.isArray(mentahAgama)
+  ? mentahAgama
+  : Object.entries(mentahAgama ?? {}).map(([kunci, jumlah]) => ({ agama: labelAgama[kunci] ?? kunci, jumlah: jumlah || 0 }));
 
 const jumlahkan = (key: 'jumlahPenduduk' | 'luasKm2') => {
   const terisi = lingkungan.map(item => item[key]).filter((angka): angka is number => angka != null);

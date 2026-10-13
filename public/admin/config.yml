@@ -499,28 +499,17 @@ collections:
 
           - label: Demografi Agama
             name: demografiAgama
-            widget: list
-            summary: "{{fields.agama}}: {{fields.jumlah}} jiwa"
+            widget: object
             collapsed: false
             required: false
-            min: 6
-            max: 6
-            allow_add: false
-            allow_delete: false
-            allow_reorder: false
-            hint: "Tinggal isi jumlah tiap agama. Baris sudah tetap 6 agama, tidak perlu tambah/hapus. Isi 0 jika belum ada datanya."
+            hint: "Tinggal isi jumlah tiap agama. Kolom sudah tetap 6 agama. Isi 0 jika belum ada datanya."
             fields:
-              - label: Agama
-                name: agama
-                widget: hidden
-              - label: Jumlah Jiwa
-                name: jumlah
-                widget: number
-                value_type: int
-                min: 0
-                required: true
-                default: 0
-                hint: "Jumlah pemeluk agama (dalam jiwa)."
+              - { label: Kristen, name: kristen, widget: number, value_type: int, min: 0, required: false, default: 0 }
+              - { label: Katolik, name: katolik, widget: number, value_type: int, min: 0, required: false, default: 0 }
+              - { label: Islam, name: islam, widget: number, value_type: int, min: 0, required: false, default: 0 }
+              - { label: Hindu, name: hindu, widget: number, value_type: int, min: 0, required: false, default: 0 }
+              - { label: Buddha, name: buddha, widget: number, value_type: int, min: 0, required: false, default: 0 }
+              - { label: Konghucu, name: konghucu, widget: number, value_type: int, min: 0, required: false, default: 0 }
 
       # ── Profil ──
       - name: profil
