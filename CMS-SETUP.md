@@ -79,7 +79,8 @@ Token GitHub tidak pernah masuk repository.
    - **Token name**: `Walian CMS`
    - **Repository access**: Only select repositories → `gleey/WalianHub`
    - **Permissions → Contents**: **Read and write**
-3. Generate, salin token (hanya tampil sekali).
+   - **Permissions → Pull requests**: **Read and write** (panel membuat + merge PR draf saat Simpan/Terbitkan)
+3. Generate, salin token (hanya tampil sekali). Setelah update env di Cloudflare, wajib **Redeploy**; pastikan env **Production** yang diisi (dipakai `walianhub.pages.dev`).
 
 > Dibutuhkan karena backend `github` Decap selalu memanggil GitHub API.
 > Satu token ini dipakai untuk semua penulisan konten panel.

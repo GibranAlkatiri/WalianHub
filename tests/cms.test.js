@@ -305,4 +305,12 @@ describe('CMS sederhana: draf dan penerbitan', () => {
     expect(github.get('public/uploads/bersama.png')).toBe('foto pengelola lain');
     expect(github.refs.get('cms/layanan/contoh')).toBe(before);
   });
+  test('token 401 memberi arahan periksa GITHUB_TOKEN, 403 memberi arahan periksa izin', async () => {
+    for (const [status, pesan] of [[401, 'GITHUB_TOKEN'], [403, 'Contents + Pull requests']]) {
+      const { call } = setup(undefined, () => new Response('{}', { status }));
+      const result = await call('list');
+      expect(result.status).toBe(502);
+      expect(result.body.error).toContain(pesan);
+    }
+  });
 });
