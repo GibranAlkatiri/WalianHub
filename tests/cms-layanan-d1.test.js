@@ -11,6 +11,7 @@ import { captureSnapshot, snapshotSql } from '../scripts/lib/cms-snapshot.js';
 import { layananImportSql } from '../scripts/lib/cms-layanan-import.js';
 
 const config = readFileSync(new URL('../public/admin/config.yml', import.meta.url), 'utf8');
+const repo = load(config).backend.repo;
 const collection = load(config).collections.find((item) => item.name === 'layanan');
 const schema = ['0001_content.sql', '0002_sessions.sql'].map((name) => readFileSync(new URL('../migrations/' + name, import.meta.url), 'utf8')).join('\n');
 const data = { judul:'Contoh layanan', ringkasan:'Persyaratan warga', ikon:'house', unggulan:true, urutan:1, persyaratan:['KTP'], alur:['Datang ke kelurahan'], diperbarui:'2026-10-10', body:'Catatan warga' };
@@ -19,7 +20,7 @@ async function setup() {
   const db = sqliteD1(schema);
   db.raw.query('INSERT INTO cms_imports(snapshot_id,repository,main_sha,captured_at) VALUES (?,?,?,?)').run('fixture', 'test/repo', 'a'.repeat(40), '2026-10-10');
   db.raw.query('INSERT INTO cms_content(collection,slug,source_path,published_json,published_blob_sha,snapshot_id) VALUES (?,?,?,?,?,?)').run('layanan','contoh','src/content/layanan/contoh.md',JSON.stringify(data),'b'.repeat(40),'fixture');
-  const github = fakeGithub({'src/content/destinasi/contoh.md':serializeContent({nama:'Wisata'},'contoh.md')}, 'gleey/WalianHub');
+  const github = fakeGithub({'src/content/destinasi/contoh.md':serializeContent({nama:'Wisata'},'contoh.md')}, repo);
   const handler = createCmsHandler(github.fetch);
   const env = { CMS_LAYANAN_D1:'1', CMS_SESSION_AUTH:'1', CMS_DB:db, CMS_USERNAME:'walian', CMS_PASSWORD_HASH:await sha256('demo'), GITHUB_TOKEN:'server-test-only', ASSETS:{fetch:async()=>new Response(config)} };
   const response = await onRequestPost({env, request:new Request('https://cms.example/api/auth',{method:'POST',headers:{origin:'https://cms.example','content-type':'application/json'},body:JSON.stringify({username:'walian',password:'demo'})})});
@@ -154,8 +155,8 @@ describe('Kontrak dan impor Layanan',()=>{
   });
   test('impor terverifikasi mempertahankan published dan draft tanpa menyentuh menu lain',async()=>{
     const path='src/content/layanan/contoh.md';
-    const github=fakeGithub({'public/admin/config.yml':config,[path]:serializeContent(data,path),'src/content/pengaturan/situs.json':'{}'},'gleey/WalianHub');
-    const captured=await captureSnapshot('gleey/WalianHub','main',github.fetch);
+    const github=fakeGithub({'public/admin/config.yml':config,[path]:serializeContent(data,path),'src/content/pengaturan/situs.json':'{}'},repo);
+    const captured=await captureSnapshot(repo,'main',github.fetch);
     const db=sqliteD1(schema);try {
       const manifest={...captured.manifest,entries:captured.manifest.entries.map((item)=>item.collection==='layanan'?{...item,draft:{data:{...data,judul:'Draf pribadi'},sha:'c'.repeat(40),revision:'d'.repeat(40),action:'edit'}}:item)};
       const sql=layananImportSql(manifest);applyImport(db,sql);
