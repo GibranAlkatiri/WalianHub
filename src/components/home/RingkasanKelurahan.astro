@@ -99,63 +99,70 @@ const dataAgama = tampilanAgama.map((item, index) => {
       </div>
     </div>
 
-    <!-- Demografi Agama: donut tanpa bingkai + daftar menyatu -->
+    <!-- Demografi Penduduk & Agama (Siluet Terpadu: Donut Kiri + Statistik Kanan) -->
     {runtimeTemplate ? '__CMS_DEMOGRAFI__' : dataAgama.length > 0 && (
-      <div class="demografi-card">
-        <!-- Donut chart tanpa bingkai -->
-        <div class="demografi-donut-wrap" aria-label={`Total penduduk: ${formatAngka(totalPenduduk) ?? '–'} jiwa`}>
-          <svg class="demografi-donut-svg" viewBox="0 0 100 100" aria-hidden="true">
-            <circle
-              cx="50"
-              cy="50"
-              r={radius}
-              fill="none"
-              stroke="rgb(226 232 240 / 0.8)"
-              stroke-width="9"
+      <div class="demografi-capsule">
+        <!-- Kepala Kiri: Bulatan Donut dengan transisi fillet -->
+        <div class="demografi-head">
+          <svg class="demografi-head-bg" viewBox="0 0 240 232" preserveAspectRatio="none" aria-hidden="true">
+            <path
+              d="M 240 24 L 210 24 C 185 24 175 16 160 10 C 148 4 133 0 116 0 A 116 116 0 0 0 116 232 C 133 232 148 228 160 222 C 175 216 185 208 210 208 L 240 208 Z"
+              fill="#ffffff"
             />
-            {dataAgama.map((item) => item.persen > 0 && (
+          </svg>
+
+          <!-- Donut chart -->
+          <div class="demografi-donut-wrap" aria-label={`Total penduduk: ${formatAngka(totalPenduduk) ?? '–'} jiwa`}>
+            <svg class="demografi-donut-svg" viewBox="0 0 100 100" aria-hidden="true">
               <circle
                 cx="50"
                 cy="50"
                 r={radius}
                 fill="none"
-                stroke={item.warna}
+                stroke="rgb(226 232 240 / 0.8)"
                 stroke-width="9"
-                stroke-dasharray={`${item.panjangBusur} ${keliling - item.panjangBusur}`}
-                stroke-dashoffset={-item.offset}
-                transform="rotate(-90 50 50)"
-                class="demografi-slice"
               />
-            ))}
-          </svg>
+              {dataAgama.map((item) => item.persen > 0 && (
+                <circle
+                  cx="50"
+                  cy="50"
+                  r={radius}
+                  fill="none"
+                  stroke={item.warna}
+                  stroke-width="9"
+                  stroke-dasharray={`${item.panjangBusur} ${keliling - item.panjangBusur}`}
+                  stroke-dashoffset={-item.offset}
+                  transform="rotate(-90 50 50)"
+                  class="demografi-slice"
+                />
+              ))}
+            </svg>
 
-          <div class="demografi-pusat">
-            <span class="demografi-angka">{formatAngka(totalPenduduk) ?? '–'}</span>
-            <span class="demografi-satuan">Jiwa</span>
-            <span class="demografi-label">Jumlah Penduduk</span>
+            <!-- Teks Tengah: Total, Angka, Jumlah Jiwa -->
+            <div class="demografi-pusat">
+              <span class="demografi-label-atas">Total</span>
+              <span class="demografi-angka">{formatAngka(totalPenduduk) ?? '–'}</span>
+              <span class="demografi-label-bawah">Jumlah Jiwa</span>
+            </div>
           </div>
         </div>
 
-        <!-- Daftar agama vertikal menyatu dengan donut -->
-        <div class="demografi-daftar-wrap">
+        <!-- Badan Kanan: Kolom Statistik Persen (3 kolom per baris) -->
+        <div class="demografi-body">
           <div class="demografi-daftar">
             {dataAgama.map((item) => (
-              <div class="demografi-item">
-                <div class="demografi-baris-teks">
-                  <span class="demografi-nama-agama">
-                    <span class="demografi-dot" style={`background-color: ${item.warna};`}></span>
-                    <span class="demografi-nama">{item.agama}</span>
-                  </span>
-                  <span class="demografi-nilai">
-                    <strong class="demografi-persen">{item.persenLabel}%</strong>
-                  </span>
+              <div class="demografi-row">
+                <div class="demografi-nama-wrap">
+                  <span class="demografi-dot" style={`background-color: ${item.warna};`}></span>
+                  <span class="demografi-nama">{item.agama}</span>
                 </div>
-                <div class="demografi-garis-track">
+                <div class="demografi-track">
                   <div
-                    class="demografi-garis-isi"
+                    class="demografi-bar"
                     style={`width: ${Math.max(item.persen, item.jumlah > 0 ? 2 : 0)}%; background-color: ${item.warna};`}
                   ></div>
                 </div>
+                <span class="demografi-persen">{item.persenLabel}%</span>
               </div>
             ))}
           </div>
@@ -227,24 +234,45 @@ const dataAgama = tampilanAgama.map((item, index) => {
     .village-summary-stats :global([data-stat-label]) { font-size: 0.8125rem; }
   }
 
-  /* ── Demografi Card: donut tanpa bingkai + daftar menyatu ── */
-  .demografi-card {
+  /* ── Demografi Capsule (Siluet Terpadu Sesuai Gambar Referensi) ── */
+  .demografi-capsule {
     display: flex;
     align-items: center;
-    max-width: 32rem;
-    margin: 1.25rem auto 0;
+    max-width: 52rem;
+    margin: 1.75rem auto 0;
     position: relative;
+    filter: drop-shadow(0 12px 32px rgb(31 51 22 / 0.09));
   }
 
-  .demografi-donut-wrap {
+  /* Kepala Kiri: Bulatan Donut + Transisi Lekukan */
+  .demografi-head {
     position: relative;
-    width: 7.5rem;
-    height: 7.5rem;
+    width: 15rem;
+    height: 14.5rem;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1;
+    z-index: 2;
+  }
+
+  .demografi-head-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .demografi-donut-wrap {
+    position: relative;
+    width: 11rem;
+    height: 11rem;
+    margin-right: 1.5rem; /* Posisi tepat di tengah bulatan kiri */
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .demografi-donut-svg {
@@ -252,13 +280,13 @@ const dataAgama = tampilanAgama.map((item, index) => {
     inset: 0;
     width: 100%;
     height: 100%;
-    filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.04));
   }
 
   .demografi-slice {
     transition: stroke-dashoffset 0.6s ease, stroke-dasharray 0.6s ease;
   }
 
+  /* Teks Tengah: Total / Angka / Jumlah Jiwa */
   .demografi-pusat {
     position: relative;
     display: flex;
@@ -271,120 +299,159 @@ const dataAgama = tampilanAgama.map((item, index) => {
     padding: 0.25rem;
   }
 
+  .demografi-label-atas {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #64748b;
+    line-height: 1;
+  }
+
   .demografi-angka {
-    font-size: clamp(1rem, 1.8vw, 1.25rem);
+    font-size: clamp(1.75rem, 2.5vw, 2.25rem);
     font-weight: 800;
-    line-height: 1.1;
-    color: var(--color-ink);
+    line-height: 1.15;
+    color: #166534;
     font-variant-numeric: tabular-nums;
+    margin: 0.2rem 0;
   }
 
-  .demografi-satuan {
-    font-size: 0.5625rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-forest-700);
-    margin-top: 0.1rem;
+  .demografi-label-bawah {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #64748b;
+    line-height: 1;
   }
 
-  .demografi-label {
-    font-size: 0.5rem;
-    color: var(--color-ink-muted);
-    margin-top: 0.05rem;
-    line-height: 1.2;
-  }
-
-  .demografi-daftar-wrap {
+  /* Badan Kanan: Kolom Statistik Persen */
+  .demografi-body {
     flex: 1;
     min-width: 0;
-    padding: 1rem 1.25rem 1rem 2.5rem;
-    margin-left: -1.25rem;
-    border: 1px solid rgb(255 255 255 / 0.8);
-    border-radius: 0 1rem 1rem 0;
-    background: var(--color-cream-50);
-    box-shadow: 0 8px 24px rgb(31 51 22 / 0.08);
+    background: #ffffff;
+    border-radius: 0 1.25rem 1.25rem 0;
+    margin-left: -1px; /* Sambungan presisi tanpa celah */
+    min-height: 11.5rem; /* Tinggi pas dengan y=24 sampai y=208 di kepala */
+    padding: 1.5rem 2.25rem 1.5rem 0.75rem;
+    display: flex;
+    align-items: center;
+    z-index: 1;
   }
 
   .demografi-daftar {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.625rem;
-  }
-
-  .demografi-item {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 1.125rem;
+    width: 100%;
   }
 
-  .demografi-baris-teks {
+  .demografi-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    font-size: 0.75rem;
+    gap: 1.25rem;
   }
 
-  .demografi-nama-agama {
+  .demografi-nama-wrap {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
-    font-weight: 600;
-    color: var(--color-ink);
+    gap: 0.625rem;
+    min-width: 7.5rem;
+    flex-shrink: 0;
   }
 
   .demografi-dot {
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 0.75rem;
+    height: 0.75rem;
     border-radius: 9999px;
     flex-shrink: 0;
   }
 
-  .demografi-nilai {
-    display: flex;
-    align-items: baseline;
-    gap: 0.375rem;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .demografi-persen {
-    font-weight: 700;
+  .demografi-nama {
+    font-size: 0.9375rem;
+    font-weight: 600;
     color: var(--color-ink);
   }
 
-  .demografi-garis-track {
-    width: 100%;
-    height: 0.25rem;
-    background: rgb(0 0 0 / 0.06);
+  .demografi-track {
+    flex: 1;
+    height: 0.625rem;
+    background: #f1f5f9;
     border-radius: 9999px;
     overflow: hidden;
   }
 
-  .demografi-garis-isi {
+  .demografi-bar {
     height: 100%;
     border-radius: 9999px;
     transition: width 0.5s ease;
   }
 
+  .demografi-persen {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-ink);
+    min-width: 2.75rem;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+  }
+
+  /* ── Mode Mobile (< 640px) ── */
   @media (max-width: 639px) {
-    .demografi-card {
+    .demografi-capsule {
       flex-direction: column;
-      align-items: center;
-      max-width: 20rem;
+      align-items: stretch;
+      max-width: 22rem;
+      background: #ffffff;
+      border-radius: 1.5rem;
+      padding: 1.5rem 1.125rem;
+      gap: 1.25rem;
+    }
+    .demografi-head {
+      width: auto;
+      height: auto;
+      justify-content: center;
+    }
+    .demografi-head-bg {
+      display: none;
     }
     .demografi-donut-wrap {
-      width: 7rem;
-      height: 7rem;
-      margin-bottom: -1rem;
-      z-index: 2;
+      width: 10rem;
+      height: 10rem;
+      margin-right: 0;
     }
-    .demografi-daftar-wrap {
+    .demografi-angka {
+      font-size: 1.75rem;
+    }
+    .demografi-body {
+      background: transparent;
+      border-radius: 0;
       margin-left: 0;
-      margin-top: 0;
-      padding: 1.5rem 1rem 1rem;
-      border-radius: 0 0 1rem 1rem;
+      min-height: auto;
+      padding: 0;
       width: 100%;
+    }
+    .demografi-daftar {
+      gap: 0.875rem;
+    }
+    .demografi-row {
+      gap: 0.75rem;
+    }
+    .demografi-nama-wrap {
+      min-width: 5.5rem;
+      gap: 0.5rem;
+    }
+    .demografi-dot {
+      width: 0.625rem;
+      height: 0.625rem;
+    }
+    .demografi-nama {
+      font-size: 0.8125rem;
+    }
+    .demografi-track {
+      height: 0.5rem;
+    }
+    .demografi-persen {
+      font-size: 0.8125rem;
+      min-width: 2.25rem;
     }
   }
 </style>
