@@ -3,6 +3,34 @@
 // Statis (bukan dari CMS) dan tanpa tautan unduh — warga dilayani petugas di loket.
 import Container from '../ui/Container.astro';
 import Icon from '../ui/Icon.astro';
+import SmartImage from '../ui/SmartImage.astro';
+
+const langkah = [
+  {
+    gambar: '/images/siamo/1-isi-nik.webp',
+    alt: 'Petugas mengetik NIK dan hasil data warga tampil otomatis',
+    judul: 'Isi NIK',
+    keterangan: 'Petugas mengetik NIK, data warga langsung terisi otomatis.',
+  },
+  {
+    gambar: '/images/siamo/2-pilih-surat.webp',
+    alt: 'Daftar katalog jenis surat dengan Surat Keterangan Usaha terpilih',
+    judul: 'Pilih surat',
+    keterangan: 'Pilih jenis surat dari katalog yang tersedia.',
+  },
+  {
+    gambar: '/images/siamo/3-isi-detail.webp',
+    alt: 'Kolom detail surat terisi: jenis usaha, lokasi, pejabat, dan tanggal',
+    judul: 'Isi detail',
+    keterangan: 'Lengkapi kolom khusus, pejabat, tanggal, dan nomor otomatis.',
+  },
+  {
+    gambar: '/images/siamo/4-terbit-cetak.webp',
+    alt: 'Pratinjau cetak surat A4 resmi siap cetak',
+    judul: 'Terbitkan & cetak',
+    keterangan: 'Surat A4 resmi terbit dan siap dicetak dari arsip.',
+  },
+];
 ---
 
 <section id="siamo" class="overflow-x-clip bg-forest-800 py-12 sm:py-16 lg:py-20">
@@ -30,6 +58,18 @@ import Icon from '../ui/Icon.astro';
         <p class="mt-1 text-sm text-sage-200">Surat hilang atau rusak dapat dicetak ulang dari arsip kelurahan.</p>
       </li>
     </ul>
+    <ol data-motion-group class="mt-8 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+      {langkah.map((item, i) => (
+        <li data-motion="card" data-motion-card class="overflow-hidden rounded-2xl bg-white/10 ring-1 ring-white/15">
+          <SmartImage src={item.gambar} alt={item.alt} showLabel={false} class="aspect-[3/2]" />
+          <div class="p-4">
+            <p class="text-xs font-semibold tracking-widest text-sun-400 uppercase">Langkah {i + 1}</p>
+            <h3 class="mt-1 font-bold text-white">{item.judul}</h3>
+            <p class="mt-1 text-sm text-sage-200">{item.keterangan}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
     <p data-motion="content" class="mt-8 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-sage-200 ring-1 ring-white/25">
       <Icon name="check" class="size-4 text-sun-400" />
       Tanpa unduh aplikasi — cukup bawa KTP dan KK ke loket
