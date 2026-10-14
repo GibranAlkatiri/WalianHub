@@ -53,12 +53,12 @@ const totalJiwa =
   jumlahPenduduk ?? (totalJiwaAgama > 0 ? totalJiwaAgama : null);
 
 const WARNA_AGAMA: Record<string, string> = {
-  Kristen: "#2563eb",
-  Katolik: "#7c3aed",
-  Islam: "#059669",
-  Hindu: "#d97706",
-  Buddha: "#db2777",
-  Konghucu: "#dc2626",
+  Islam: "#059669", // Hijau
+  Kristen: "#2563eb", // Biru
+  Katolik: "#eab308", // Kuning Emas
+  Hindu: "#ea580c", // Oranye Safron
+  Buddha: "#db2777", // Pink
+  Konghucu: "#dc2626", // Merah
 };
 const WARNA_CADANGAN = [
   "#2563eb",
@@ -291,11 +291,7 @@ const dataAgama = tampilanAgama.map((item, index) => {
     border-left: 1px solid var(--color-line);
     padding-left: 1rem;
   }
-</style>
 
-<!-- CSS kartu demografi global: cocok dengan HTML injeksi runtime CMS
-  (server/pengaturan-template.js) yang tanpa atribut scope Astro. -->
-<style is:global>
   /* ── Kartu demografi: cakram bundar kiri + panel daftar kanan ── */
   .demografi-card {
     display: flex;
