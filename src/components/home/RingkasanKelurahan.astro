@@ -291,7 +291,11 @@ const dataAgama = tampilanAgama.map((item, index) => {
     border-left: 1px solid var(--color-line);
     padding-left: 1rem;
   }
+</style>
 
+<!-- CSS kartu demografi global: cocok dengan HTML injeksi runtime CMS
+  (server/pengaturan-template.js) yang tanpa atribut scope Astro. -->
+<style is:global>
   /* ── Kartu demografi: cakram bundar kiri + panel daftar kanan ── */
   .demografi-card {
     display: flex;
