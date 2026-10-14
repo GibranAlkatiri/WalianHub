@@ -1,78 +1,117 @@
 ---
 // Section SIAMO di halaman Layanan: promosi aplikasi internal administrasi surat.
 // Statis (bukan dari CMS) dan tanpa tautan unduh — warga dilayani petugas di loket.
-import Container from '../ui/Container.astro';
-import Icon from '../ui/Icon.astro';
-import SmartImage from '../ui/SmartImage.astro';
+import Container from "../ui/Container.astro";
+import Icon from "../ui/Icon.astro";
+import SmartImage from "../ui/SmartImage.astro";
 
 const langkah = [
   {
-    gambar: '/images/siamo/1-isi-nik.webp',
-    alt: 'Petugas mengetik NIK dan hasil data warga tampil otomatis',
-    judul: 'Isi NIK',
-    keterangan: 'Petugas mengetik NIK, data warga langsung terisi otomatis.',
+    gambar: "/images/siamo/1-isi-nik.webp",
+    alt: "Petugas mengetik NIK dan hasil data warga tampil otomatis",
+    judul: "Isi NIK",
   },
   {
-    gambar: '/images/siamo/2-pilih-surat.webp',
-    alt: 'Daftar katalog jenis surat dengan Surat Keterangan Usaha terpilih',
-    judul: 'Pilih surat',
-    keterangan: 'Pilih jenis surat dari katalog yang tersedia.',
+    gambar: "/images/siamo/2-pilih-surat.webp",
+    alt: "Daftar katalog jenis surat dengan Surat Keterangan Usaha terpilih",
+    judul: "Pilih surat",
   },
   {
-    gambar: '/images/siamo/3-isi-detail.webp',
-    alt: 'Kolom detail surat terisi: jenis usaha, lokasi, pejabat, dan tanggal',
-    judul: 'Isi detail',
-    keterangan: 'Lengkapi kolom khusus, pejabat, tanggal, dan nomor otomatis.',
+    gambar: "/images/siamo/3-isi-detail.webp",
+    alt: "Kolom detail surat terisi: jenis usaha, lokasi, pejabat, dan tanggal",
+    judul: "Isi detail",
   },
   {
-    gambar: '/images/siamo/4-terbit-cetak.webp',
-    alt: 'Pratinjau cetak surat A4 resmi siap cetak',
-    judul: 'Terbitkan & cetak',
-    keterangan: 'Surat A4 resmi terbit dan siap dicetak dari arsip.',
+    gambar: "/images/siamo/4-terbit-cetak.webp",
+    alt: "Pratinjau cetak surat A4 resmi siap cetak",
+    judul: "Terbitkan & cetak",
   },
 ];
 ---
 
-<section id="siamo" class="overflow-x-clip bg-forest-800 py-12 sm:py-16 lg:py-20">
+<section
+  id="siamo"
+  class="overflow-x-clip bg-forest-800 py-12 sm:py-16 lg:py-20"
+>
   <Container>
-    <p data-motion="heading" class="text-sm font-semibold tracking-widest text-sage-300 uppercase">Digitalisasi layanan</p>
-    <h2 data-motion="heading" class="mt-2 max-w-2xl text-2xl leading-tight font-bold text-balance text-white sm:text-3xl">Surat lebih cepat dengan SIAMO</h2>
+    <p
+      data-motion="heading"
+      class="text-sm font-semibold tracking-widest text-sage-300 uppercase"
+    >
+      Digitalisasi layanan
+    </p>
+    <h2
+      data-motion="heading"
+      class="mt-2 max-w-2xl text-2xl leading-tight font-bold text-balance text-white sm:text-3xl"
+    >
+      Surat lebih cepat dengan SIAMO
+    </h2>
     <p data-motion="content" class="mt-3 max-w-2xl text-sage-200">
-      SIAMO (Sistem Administrasi Surat Kelurahan) adalah aplikasi internal Kelurahan Walian yang menggantikan
-      pencatatan spreadsheet: katalog 59 jenis surat, cetak A4 resmi, dan arsip yang tertib.
+      SIAMO (Sistem Administrasi Surat Kelurahan) adalah aplikasi internal
+      Kelurahan Walian yang mengotomatisasi proses administrasi surat-menyurat
+      warga.
     </p>
     <ul data-motion-group class="mt-8 grid gap-3 sm:grid-cols-3 sm:gap-4">
-      <li data-motion="card" data-motion-card class="rounded-2xl bg-white/10 p-5 ring-1 ring-white/15">
+      <li
+        data-motion="card"
+        data-motion-card
+        class="rounded-2xl bg-white/10 p-5 ring-1 ring-white/15"
+      >
         <Icon name="check" class="size-5 text-sun-400" />
         <h3 class="mt-3 font-bold text-white">Pencarian warga berbasis NIK</h3>
-        <p class="mt-1 text-sm text-sage-200">Data terisi otomatis ke surat, mengurangi salah ketik.</p>
+        <p class="mt-1 text-sm text-sage-200">
+          Data terisi otomatis ke surat, mengurangi salah ketik.
+        </p>
       </li>
-      <li data-motion="card" data-motion-card class="rounded-2xl bg-white/10 p-5 ring-1 ring-white/15">
+      <li
+        data-motion="card"
+        data-motion-card
+        class="rounded-2xl bg-white/10 p-5 ring-1 ring-white/15"
+      >
         <Icon name="check" class="size-5 text-sun-400" />
         <h3 class="mt-3 font-bold text-white">Penomoran otomatis anti-ganda</h3>
-        <p class="mt-1 text-sm text-sage-200">Setiap surat tercatat tertib dengan nomor resmi.</p>
+        <p class="mt-1 text-sm text-sage-200">
+          Setiap surat tercatat tertib dengan nomor resmi.
+        </p>
       </li>
-      <li data-motion="card" data-motion-card class="rounded-2xl bg-white/10 p-5 ring-1 ring-white/15">
+      <li
+        data-motion="card"
+        data-motion-card
+        class="rounded-2xl bg-white/10 p-5 ring-1 ring-white/15"
+      >
         <Icon name="check" class="size-5 text-sun-400" />
         <h3 class="mt-3 font-bold text-white">Arsip siap cetak ulang</h3>
-        <p class="mt-1 text-sm text-sage-200">Surat hilang atau rusak dapat dicetak ulang dari arsip kelurahan.</p>
+        <p class="mt-1 text-sm text-sage-200">
+          Surat hilang atau rusak dapat dicetak ulang dari arsip kelurahan.
+        </p>
       </li>
     </ul>
-    <ol data-motion-group class="mt-8 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-      {langkah.map((item, i) => (
-        <li data-motion="card" data-motion-card class="overflow-hidden rounded-2xl bg-white/10 ring-1 ring-white/15">
-          <SmartImage src={item.gambar} alt={item.alt} showLabel={false} class="aspect-[3/2]" />
-          <div class="p-4">
-            <p class="text-xs font-semibold tracking-widest text-sun-400 uppercase">Langkah {i + 1}</p>
-            <h3 class="mt-1 font-bold text-white">{item.judul}</h3>
-            <p class="mt-1 text-sm text-sage-200">{item.keterangan}</p>
-          </div>
-        </li>
-      ))}
+    <ol
+      data-motion-group
+      class="mt-8 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4"
+    >
+      {
+        langkah.map((item, i) => (
+          <li
+            data-motion="card"
+            data-motion-card
+            class="relative overflow-hidden rounded-2xl bg-white/10 ring-1 ring-white/15"
+          >
+            <SmartImage
+              src={item.gambar}
+              alt={item.alt}
+              showLabel={false}
+              class="aspect-[3/2]"
+            />
+            <div class="flex items-center justify-between gap-2 p-4">
+              <h3 class="font-bold text-white">{item.judul}</h3>
+              {i < langkah.length - 1 && (
+                <Icon name="arrow-right" class="size-5 shrink-0 text-sun-400" />
+              )}
+            </div>
+          </li>
+        ))
+      }
     </ol>
-    <p data-motion="content" class="mt-8 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-sage-200 ring-1 ring-white/25">
-      <Icon name="check" class="size-4 text-sun-400" />
-      Tanpa unduh aplikasi — cukup bawa KTP dan KK ke loket
-    </p>
   </Container>
 </section>
