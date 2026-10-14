@@ -4,6 +4,7 @@ import { getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Container from '../components/ui/Container.astro';
 import KepalaHalaman from '../components/profil/KepalaHalaman.astro';
+import VideoProfil from '../components/profil/VideoProfil.astro';
 import StrukturOrganisasi from '../components/profil/StrukturOrganisasi.astro';
 import Wilayah from '../components/profil/Wilayah.astro';
 import VisiMisi from '../components/profil/VisiMisi.astro';
@@ -14,6 +15,7 @@ const profil = (await getEntry('profil', 'profil'))!.data;
 
 <BaseLayout title="Profil" description="Struktur organisasi, wilayah, penduduk, serta visi dan misi Kelurahan Walian.">
   <KepalaHalaman ringkasan={profil.ringkasan} />
+  <VideoProfil videoProfil={profil.videoProfil} />
   <StrukturOrganisasi lurah={profil.lurah} strukturOrganisasi={profil.strukturOrganisasi} />
   <Wilayah sumberData={profil.sumberData} lingkungan={profil.lingkungan} />
   <VisiMisi visi={profil.visi} misi={profil.misi} programUnggulan={profil.programUnggulan} sumber={profil.sumberVisiMisi} />

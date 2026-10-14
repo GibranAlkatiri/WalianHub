@@ -127,6 +127,14 @@ export const profilSchema = z.object({
       )
       .optional()
       .default([]),
+    /** Video pengenalan/potensi kelurahan (YouTube). Kosong: tampil placeholder. */
+    videoProfil: z
+      .object({
+        url: z.string().trim().default(''),
+        judul: z.string().trim().default(''),
+        deskripsi: z.string().trim().default(''),
+      })
+      .default({ url: '', judul: '', deskripsi: '' }),
     /** Visi dan misi Pemerintah Kota Tomohon, yang diikuti Kelurahan Walian. */
     visi: teksWajib,
     misi: z.array(teksWajib),

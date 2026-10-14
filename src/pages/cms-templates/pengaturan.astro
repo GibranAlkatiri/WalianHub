@@ -7,6 +7,7 @@ import Contact from '../../components/home/Contact.astro';
 import Footer from '../../components/layout/Footer.astro';
 import Pengaduan from '../../components/layanan/Pengaduan.astro';
 import KepalaHalaman from '../../components/profil/KepalaHalaman.astro';
+import VideoProfil from '../../components/profil/VideoProfil.astro';
 import StrukturOrganisasi from '../../components/profil/StrukturOrganisasi.astro';
 import SimpulBagan from '../../components/profil/SimpulBagan.astro';
 import Wilayah from '../../components/profil/Wilayah.astro';
@@ -30,6 +31,7 @@ const lingkungan = {nama:'__CMS_ENVIRONMENT_NAME__',kepala:'__CMS_HEAD__',wakil:
 <template id="cms-footer"><Footer {situs} /></template>
 <template id="cms-complaint"><Pengaduan whatsapp={situs.whatsapp} /></template>
 <template id="cms-profile-heading"><KepalaHalaman ringkasan="__CMS_SUMMARY__" runtimeTemplate /></template>
+<template id="cms-video"><VideoProfil videoProfil={{ url: 'https://cms.invalid/__CMS_VIDEO_URL__', judul: '__CMS_VIDEO_TITLE__', deskripsi: '__CMS_VIDEO_DESCRIPTION__' }} runtimeTemplate /></template>
 <template id="cms-structure"><StrukturOrganisasi {lurah} strukturOrganisasi={[]} runtimeTemplate /></template>
 <template id="cms-node-root"><SimpulBagan simpul={node} puncak /></template>
 <template id="cms-node-child"><SimpulBagan simpul={node} /></template>

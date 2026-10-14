@@ -532,6 +532,24 @@ collections:
                 required: false
                 hint: "Foto tegak (rasio 3:4). Kosong: tampil gambar bawaan."
 
+          - label: Video Profil
+            name: videoProfil
+            widget: object
+            collapsed: false
+            hint: "Video pengenalan/potensi kelurahan dari YouTube. Kosongkan tautan jika videonya belum ada."
+            fields:
+              - label: Tautan YouTube
+                name: url
+                widget: string
+                required: false
+                hint: "Tempel link YouTube (watch, youtu.be, embed, atau shorts). Kosong: tampil “Video menyusul”."
+              - { label: Judul, name: judul, widget: string, required: false, hint: "Judul di kanan video. Kosong: tampil judul bawaan." }
+              - label: Deskripsi Singkat
+                name: deskripsi
+                widget: text
+                required: false
+                hint: "Satu-dua kalimat tentang isi video. Tampil di kanan video."
+
           - label: Struktur Organisasi
             name: strukturOrganisasi
             widget: list

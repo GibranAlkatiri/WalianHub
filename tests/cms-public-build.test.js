@@ -53,12 +53,14 @@ test('template Pengaturan hasil build dapat dirender dengan dua statistik ringka
   expect(templateHtml).not.toContain('id="cms-stat-family"');
   expect(templateHtml).not.toContain('id="cms-stat-population"');
   expect(templateHtml).toContain('__CMS_DEMOGRAFI__');
+  expect(templateHtml).toContain('id="cms-video"');
   const parts = renderPengaturan(await publishedPengaturan(environment()), parsePengaturanTemplates(templateHtml));
-  for (const part of ['hero', 'intro', 'contact', 'footer', 'complaint', 'heading', 'structure', 'region', 'vision']) {
+  for (const part of ['hero', 'intro', 'contact', 'footer', 'complaint', 'heading', 'video', 'structure', 'region', 'vision']) {
     expect(parts[part]).toBeString();
     expect(parts[part]).not.toContain('__CMS_');
   }
   expect(parts.hero).toContain('demografi-card');
+  expect(parts.video).toContain('video-profil');
 });
 
 test('empat halaman publik memakai Pengaturan D1 dan template hasil build tanpa 503', async () => {
