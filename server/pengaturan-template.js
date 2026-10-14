@@ -56,7 +56,7 @@ export function typedText(text,delay=0,interval=JEDA_HURUF_JUDUL) {
     return '<span class="inline-block max-w-full">'+Array.from(segmenter.segment(word),({segment})=>'<span class="hero-huruf" style="--jeda-huruf: '+(delay+index++*interval)+'ms">'+escapeHtml(segment)+'</span>').join('')+'</span>';
   }).join('');
 }
-const WARNA_AGAMA={'Kristen':'#2563eb','Katolik':'#7c3aed','Islam':'#059669','Hindu':'#d97706','Buddha':'#db2777','Konghucu':'#dc2626'};
+const WARNA_AGAMA={'Islam':'#059669','Kristen':'#2563eb','Katolik':'#eab308','Hindu':'#ea580c','Buddha':'#db2777','Konghucu':'#dc2626'};
 const WARNA_CADANGAN=['#2563eb','#7c3aed','#059669','#d97706','#db2777','#dc2626','#0891b2','#4f46e5'];
 const LABEL_AGAMA={kristen:'Kristen',katolik:'Katolik',islam:'Islam',hindu:'Hindu',buddha:'Buddha',konghucu:'Konghucu'};
 function renderDemografi(beranda) {
