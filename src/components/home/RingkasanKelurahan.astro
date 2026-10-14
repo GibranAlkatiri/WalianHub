@@ -4,63 +4,93 @@
 // Lingkungan dan Luas Wilayah, mengikuti siluet referensi: cakram bundar
 // kiri menempel pada panel daftar kanan.
 // Marker runtime memakai total yang sudah dihitung oleh publikasi CMS.
-import type { CollectionEntry } from 'astro:content';
-import Container from '../ui/Container.astro';
-import StatCard from '../ui/StatCard.astro';
-import { formatAngka } from '../../lib/format';
+import type { CollectionEntry } from "astro:content";
+import Container from "../ui/Container.astro";
+import StatCard from "../ui/StatCard.astro";
+import { formatAngka } from "../../lib/format";
 
-type Profil = CollectionEntry<'profil'>['data'];
-type Beranda = CollectionEntry<'beranda'>['data'];
+type Profil = CollectionEntry<"profil">["data"];
+type Beranda = CollectionEntry<"beranda">["data"];
 interface Props {
-  lingkungan: Profil['lingkungan'];
-  jumlahPenduduk?: Beranda['jumlahPenduduk'];
-  demografiAgama?: Beranda['demografiAgama'];
+  lingkungan: Profil["lingkungan"];
+  jumlahPenduduk?: Beranda["jumlahPenduduk"];
+  demografiAgama?: Beranda["demografiAgama"];
   runtimeTemplate?: boolean;
 }
-const { lingkungan, jumlahPenduduk = null, demografiAgama: mentahAgama, runtimeTemplate = false } = Astro.props;
-const jumlahkan = (key: 'luasKm2') => {
-  const terisi = lingkungan.map(item => item[key]).filter((angka): angka is number => angka != null);
+const {
+  lingkungan,
+  jumlahPenduduk = null,
+  demografiAgama: mentahAgama,
+  runtimeTemplate = false,
+} = Astro.props;
+const jumlahkan = (key: "luasKm2") => {
+  const terisi = lingkungan
+    .map((item) => item[key])
+    .filter((angka): angka is number => angka != null);
   return terisi.length ? terisi.reduce((a, b) => a + b, 0) : null;
 };
 
 // Normalisasi object 6 agama ke daftar tampilan (3 teratas + Lainnya).
 const labelAgama: Record<string, string> = {
-  kristen: 'Kristen',
-  katolik: 'Katolik',
-  islam: 'Islam',
-  hindu: 'Hindu',
-  buddha: 'Buddha',
-  konghucu: 'Konghucu',
+  kristen: "Kristen",
+  katolik: "Katolik",
+  islam: "Islam",
+  hindu: "Hindu",
+  buddha: "Buddha",
+  konghucu: "Konghucu",
 };
-const daftarAgama = Object.entries(mentahAgama ?? {}).map(([kunci, jumlah]) => ({
-  agama: labelAgama[kunci] ?? kunci,
-  jumlah: jumlah || 0,
-}));
-const totalJiwaAgama = daftarAgama.reduce((acc, item) => acc + (item.jumlah || 0), 0);
-const totalJiwa = jumlahPenduduk ?? (totalJiwaAgama > 0 ? totalJiwaAgama : null);
+const daftarAgama = Object.entries(mentahAgama ?? {}).map(
+  ([kunci, jumlah]) => ({
+    agama: labelAgama[kunci] ?? kunci,
+    jumlah: jumlah || 0,
+  }),
+);
+const totalJiwaAgama = daftarAgama.reduce(
+  (acc, item) => acc + (item.jumlah || 0),
+  0,
+);
+const totalJiwa =
+  jumlahPenduduk ?? (totalJiwaAgama > 0 ? totalJiwaAgama : null);
 
 const WARNA_AGAMA: Record<string, string> = {
-  Kristen: '#2563eb',
-  Katolik: '#7c3aed',
-  Islam: '#059669',
-  Hindu: '#d97706',
-  Buddha: '#db2777',
-  Konghucu: '#dc2626',
+  Kristen: "#2563eb",
+  Katolik: "#7c3aed",
+  Islam: "#059669",
+  Hindu: "#d97706",
+  Buddha: "#db2777",
+  Konghucu: "#dc2626",
 };
-const WARNA_CADANGAN = ['#2563eb', '#7c3aed', '#059669', '#d97706', '#db2777', '#dc2626', '#0891b2', '#4f46e5'];
-const WARNA_LAINNYA = '#94a3b8';
+const WARNA_CADANGAN = [
+  "#2563eb",
+  "#7c3aed",
+  "#059669",
+  "#d97706",
+  "#db2777",
+  "#dc2626",
+  "#0891b2",
+  "#4f46e5",
+];
+const WARNA_LAINNYA = "#94a3b8";
 // ponytail: warna netral tetap; ganti ke token palette saat token abu resmi tersedia.
 
 const radius = 38;
 const keliling = 2 * Math.PI * radius;
 const basisTotal = totalJiwaAgama > 0 ? totalJiwaAgama : 1;
 
-const terurut = [...daftarAgama].sort((a, b) => (b.jumlah || 0) - (a.jumlah || 0));
+const terurut = [...daftarAgama].sort(
+  (a, b) => (b.jumlah || 0) - (a.jumlah || 0),
+);
 const tigaTeratas = terurut.slice(0, 3);
 const sisa = terurut.slice(3);
 const tampilanAgama =
   sisa.length > 0
-    ? [...tigaTeratas, { agama: 'Lainnya', jumlah: sisa.reduce((acc, item) => acc + (item.jumlah || 0), 0) }]
+    ? [
+        ...tigaTeratas,
+        {
+          agama: "Lainnya",
+          jumlah: sisa.reduce((acc, item) => acc + (item.jumlah || 0), 0),
+        },
+      ]
     : tigaTeratas;
 let offsetBerjalan = 0;
 const dataAgama = tampilanAgama.map((item, index) => {
@@ -68,11 +98,20 @@ const dataAgama = tampilanAgama.map((item, index) => {
   const panjangBusur = (persen / 100) * keliling;
   const offset = offsetBerjalan;
   if (persen > 0) offsetBerjalan += panjangBusur;
-  const warna = item.agama === 'Lainnya' ? WARNA_LAINNYA : (WARNA_AGAMA[item.agama] || WARNA_CADANGAN[index % WARNA_CADANGAN.length]);
+  const warna =
+    item.agama === "Lainnya"
+      ? WARNA_LAINNYA
+      : WARNA_AGAMA[item.agama] ||
+        WARNA_CADANGAN[index % WARNA_CADANGAN.length];
   return {
     ...item,
     persen,
-    persenLabel: persen >= 10 ? persen.toFixed(1).replace(/\.0$/, '') : (persen > 0 ? persen.toFixed(1) : '0'),
+    persenLabel:
+      persen >= 10
+        ? persen.toFixed(1).replace(/\.0$/, "")
+        : persen > 0
+          ? persen.toFixed(1)
+          : "0",
     panjangBusur,
     offset,
     warna,
@@ -80,73 +119,111 @@ const dataAgama = tampilanAgama.map((item, index) => {
 });
 ---
 
-<section id="ringkasan-kelurahan" aria-label="Ringkasan kelurahan" class="village-summary">
+<section
+  id="ringkasan-kelurahan"
+  aria-label="Ringkasan kelurahan"
+  class="village-summary"
+>
   <Container>
     <div class="village-summary-grid">
       <div class="village-summary-content">
         <div class="village-summary-stats">
-          {runtimeTemplate ? '__CMS_STATS__' : <>
-            <StatCard ikon="map" label="Lingkungan" angka={lingkungan.length ? String(lingkungan.length) : null} />
-            <StatCard ikon="land-plot" label="Luas wilayah" angka={formatAngka(jumlahkan('luasKm2'))} satuan="km²" />
-          </>}
+          {
+            runtimeTemplate ? (
+              "__CMS_STATS__"
+            ) : (
+              <>
+                <StatCard
+                  ikon="map"
+                  label="Lingkungan"
+                  angka={lingkungan.length ? String(lingkungan.length) : null}
+                />
+                <StatCard
+                  ikon="land-plot"
+                  label="Luas wilayah"
+                  angka={formatAngka(jumlahkan("luasKm2"))}
+                  satuan="km²"
+                />
+              </>
+            )
+          }
         </div>
       </div>
-      {runtimeTemplate ? '__CMS_DEMOGRAFI__' : (
-        <div class="demografi-card">
-          <div class="demografi-head">
-            <div class="demografi-donut-wrap" aria-label={`Total penduduk: ${formatAngka(totalJiwa) ?? '–'} jiwa`}>
-              <svg class="demografi-donut-svg" viewBox="0 0 100 100" aria-hidden="true">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r={radius}
-                  fill="none"
-                  stroke="rgb(226 232 240 / 0.8)"
-                  stroke-width="9"
-                />
-                {dataAgama.map((item) => item.persen > 0 && (
+      {
+        runtimeTemplate ? (
+          "__CMS_DEMOGRAFI__"
+        ) : (
+          <div class="demografi-card">
+            <div class="demografi-head">
+              <div
+                class="demografi-donut-wrap"
+                aria-label={`Total penduduk: ${formatAngka(totalJiwa) ?? "–"} jiwa`}
+              >
+                <svg
+                  class="demografi-donut-svg"
+                  viewBox="0 0 100 100"
+                  aria-hidden="true"
+                >
                   <circle
                     cx="50"
                     cy="50"
                     r={radius}
                     fill="none"
-                    stroke={item.warna}
+                    stroke="rgb(226 232 240 / 0.8)"
                     stroke-width="9"
-                    stroke-dasharray={`${item.panjangBusur} ${keliling - item.panjangBusur}`}
-                    stroke-dashoffset={-item.offset}
-                    transform="rotate(-90 50 50)"
-                    class="demografi-slice"
                   />
+                  {dataAgama.map(
+                    (item) =>
+                      item.persen > 0 && (
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r={radius}
+                          fill="none"
+                          stroke={item.warna}
+                          stroke-width="9"
+                          stroke-dasharray={`${item.panjangBusur} ${keliling - item.panjangBusur}`}
+                          stroke-dashoffset={-item.offset}
+                          transform="rotate(-90 50 50)"
+                          class="demografi-slice"
+                        />
+                      ),
+                  )}
+                </svg>
+                <div class="demografi-pusat">
+                  <span class="demografi-label-atas">Total</span>
+                  <span class="demografi-angka">
+                    {formatAngka(totalJiwa) ?? "–"}
+                  </span>
+                  <span class="demografi-label-bawah">Jumlah Jiwa</span>
+                </div>
+              </div>
+            </div>
+            <div class="demografi-body">
+              <div class="demografi-daftar">
+                {dataAgama.map((item) => (
+                  <div class="demografi-row">
+                    <div class="demografi-nama-wrap">
+                      <span
+                        class="demografi-dot"
+                        style={`background-color: ${item.warna};`}
+                      />
+                      <span class="demografi-nama">{item.agama}</span>
+                    </div>
+                    <div class="demografi-track">
+                      <div
+                        class="demografi-bar"
+                        style={`width: ${Math.max(item.persen, item.jumlah > 0 ? 2 : 0)}%; background-color: ${item.warna};`}
+                      />
+                    </div>
+                    <span class="demografi-persen">{item.persenLabel}%</span>
+                  </div>
                 ))}
-              </svg>
-              <div class="demografi-pusat">
-                <span class="demografi-label-atas">Total</span>
-                <span class="demografi-angka">{formatAngka(totalJiwa) ?? '–'}</span>
-                <span class="demografi-label-bawah">Jumlah Jiwa</span>
               </div>
             </div>
           </div>
-          <div class="demografi-body">
-            <div class="demografi-daftar">
-              {dataAgama.map((item) => (
-                <div class="demografi-row">
-                  <div class="demografi-nama-wrap">
-                    <span class="demografi-dot" style={`background-color: ${item.warna};`}></span>
-                    <span class="demografi-nama">{item.agama}</span>
-                  </div>
-                  <div class="demografi-track">
-                    <div
-                      class="demografi-bar"
-                      style={`width: ${Math.max(item.persen, item.jumlah > 0 ? 2 : 0)}%; background-color: ${item.warna};`}
-                    ></div>
-                  </div>
-                  <span class="demografi-persen">{item.persenLabel}%</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+        )
+      }
     </div>
   </Container>
 </section>
@@ -202,7 +279,9 @@ const dataAgama = tampilanAgama.map((item, index) => {
     font-size: 0.875rem;
     line-height: 1.5;
   }
-  .village-summary-stats :global([data-stat-unit]) { font-size: 0.6875rem; }
+  .village-summary-stats :global([data-stat-unit]) {
+    font-size: 0.6875rem;
+  }
   .village-summary-stats :global([data-stat-label]) {
     margin: 0.25rem 0 0;
     font-size: 0.75rem;
@@ -250,7 +329,9 @@ const dataAgama = tampilanAgama.map((item, index) => {
     height: 100%;
   }
   .demografi-slice {
-    transition: stroke-dashoffset 0.6s ease, stroke-dasharray 0.6s ease;
+    transition:
+      stroke-dashoffset 0.6s ease,
+      stroke-dasharray 0.6s ease;
   }
   .demografi-pusat {
     position: relative;
@@ -284,7 +365,7 @@ const dataAgama = tampilanAgama.map((item, index) => {
     min-width: 0;
     background: #ffffff;
     border-radius: 0 1.25rem 1.25rem 0;
-    margin-left: -2.5rem;
+    margin-left: -3.6rem;
     padding: 1.25rem 1.5rem 1.25rem 3.5rem;
     min-height: 9.5rem;
     display: flex;
@@ -360,7 +441,9 @@ const dataAgama = tampilanAgama.map((item, index) => {
       width: 7.25rem;
       height: 7.25rem;
     }
-    .demografi-angka { font-size: 1.375rem; }
+    .demografi-angka {
+      font-size: 1.375rem;
+    }
     .demografi-body {
       margin-left: 0;
       margin-top: 0;
@@ -371,16 +454,34 @@ const dataAgama = tampilanAgama.map((item, index) => {
     }
   }
   @media (min-width: 640px) {
-    .demografi-angka { font-size: 2rem; }
-    .demografi-nama-wrap { font-size: 0.875rem; min-width: 7rem; }
-    .demografi-persen { font-size: 0.875rem; }
+    .demografi-angka {
+      font-size: 2rem;
+    }
+    .demografi-nama-wrap {
+      font-size: 0.875rem;
+      min-width: 7rem;
+    }
+    .demografi-persen {
+      font-size: 0.875rem;
+    }
   }
   @media (min-width: 1024px) {
-    .village-summary-content { padding: 1.5rem 2rem; }
-    .village-summary-stats :global([data-stat-card]) { column-gap: 0.875rem; }
-    .village-summary-stats :global([data-stat-card] > span) { width: 2.5rem; height: 2.5rem; }
-    .village-summary-stats :global([data-stat-card] + [data-stat-card]) { padding-left: 1.5rem; }
-    .village-summary-stats :global([data-stat-label]) { font-size: 0.8125rem; }
+    .village-summary-content {
+      padding: 1.5rem 2rem;
+    }
+    .village-summary-stats :global([data-stat-card]) {
+      column-gap: 0.875rem;
+    }
+    .village-summary-stats :global([data-stat-card] > span) {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+    .village-summary-stats :global([data-stat-card] + [data-stat-card]) {
+      padding-left: 1.5rem;
+    }
+    .village-summary-stats :global([data-stat-label]) {
+      font-size: 0.8125rem;
+    }
     .demografi-head {
       width: 13rem;
       height: 13rem;
