@@ -1,0 +1,38 @@
+---
+// Section SIAMO di halaman Layanan: promosi aplikasi internal administrasi surat.
+// Statis (bukan dari CMS) dan tanpa tautan unduh — warga dilayani petugas di loket.
+import Container from '../ui/Container.astro';
+import Icon from '../ui/Icon.astro';
+---
+
+<section id="siamo" class="overflow-x-clip bg-forest-800 py-12 sm:py-16 lg:py-20">
+  <Container>
+    <p data-motion="heading" class="text-sm font-semibold tracking-widest text-sage-300 uppercase">Digitalisasi layanan</p>
+    <h2 data-motion="heading" class="mt-2 max-w-2xl text-2xl leading-tight font-bold text-balance text-white sm:text-3xl">Surat lebih cepat dengan SIAMO</h2>
+    <p data-motion="content" class="mt-3 max-w-2xl text-sage-200">
+      SIAMO (Sistem Administrasi Surat Kelurahan) adalah aplikasi internal Kelurahan Walian yang menggantikan
+      pencatatan spreadsheet: katalog 59 jenis surat, cetak A4 resmi, dan arsip yang tertib.
+    </p>
+    <ul data-motion-group class="mt-8 grid gap-3 sm:grid-cols-3 sm:gap-4">
+      <li data-motion="card" data-motion-card class="rounded-2xl bg-white/10 p-5 ring-1 ring-white/15">
+        <Icon name="check" class="size-5 text-sun-400" />
+        <h3 class="mt-3 font-bold text-white">Pencarian warga berbasis NIK</h3>
+        <p class="mt-1 text-sm text-sage-200">Data terisi otomatis ke surat, mengurangi salah ketik.</p>
+      </li>
+      <li data-motion="card" data-motion-card class="rounded-2xl bg-white/10 p-5 ring-1 ring-white/15">
+        <Icon name="check" class="size-5 text-sun-400" />
+        <h3 class="mt-3 font-bold text-white">Penomoran otomatis anti-ganda</h3>
+        <p class="mt-1 text-sm text-sage-200">Setiap surat tercatat tertib dengan nomor resmi.</p>
+      </li>
+      <li data-motion="card" data-motion-card class="rounded-2xl bg-white/10 p-5 ring-1 ring-white/15">
+        <Icon name="check" class="size-5 text-sun-400" />
+        <h3 class="mt-3 font-bold text-white">Arsip siap cetak ulang</h3>
+        <p class="mt-1 text-sm text-sage-200">Surat hilang atau rusak dapat dicetak ulang dari arsip kelurahan.</p>
+      </li>
+    </ul>
+    <p data-motion="content" class="mt-8 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-sage-200 ring-1 ring-white/25">
+      <Icon name="check" class="size-4 text-sun-400" />
+      Tanpa unduh aplikasi — cukup bawa KTP dan KK ke loket
+    </p>
+  </Container>
+</section>

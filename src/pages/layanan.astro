@@ -9,6 +9,7 @@ import StatusKantor from '../components/ui/StatusKantor.astro';
 import TeksKetik from '../components/ui/TeksKetik.astro';
 import DaftarPengumuman from '../components/layanan/DaftarPengumuman.astro';
 import ItemLayanan from '../components/layanan/ItemLayanan.astro';
+import SiamoPromo from '../components/layanan/SiamoPromo.astro';
 import Pengaduan from '../components/layanan/Pengaduan.astro';
 import { url } from '../lib/url';
 import { formatTanggal } from '../lib/format';
@@ -66,6 +67,8 @@ const diperbarui = layanan.length > 0 ? new Date(Math.max(...layanan.map((item) 
       <div data-cms-services-empty hidden={layanan.length > 0} class="mt-8 rounded-2xl bg-white p-8 text-center text-ink-muted shadow-card">Daftar layanan sedang disiapkan.</div>
     </Container>
   </section>
+
+  <SiamoPromo />
 
   <Pengaduan whatsapp={situs.whatsapp} />
 
