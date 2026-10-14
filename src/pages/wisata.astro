@@ -11,7 +11,7 @@ import { url } from '../lib/url';
 import { formatTanggal } from '../lib/format';
 import { JEDA_HURUF_SUBJUDUL, jedaSubjudulKetik } from '../lib/teks-ketik';
 
-const judulHalaman = 'Wisata Walian';
+const judulHalaman = 'Destinasi Walian';
 const pengantar = 'Kenali tempat-tempat menarik di Kelurahan Walian. Tekan "Cek Lokasi" untuk melihat titik destinasi di Google Maps.';
 
 const diperbarui = wisata.semua.length > 0
@@ -19,13 +19,13 @@ const diperbarui = wisata.semua.length > 0
   : null;
 ---
 
-<BaseLayout title="Wisata" description="Tempat wisata di Kelurahan Walian, beserta foto, informasi singkat, dan lokasi di Google Maps.">
+<BaseLayout title="Destinasi" description="Tempat wisata di Kelurahan Walian, beserta foto, informasi singkat, dan lokasi di Google Maps.">
   <section class="pt-8 pb-12 sm:pt-10 sm:pb-16 lg:pt-12 lg:pb-20">
     <Container>
       <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-sm text-ink-subtle">
         <a href={url('/')} class="hover:text-forest-600 hover:underline">Beranda</a>
         <span aria-hidden="true">/</span>
-        <span class="text-ink" aria-current="page">Wisata</span>
+        <span class="text-ink" aria-current="page">Destinasi</span>
       </nav>
       <h1 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl">
         <TeksKetik teks={judulHalaman} />
@@ -38,7 +38,7 @@ const diperbarui = wisata.semua.length > 0
 
   <section class="bg-sage-100 py-12 sm:py-16 lg:py-24">
     <Container>
-      <SectionHeading overline="Wisata" title="Daftar destinasi" />
+      <SectionHeading overline="Destinasi" title="Daftar destinasi" />
         <div data-cms-destination-list hidden={wisata.semua.length === 0} data-motion-group class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {wisata.semua.map((item) => (
             <DestinationCard

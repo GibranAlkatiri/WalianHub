@@ -1,12 +1,12 @@
 import { wisata } from './data-wisata';
 
 // Menu utama di header, menu HP, dan footer.
-// Wisata menggulir ke Beranda sampai empat destinasi, lalu membuka halaman daftar mulai lima.
+// Destinasi menggulir ke Beranda sampai empat destinasi, lalu membuka halaman daftar mulai lima.
 export const menuUtama = [
   { label: 'Beranda', href: '/' },
   { label: 'Profil', href: '/profil' },
   { label: 'Layanan', href: '/layanan' },
-  { label: 'Wisata', href: wisata.href, halaman: '/wisata' },
+  { label: 'Destinasi', href: wisata.href, halaman: '/wisata' },
 ];
 
 /** Tujuan tombol "Hubungi Kami": section Kontak di Beranda. */
