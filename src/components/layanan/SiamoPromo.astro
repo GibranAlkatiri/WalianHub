@@ -88,27 +88,36 @@ const langkah = [
     </ul>
     <ol
       data-motion-group
-      class="mt-8 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4"
+      class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8"
     >
       {
         langkah.map((item, i) => (
-          <li
-            data-motion="card"
-            data-motion-card
-            class="relative overflow-hidden rounded-2xl bg-white/10 ring-1 ring-white/15"
-          >
-            <SmartImage
-              src={item.gambar}
-              alt={item.alt}
-              showLabel={false}
-              class="aspect-[3/2]"
-            />
-            <div class="flex items-center justify-between gap-2 p-4">
-              <h3 class="font-bold text-white">{item.judul}</h3>
-              {i < langkah.length - 1 && (
-                <Icon name="arrow-right" class="size-5 shrink-0 text-sun-400" />
-              )}
+          <li data-motion="card" data-motion-card class="relative">
+            <div class="h-full overflow-hidden rounded-2xl bg-white/10 ring-1 ring-white/15">
+              <SmartImage
+                src={item.gambar}
+                alt={item.alt}
+                showLabel={false}
+                class="aspect-[3/2]"
+              />
+              <div class="flex items-center gap-2 p-4">
+                <span
+                  aria-hidden="true"
+                  class="flex size-6 shrink-0 items-center justify-center rounded-full bg-sun-400 text-sm font-bold text-ink"
+                >
+                  {i + 1}
+                </span>
+                <h3 class="font-bold text-white">{item.judul}</h3>
+              </div>
             </div>
+            {i < langkah.length - 1 && (
+              <span
+                aria-hidden="true"
+                class="absolute top-1/2 left-full z-10 ml-1 hidden -translate-y-1/2 lg:block"
+              >
+                <Icon name="arrow-right" class="size-6 text-sun-400" />
+              </span>
+            )}
           </li>
         ))
       }
