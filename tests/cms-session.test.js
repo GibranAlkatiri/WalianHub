@@ -143,6 +143,20 @@ describe('Sesi CMS mandiri', () => {
       expect(db.raw.query('SELECT attempts FROM cms_login_limits WHERE key_hash=?').get(key).attempts).toBe(5);
     } finally { db.close(); }
   });
+  test('batas login dapat dinonaktifkan sementara meski alamat sudah diblokir', async () => {
+    const { login, env, db } = setup();
+    try {
+      for (let i = 0; i < 10; i++) expect((await login({ username: 'walian', password: 'salah' })).status).toBe(401);
+      expect((await login()).status).toBe(429);
+      env.CMS_LOGIN_LIMIT_DISABLED = '1';
+      for (let i = 0; i < 12; i++) expect((await login({ username: 'walian', password: 'salah' })).status).toBe(401);
+      expect(db.raw.query('SELECT attempts FROM cms_login_limits').get().attempts).toBe(10);
+      expect((await login()).status).toBe(200);
+      expect((await login(undefined, undefined, { origin: 'https://luar.example' })).status).toBe(403);
+      env.CMS_LOGIN_LIMIT_DISABLED = '0';
+      expect((await login()).status).toBe(429);
+    } finally { db.close(); }
+  });
   test('binding atau schema sesi yang hilang gagal tertutup, tanpa mengembalikan token', async () => {
     const { login, env, db, req, call } = setup();
     try {
