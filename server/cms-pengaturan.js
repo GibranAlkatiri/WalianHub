@@ -3,16 +3,22 @@ import { LayananError } from './cms-layanan.js';
 export const pengaturanSchemas = {situs:situsSchema,beranda:berandaSchema,profil:profilSchema};
 const fail = (message) => { throw new LayananError(message); };
 // A draft may omit required values, but cannot change field types or names.
-function draftObject(value, fields) {
-  if (!value || Array.isArray(value) || typeof value !== 'object' || Object.keys(value).some((name)=>!fields.some((field)=>field.name===name))) fail('Isian Pengaturan tidak valid.');
-  return Object.fromEntries(Object.entries(value).map(([name,item])=>[name,draftValue(item,fields.find((field)=>field.name===name))]));
+function draftObject(value, fields, label = 'Pengaturan') {
+  if (!value || Array.isArray(value) || typeof value !== 'object') fail('Isian Pengaturan tidak valid.');
+  const extra = Object.keys(value).find((name) => !fields.some((field) => field.name === name));
+  if (extra) {
+    // Name the key so production logs and the panel message pinpoint stale data.
+    console.warn(`WalianHub CMS pengaturan: kolom asing ${label}.${extra}`);
+    fail(`Isian Pengaturan tidak valid (kolom asing: ${label}.${extra}). Muat ulang panel; jika berlanjut hubungi pengelola.`);
+  }
+  return Object.fromEntries(Object.entries(value).map(([name,item])=>[name,draftValue(item,fields.find((field)=>field.name===name),`${label}.${name}`)]));
 }
-function draftValue(value, field) {
+function draftValue(value, field, label = 'Pengaturan') {
   if (value === null && field.required === false && ['object','number','string'].includes(field.widget)) return null;
-  if (field.widget === 'object') return draftObject(value,field.fields);
+  if (field.widget === 'object') return draftObject(value,field.fields,label);
   if (field.widget === 'list' || field.widget === 'daftarNama') {
     if (!Array.isArray(value)) fail(`Isian ${field.label} harus berupa daftar.`);
-    return value.map((item)=>field.fields ? draftObject(item,field.fields) : draftValue(item,field.field || {widget:'string',label:field.label}));
+    return value.map((item,index)=>field.fields ? draftObject(item,field.fields,`${label}.${index}`) : draftValue(item,field.field || {widget:'string',label:field.label},label));
   }
   if (field.widget === 'number') {
     if (typeof value !== 'number' || !Number.isFinite(value) || (field.value_type === 'int' && !Number.isInteger(value)) || (field.min !== undefined && value < field.min) || (field.max !== undefined && value > field.max)) fail(`Angka ${field.label} tidak valid.`);

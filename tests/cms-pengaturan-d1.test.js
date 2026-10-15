@@ -85,6 +85,18 @@ test('kontrak Pengaturan mencakup jadwal, tanggal, pohon organisasi, angka, taut
   expect(()=>validatePengaturan({hero:{judul:'a',subjudul:'b',foto:[{gambar:'javascript:alert(1)',keterangan:'x'}]}},collection,'beranda',true)).toThrow();
   expect(typedText('<img> é👩‍💻')).toContain('&lt;');expect(typedText('<img> é👩‍💻')).not.toContain('<img>');expect(typedText('A B')).toContain('--jeda-huruf: 70ms');
 });
+test('kolom asing Pengaturan ditolak dengan menyebut nama kuncinya',async()=>{
+  const s=await setup();try{
+    const entry=await s.get('profil');
+    for(const data of [{...content.profil,kolomLama:'x'},{...content.profil,lurah:{...content.profil.lurah,namaLama:'x'}}]){
+      const res=await s.write('save',entry,{data});
+      expect(res.status).toBe(422);
+      expect(await res.text()).toContain('kolom asing');
+    }
+    const named=await(await s.write('save',entry,{data:{...content.profil,kolomLama:'x'}})).json();
+    expect(named.error).toContain('kolomLama');
+  }finally{s.db.close();}
+});
 test('impor Pengaturan mempertahankan draf GitHub dan koleksi lain; perubahan serentak ditolak dan impor ulang tidak menimpa editor',async()=>{
   const s=await setup();try{
     s.db.raw.query('INSERT INTO cms_content(collection,slug,source_path,published_json,published_blob_sha,snapshot_id) VALUES (?,?,?,?,?,?)').run('destinasi','tetap','src/content/destinasi/tetap.md','{}','c'.repeat(40),'fixture');
