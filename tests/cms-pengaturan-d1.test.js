@@ -97,6 +97,17 @@ test('kolom asing Pengaturan ditolak dengan menyebut nama kuncinya',async()=>{
     expect(named.error).toContain('kolomLama');
   }finally{s.db.close();}
 });
+test('demografiAgama legacy pada profil dibersihkan saat simpan lalu bisa terbit',async()=>{
+  const s=await setup();try{
+    const legacy=[{agama:'Kristen Protestan',jumlah:6120},{agama:'Katolik',jumlah:1450}];
+    const entry=await s.get('profil');
+    const draft=await(await s.write('save',entry,{data:{...content.profil,demografiAgama:legacy}})).json();
+    expect(draft.revision).toStartWith('d1:');
+    expect(draft.data.demografiAgama).toBeUndefined();
+    expect((await s.write('publish',draft)).status).toBe(200);
+    expect((await publishedPengaturan(s.env)).profil.demografiAgama).toEqual([]);
+  }finally{s.db.close();}
+});
 test('impor Pengaturan mempertahankan draf GitHub dan koleksi lain; perubahan serentak ditolak dan impor ulang tidak menimpa editor',async()=>{
   const s=await setup();try{
     s.db.raw.query('INSERT INTO cms_content(collection,slug,source_path,published_json,published_blob_sha,snapshot_id) VALUES (?,?,?,?,?,?)').run('destinasi','tetap','src/content/destinasi/tetap.md','{}','c'.repeat(40),'fixture');

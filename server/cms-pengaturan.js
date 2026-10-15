@@ -37,7 +37,16 @@ export function validatePengaturan(value, collection, slug, publish = false) {
   const schema = pengaturanSchemas[slug], file = collection.files?.find((file)=>file.name===slug);
   if (!schema || !file) throw new LayananError('Pengaturan tidak dikenali.',404);
   if (new TextEncoder().encode(JSON.stringify(value)).length > 256*1024) throw new LayananError('Isian Pengaturan terlalu panjang.',413);
-  const data = draftObject(value,file.fields);
+  // Legacy rows may still carry profil demografiAgama (moved to Beranda in
+  // c67b7a9). The website no longer reads it; drop it instead of bricking
+  // every Profil save with an invisible key the panel never renders.
+  let input = value;
+  if (slug === 'profil' && input && typeof input === 'object' && !Array.isArray(input) && 'demografiAgama' in input) {
+    console.warn('WalianHub CMS pengaturan: membersihkan demografiAgama legacy dari profil.');
+    const { demografiAgama: _legacy, ...rest } = input;
+    input = rest;
+  }
+  const data = draftObject(input,file.fields);
   if (!publish) return data;
   const result = schema.safeParse(data);
   if (!result.success) {
