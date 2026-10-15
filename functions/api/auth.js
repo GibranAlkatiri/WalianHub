@@ -32,11 +32,12 @@ export async function onRequestPost({ request, env }) {
     const envHash = String(env.CMS_PASSWORD_HASH || '').trim().toLowerCase();
     const envToken = String(env.GITHUB_TOKEN || '').trim();
     if (!envUser || !/^[a-f0-9]{64}$/.test(envHash) || (!sessions && !envToken)) return json({ ok: false, mode: sessions ? 'session' : 'legacy', error: 'Konfigurasi login di server belum lengkap. Lengkapi env lalu redeploy.' }, 500);
-    const key = sessions ? await checkLoginLimit(request, env) : null;
+    const limitLogin = sessions && env.CMS_LOGIN_LIMIT_DISABLED !== '1';
+    const key = limitLogin ? await checkLoginLimit(request, env) : null;
     const { username, password } = await credentials(request);
     const passwordValid = equal(await sha256(password), envHash);
     if (username.trim() !== envUser || !passwordValid) {
-      if (sessions) await failedLogin(key, env);
+      if (limitLogin) await failedLogin(key, env);
       return json({ ok: false, mode: sessions ? 'session' : 'legacy', error: 'Username atau password salah.' }, 401);
     }
     // Keep the production GitHub flow until the final migration switch.

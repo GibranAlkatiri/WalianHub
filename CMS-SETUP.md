@@ -109,6 +109,7 @@ Cloudflare Dashboard → Pages project → **Settings → Environment variables*
 ### 4.4 Ganti password / cabut akses
 
 - **Ganti password**: hitung hash baru (langkah 4.2), update `CMS_PASSWORD_HASH`, redeploy.
+- **Nonaktifkan batas percobaan login sementara**: set `CMS_LOGIN_LIMIT_DISABLED=1` pada environment Production lalu redeploy. Password dan sesi tetap diperiksa. Hapus variable ini atau set `0` lalu redeploy untuk mengaktifkan kembali batas 10 percobaan gagal per alamat selama 15 menit.
 - **Cabut akses**: hapus/rotasi `GITHUB_TOKEN` dan update di Cloudflare.
 
 Karena hanya 1 user, tidak ada konsep tambah/hapus akun — cukup ganti passwordnya.
