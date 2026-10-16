@@ -5,7 +5,7 @@ Dikembangkan oleh KKT Angkatan 149 Universitas Sam Ratulangi.
 
 ## Lihat website
 
-### **https://walianhub.pages.dev/**
+### **https://walian-hub.pages.dev/**
 
 Ini adalah **versi pratinjau**. Teks di dalam [kurung siku] dan data destinasi masih contoh. Data contoh sengaja dipertahankan untuk demo: staf nantinya dapat mengoreksi nama/jenis surat, persyaratan, profil, kontak, dan destinasi melalui CMS. Validasi data resmi dilakukan bersama kelurahan saat demo. Kode CMS sudah tersedia; login dan publikasi pada lingkungan produksi masih perlu dibuktikan.
 Cloudflare terhubung ke branch `main` pada `gleey/WalianHub`. Perubahan di repository kode bersama `GibranAlkatiri/WalianHub` perlu disinkronkan ke repo tersebut sebelum memperbarui situs.
