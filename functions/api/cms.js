@@ -203,7 +203,10 @@ export function createCmsHandler(fetchGitHub = fetch) {
       const body = postBody;
       const t = target(config, body.collection, body.slug);
       const current = await entry(t);
-      if (current.revision !== (body.revision || null) || current.publishedSha !== (body.publishedSha || null)) fail('Konten telah berubah. Muat ulang agar perubahan lain tidak tertimpa.', 409);
+      if (current.revision !== (body.revision || null) || current.publishedSha !== (body.publishedSha || null)) {
+        if (!body.revision && !body.publishedSha && (current.revision || current.publishedSha)) fail('Nama atau ID konten sudah digunakan oleh entri lain. Ubah nama agar tidak bentrok.', 409);
+        fail('Konten telah berubah. Muat ulang agar perubahan lain tidak tertimpa.', 409);
+      }
       if (body.action === 'discard') {
         if (!current.revision) fail('Tidak ada draf untuk dibuang.', 404);
         const mainRef = await ref(main);

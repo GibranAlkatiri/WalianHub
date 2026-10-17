@@ -64,6 +64,8 @@ describe('Destinasi dan Pengumuman D1',()=>{
         const entry=await s.get('destinasi',slug),results=await Promise.all([s.write('destinasi','save',entry,{data:{...wisata,nama:'A'}}),s.write('destinasi','save',entry,{data:{...wisata,nama:'B'}})]);expect(results.map((r)=>r.status).sort()).toEqual([200,409]);
         const winner=await results.find((r)=>r.status===200).json();expect((await s.write('destinasi','publish',entry)).status).toBe(409);const race=await Promise.all([s.write('destinasi','publish',winner),s.write('destinasi','save',winner,{data:wisata})]);expect(race.map((r)=>r.status).sort()).toEqual([200,409]);
       }
+      const dup = await (await s.call('destinasi','save',{slug:'contoh',data:wisata},'POST')).json();
+      expect(dup.error).toContain('sudah digunakan');
     }finally{s.db.close();}
   });
   test('pengumuman file tunggal: revisi privat, terbit, batal revisi, hapus baris dan daftar kosong',async()=>{

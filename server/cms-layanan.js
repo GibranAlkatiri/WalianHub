@@ -59,7 +59,10 @@ export async function layananOperation(db, collection, action, slug, body, valid
     const row = await db.prepare('SELECT * FROM cms_content WHERE collection = ? AND slug = ?').bind(name, slug).first();
     if (action === 'entry') return asEntry(row, slug);
     if (!['save', 'publish', 'discard', 'withdraw', 'delete'].includes(action)) fail('Tindakan layanan tidak dikenali.', 404);
-    if ((row?.draft_revision || null) !== (body.revision || null) || (row?.published_blob_sha || null) !== (body.publishedSha || null)) conflict();
+    if ((row?.draft_revision || null) !== (body.revision || null) || (row?.published_blob_sha || null) !== (body.publishedSha || null)) {
+      if (!body.revision && !body.publishedSha && row) fail('Nama atau ID konten sudah digunakan oleh entri lain. Ubah nama agar tidak bentrok.', 409);
+      conflict();
+    }
     if (body.uploads !== undefined && (!Array.isArray(body.uploads) || body.uploads.length)) fail('Unggahan foto layanan belum tersedia pada tahap ini. Simpan isian teks terlebih dahulu.');
     const where = 'collection = ? AND slug = ? AND version = ? AND draft_revision IS ? AND published_blob_sha IS ?';
     const guard = [name, slug, row?.version, row?.draft_revision || null, row?.published_blob_sha || null];

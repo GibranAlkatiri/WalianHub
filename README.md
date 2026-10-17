@@ -15,13 +15,7 @@ Cloudflare terhubung ke branch `main` pada `gleey/WalianHub`. Perubahan di repos
 - **Beranda, Profil, Layanan, dan Wisata:** tersedia.
 - **Navigasi Wisata otomatis:** sampai 4 destinasi menuju section Beranda; mulai 5 menuju `/wisata`, dengan 4 pilihan di Beranda dan tombol "Semua Wisata".
 - `/wisata` selalu dapat dibuka, termasuk ketika jumlah destinasi turun atau kosong, agar tautan lama tetap berlaku.
-- **CMS dan animasi:** kode telah digabung ke `main` melalui PR #4. Berikutnya: pemeriksaan fungsi backend dan [perbaikan UI CMS](TAHAPAN-UI-CMS.md). Bahasa Inggris dan halaman detail destinasi tetap ditunda.
-
-## Kerja tim dan asisten AI
-
-Baca [AGENTS.md — pembagian frontend/backend](AGENTS.md) sebelum mengubah berkas. Dokumen ini menentukan area tiap peran, cara mengambil kode dari repo bersama/fork, dan langkah ketika pekerjaan menyentuh area rekan.
-
-Untuk tampilan panel, ikuti [TAHAPAN-UI-CMS.md — rencana perbaikan untuk pengguna awam](TAHAPAN-UI-CMS.md). Untuk login, koneksi GitHub, dan hosting, gunakan [CMS-SETUP.md](CMS-SETUP.md).
+- **CMS dan animasi:** panel konten tersedia di `/admin/` untuk pengelolaan layanan, destinasi, pengumuman, dan profil kelurahan.
 
 ## Isi website
 
@@ -53,8 +47,6 @@ Semua isi website ada di folder `src/content/`. Untuk mengganti isi, tampilan ti
 Setiap isi diperiksa oleh `src/content.config.ts` setiap kali website dibangun. Jika ada data yang tidak sesuai, proses build gagal dengan pesan yang jelas, dan website yang sedang tayang tidak berubah.
 
 ## Untuk pembuat CMS
-
-Mulai dari [aturan pembagian kerja](AGENTS.md) dan [CMS-SETUP.md — konfigurasi CMS yang digunakan](CMS-SETUP.md). [CMS.md](CMS.md) menyimpan rencana awal serta rincian kontrak field; keterangan hosting dan status implementasi historisnya tidak menjadi acuan operasional terbaru.
 
 `src/content.config.ts` adalah **kontrak data** antara tampilan dan CMS. Formulir CMS mengikuti nama field, tipe, daftar pilihan, aturan wajib/kosong, dan validasi tersebut. Isian konten terpisah dari tampilan; label formulir boleh memakai Bahasa Indonesia. Teks antarmuka seperti "Cek Lokasi", tata letak, dan aturan navigasi tetap dikelola frontend.
 
