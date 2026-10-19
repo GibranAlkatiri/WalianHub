@@ -1,9 +1,10 @@
 ---
-// Section Wilayah pada halaman Profil: data setiap lingkungan. Ringkasan kelurahan tampil di bawah hero Beranda.
+// Section Wilayah pada halaman Profil: ringkasan angka serta rincian setiap lingkungan.
 // Total kelurahan dijumlahkan dari angka lingkungan yang sudah diisi. Angka yang belum diisi tidak ikut dihitung.
 // Data lingkungan: tabel mulai 768px; di HP, pilih lingkungan untuk melihat satu kartu.
 import Container from '../ui/Container.astro';
 import SectionHeading from '../ui/SectionHeading.astro';
+import RingkasanKelurahan from './RingkasanKelurahan.astro';
 import { formatAngka } from '../../lib/format';
 
 interface Lingkungan {
@@ -18,10 +19,11 @@ interface Lingkungan {
 interface Props {
   sumberData: { tahun: string; sumber: string };
   lingkungan: Lingkungan[];
+  jumlahPenduduk?: number | null;
   runtimeTemplate?: boolean;
 }
 
-const { sumberData, lingkungan, runtimeTemplate = false } = Astro.props;
+const { sumberData, lingkungan, jumlahPenduduk, runtimeTemplate = false } = Astro.props;
 
 // Jumlah dari lingkungan yang sudah diisi. Jika belum ada satu pun yang diisi: null ("Data menyusul").
 const jumlahkan = (ambil: (item: Lingkungan) => number | null) => {
@@ -47,6 +49,8 @@ const nama = (isi: string) => isi.trim() || '[kosong]';
     <p class="mt-4 text-sm text-ink-subtle">
       Sumber data: {sumberData.sumber}, {sumberData.tahun}. Total dijumlahkan dari data lingkungan yang sudah diisi.
     </p>
+
+    {runtimeTemplate ? '__CMS_REGION_STATS__' : <RingkasanKelurahan {lingkungan} {jumlahPenduduk} />}
 
     {
       lingkungan.length > 0 && (

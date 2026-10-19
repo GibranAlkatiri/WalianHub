@@ -495,7 +495,7 @@ collections:
             value_type: int
             min: 0
             required: false
-            hint: "Total penduduk pada ringkasan di bawah hero Beranda. Jika kosong, total hanya dihitung ketika data penduduk seluruh lingkungan sudah lengkap; jika belum, statistik disembunyikan."
+            hint: "Total penduduk pada bagian Wilayah dan penduduk di halaman Profil. Jika kosong, total hanya dihitung ketika data penduduk seluruh lingkungan sudah lengkap; jika belum, statistik disembunyikan."
 
           - label: Demografi Agama
             name: demografiAgama
@@ -542,13 +542,13 @@ collections:
                 name: url
                 widget: string
                 required: false
-                hint: "Tempel link YouTube (watch, youtu.be, embed, atau shorts). Kosong: tampil “Video menyusul”."
-              - { label: Judul, name: judul, widget: string, required: false, hint: "Judul di kanan video. Kosong: tampil judul bawaan." }
+                hint: "Tempel link YouTube (watch, youtu.be, embed, atau shorts). Video tampil di samping pengantar Profil; jika kosong, blok video disembunyikan."
+              - { label: Judul, name: judul, widget: string, required: false, hint: "Judul di bawah video. Kosong: tampil judul bawaan." }
               - label: Deskripsi Singkat
                 name: deskripsi
                 widget: text
                 required: false
-                hint: "Satu-dua kalimat tentang isi video. Tampil di kanan video."
+                hint: "Satu-dua kalimat di bawah video. Kosongkan jika tidak diperlukan."
 
           - label: Struktur Organisasi
             name: strukturOrganisasi

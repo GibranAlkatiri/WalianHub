@@ -4,6 +4,7 @@ import { formatAngka,formatNomorWhatsapp,tautanWhatsapp } from '../src/lib/forma
 import { JEDA_HURUF_JUDUL,JEDA_HURUF_SUBJUDUL,jedaSubjudulKetik } from '../src/lib/teks-ketik.ts';
 import { dateLabel } from './collections-template.js';
 import { dataDemografi, statistikKelurahan } from '../src/lib/demografi.ts';
+import { videoProfilEmbed } from '../src/lib/video-profil.ts';
 export const escapeHtml = (value)=>String(value??'').replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const fill = (html,values)=>html.replace(/__CMS_[A-Z]+(?:_[A-Z]+)*__/g,(key)=>{if(!Object.hasOwn(values,key))throw new Error('Template Pengaturan tidak lengkap: '+key);return values[key];});
 // Extract a balanced element from our own build artifact, including nested divs.
@@ -88,16 +89,21 @@ export function renderPengaturan(data,t,wisataHref) {
   const stats=statistikKelurahan(p.lingkungan,b.jumlahPenduduk);
   values.__CMS_STATS__=Object.entries(stats).filter(([,number])=>number!==null).map(([kind,number])=>fill(t['cms-stat-'+kind],{__CMS_NUMBER__:escapeHtml(formatAngka(number))})).join('');
   const summary=values.__CMS_STATS__?fill(t['cms-summary'],values):'';
+  values.__CMS_REGION_STATS__=summary;
   const agama=dataDemografi(b.demografiAgama);
   values.__CMS_RELIGION_TOTAL__=escapeHtml(formatAngka(agama.total));
   values.__CMS_RELIGION_ROWS__=agama.rows.map((item)=>fill(t['cms-religion-row'],{__CMS_RELIGION_LABEL__:escapeHtml(item.label),__CMS_RELIGION_COUNT__:escapeHtml(formatAngka(item.jumlah)),__CMS_RELIGION_PERCENT__:item.persen.toFixed(1).replace(/\.0$/,''),__CMS_RELIGION_WIDTH__:String(item.persen)})).join('');
   const demography=agama.total>0?fill(t['cms-demography'],values):'';
-  // Video profil: terima link YouTube apa pun, tampilkan sebagai embed. Kosong: placeholder bawaan template.
-  const videoId=(()=>{const tautan=(p.videoProfil?.url||'').trim();if(!tautan)return null;try{const alamat=new URL(tautan,'https://www.youtube.com');let id=null;if(alamat.hostname.includes('youtu.be'))id=alamat.pathname.slice(1).split('/')[0]||null;else if(alamat.pathname.startsWith('/embed/'))id=alamat.pathname.split('/')[2]?.split(/[?#]/)[0]||null;else if(alamat.pathname.startsWith('/shorts/'))id=alamat.pathname.split('/')[2]?.split(/[?#]/)[0]||null;else id=alamat.searchParams.get('v');return id&&/^[\w-]{6,}$/.test(id)?id:null;}catch{return null;}})();
+  // Video menyatu dengan pengantar Profil dan hilang seluruhnya ketika belum tersedia.
+  const embedVideo=videoProfilEmbed(p.videoProfil?.url);
   const judulVideo=(p.videoProfil?.judul||'').trim()||'Video pengenalan Kelurahan Walian';
-  values.__CMS_VIDEO_URL__=escapeHtml((p.videoProfil?.url||'').trim());values.__CMS_VIDEO_TITLE__=escapeHtml(judulVideo);values.__CMS_VIDEO_DESCRIPTION__=escapeHtml((p.videoProfil?.deskripsi||'').trim());
-  values.__CMS_VIDEO_EMBED__=videoId?`https://www.youtube.com/embed/${videoId}`:'';
-  values.__CMS_VIDEO_FRAME__=videoId?`<iframe src="https://www.youtube.com/embed/${videoId}" title="${escapeHtml(judulVideo)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen class="h-full w-full"></iframe>`:`<div class="grid aspect-video place-items-center rounded-2xl bg-sage-100 text-center shadow-card"><div class="px-6"><p class="font-semibold text-ink">Video menyusul</p><p class="mt-1 text-sm text-ink-muted">Tautan video YouTube belum diisi melalui CMS.</p></div></div>`;
+  const deskripsiVideo=(p.videoProfil?.deskripsi||'').trim();
+  values.__CMS_VIDEO_TITLE__=escapeHtml(judulVideo);
+  values.__CMS_VIDEO_DESCRIPTION_BLOCK__=deskripsiVideo?`<p class="mt-2 text-sm text-ink-muted">${escapeHtml(deskripsiVideo)}</p>`:'';
+  values.__CMS_VIDEO_FRAME__=embedVideo?`<iframe src="${escapeHtml(embedVideo)}" title="${escapeHtml(judulVideo)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen class="h-full w-full"></iframe>`:'';
+  const video=embedVideo?fill(t['cms-video'],values):'';
+  values.__CMS_HAS_VIDEO__=embedVideo?'true':'false';
+  values.__CMS_PROFILE_VIDEO__=video;
   const environment=(item,template)=>{
     for(const [name,marker] of [['kepala','__CMS_HEAD__'],['wakil','__CMS_DEPUTY__']])if(!item[name])template=template.replace(new RegExp('(<(?:td|dd) class="[^"]*)\\btext-ink(?=")[^"]*">'+marker,'g'),'$1text-ink-subtle">'+marker);
     return fill(template,{__CMS_ENVIRONMENT_NAME__:escapeHtml(item.nama),__CMS_HEAD__:escapeHtml(item.kepala||'[kosong]'),__CMS_DEPUTY__:escapeHtml(item.wakil||'[kosong]'),__CMS_FAMILY__:escapeHtml(formatAngka(item.kepalaKeluarga)??'–'),__CMS_POPULATION__:escapeHtml(formatAngka(item.jumlahPenduduk)??'–'),__CMS_AREA__:escapeHtml(formatAngka(item.luasKm2)??'–')});
@@ -110,5 +116,5 @@ export function renderPengaturan(data,t,wisataHref) {
   const contact=fill(t['cms-contact'],values).replace(/href="https:\/\/wa.me\/[^"]*"/,()=>`href="${escapeHtml(tautanWhatsapp(s.whatsapp||'',`Halo Kantor ${s.namaKelurahan}, saya ingin bertanya tentang `))}"`);
   const complaint=fill(t['cms-complaint'],values).replace(/href="https:\/\/wa.me\/[^"]*"/,()=>`href="${escapeHtml(tautanWhatsapp(s.whatsapp||'',`Halo Kantor ${s.namaKelurahan}, saya ingin menyampaikan keluhan atau masukan: `))}"`);
   let footer=t['cms-footer'];if(!s.mediaSosial.length)footer=footer.replace(element(footer,/<ul\b[^>]*class="mt-6 flex gap-2"[^>]*>/),'');footer=fill(footer,values);if(wisataHref)footer=footer.replace(/href="\/(?:wisata|#wisata)"/g,()=>`href="${escapeHtml(wisataHref)}"`);
-  return {hero:fill(hero,values),summary,demography,intro:fill(t[p.lurah.foto?'cms-intro-photo':'cms-intro-empty'],values),contact,footer,complaint,heading:fill(t['cms-profile-heading'],values),video:fill(t['cms-video'],values),structure:fill(t['cms-structure'],values),region:fill(t[p.lingkungan.length?'cms-region':'cms-region-empty'],values),vision:fill(t['cms-vision'],values),updated:dateLabel(p.diperbarui)};
+  return {hero:fill(hero,values),summary,demography,intro:fill(t[p.lurah.foto?'cms-intro-photo':'cms-intro-empty'],values),contact,footer,complaint,heading:fill(t['cms-profile-heading'],values),video,structure:fill(t['cms-structure'],values),region:fill(t[p.lingkungan.length?'cms-region':'cms-region-empty'],values),vision:fill(t['cms-vision'],values),updated:dateLabel(p.diperbarui)};
 }

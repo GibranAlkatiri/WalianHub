@@ -2,7 +2,7 @@
 // Runtime fragments keep the same markup, icons and scoped styles as the site.
 import { getEntry } from 'astro:content';
 import Hero from '../../components/home/Hero.astro';
-import RingkasanKelurahan from '../../components/home/RingkasanKelurahan.astro';
+import RingkasanKelurahan from '../../components/profil/RingkasanKelurahan.astro';
 import DemografiAgama from '../../components/profil/DemografiAgama.astro';
 import BarisAgama from '../../components/profil/BarisAgama.astro';
 import ProfileIntro from '../../components/home/ProfileIntro.astro';
@@ -37,7 +37,7 @@ const lingkungan = {nama:'__CMS_ENVIRONMENT_NAME__',kepala:'__CMS_HEAD__',wakil:
 <template id="cms-footer"><Footer {situs} /></template>
 <template id="cms-complaint"><Pengaduan whatsapp={situs.whatsapp} /></template>
 <template id="cms-profile-heading"><KepalaHalaman ringkasan="__CMS_SUMMARY__" runtimeTemplate /></template>
-<template id="cms-video"><VideoProfil videoProfil={{ url: 'https://cms.invalid/__CMS_VIDEO_URL__', judul: '__CMS_VIDEO_TITLE__', deskripsi: '__CMS_VIDEO_DESCRIPTION__' }} runtimeTemplate /></template>
+<template id="cms-video"><VideoProfil runtimeTemplate /></template>
 <template id="cms-structure"><StrukturOrganisasi {lurah} strukturOrganisasi={[]} runtimeTemplate /></template>
 <template id="cms-node-root"><SimpulBagan simpul={node} puncak /></template>
 <template id="cms-node-child"><SimpulBagan simpul={node} /></template>

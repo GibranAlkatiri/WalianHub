@@ -17,7 +17,8 @@ Website masih memiliki data yang perlu dilengkapi dan `SIAP_DIINDEKS` masih `fal
 - **Navigasi Wisata otomatis:** sampai 4 destinasi menuju section Beranda; mulai 5 menuju `/wisata`, dengan 4 pilihan di Beranda dan tombol "Semua Wisata".
 - `/wisata` selalu dapat dibuka, termasuk ketika jumlah destinasi turun atau kosong, agar tautan lama tetap berlaku.
 - **CMS dan animasi:** panel konten tersedia di `/admin/` untuk pengelolaan layanan, destinasi, pengumuman, dan profil kelurahan.
-- **Ringkasan dan demografi:** hero menyediakan akses Layanan dan Kontak. Statistik tersedia di bagian terpisah di bawah hero dan angka yang belum tersedia disembunyikan; total lingkungan yang belum lengkap tidak dianggap sebagai total kelurahan. Demografi agama tampil di Profil hanya setelah jumlahnya diisi, memakai sumber/tahun dari Pengaturan Profil. Field penyimpanannya tetap di Pengaturan Beranda agar konten lama tidak perlu dimigrasikan.
+- **Ringkasan dan demografi:** hero menyediakan akses Layanan dan Kontak. Statistik berada dalam bagian Wilayah dan penduduk di halaman Profil dan angka yang belum tersedia disembunyikan; total lingkungan yang belum lengkap tidak dianggap sebagai total kelurahan. Demografi agama tampil di Profil hanya setelah jumlahnya diisi, memakai sumber/tahun dari Pengaturan Profil. Field penyimpanannya tetap di Pengaturan Beranda agar konten lama tidak perlu dimigrasikan.
+- **Video Profil:** video YouTube mendampingi pengantar Profil di kanan pada desktop dan di bawah pada ponsel. Tanpa tautan video yang didukung, blok video tidak ditampilkan.
 
 ## Isi website
 

@@ -47,7 +47,7 @@ function environment(template = () => templateHtml, rows = publishedRows) {
   };
 }
 
-test('hero dan ringkasan terpisah; angka dan demografi yang belum tersedia tidak ditampilkan', async () => {
+test('hero tanpa statistik; angka dan demografi yang belum tersedia tidak ditampilkan', async () => {
   expect(templateHtml).toContain('id="cms-stat-environment"');
   expect(templateHtml).toContain('id="cms-stat-area"');
   expect(templateHtml).not.toContain('id="cms-stat-family"');
@@ -67,11 +67,16 @@ test('hero dan ringkasan terpisah; angka dan demografi yang belum tersedia tidak
   expect(parts.summary).toContain('Lingkungan');
   expect(parts.summary).not.toContain('Data menyusul');
   expect(parts.summary).not.toContain('Luas wilayah');
+  expect(parts.region).toContain(parts.summary);
+  expect(parts.heading).not.toContain('id="ringkasan-kelurahan"');
   expect(parts.demography).toBe('');
-  expect(parts.video).toContain('video-profil');
+  expect(parts.video).toBe('');
+  expect(parts.heading).not.toContain('id="video-profil"');
+  expect(parts.heading).not.toContain('href="#video-profil"');
+  expect(parts.heading).not.toContain('Video menyusul');
 });
 
-test('demografi terisi hanya tampil di Profil; total parsial tidak menjadi statistik Beranda', async () => {
+test('statistik dan demografi terisi hanya tampil di Profil; total parsial tidak menjadi total kelurahan', async () => {
   const settings = await publishedPengaturan(environment());
   settings.beranda.jumlahPenduduk = 2500;
   settings.beranda.demografiAgama = { kristen: 1500, katolik: 1000, islam: 0, hindu: 0, buddha: 0, konghucu: 0 };
@@ -89,7 +94,36 @@ test('demografi terisi hanya tampil di Profil; total parsial tidak menjadi stati
     expect(response.status).toBe(200);
     const html = await response.text();
     expect(html.includes('id="demografi-agama"')).toBe(path === '/profil');
-    if (path === '/') { expect(html).toContain('2.500'); expect(html).not.toContain('demografi-card'); }
+    expect(html.includes('id="ringkasan-kelurahan"')).toBe(path === '/profil');
+    if (path === '/') { expect(html).not.toContain('2.500'); expect(html).not.toContain('demografi-card'); }
+    else {
+      expect(html).toContain('2.500'); expect(html).toContain('Lingkungan');
+      expect(html.match(/id="ringkasan-kelurahan"/g)).toHaveLength(1);
+      expect(html.indexOf('id="ringkasan-kelurahan"')).toBeGreaterThan(html.indexOf('id="wilayah"'));
+      expect(html.indexOf('id="ringkasan-kelurahan"')).toBeLessThan(html.indexOf('Data lingkungan'));
+    }
+  }
+});
+
+test('video Profil mengikuti isi CMS: kosong atau invalid hilang, tautan YouTube masuk ke pengantar', async () => {
+  const settings = await publishedPengaturan(environment());
+  for (const url of ['', 'https://example.com/watch?v=abcdefghijk', 'https://youtu.be.example.com/abcdefghijk', 'https://www.youtube.com/watch?v=x', 'https://youtu.be/abcdefghijk', 'https://www.youtube.com/watch?v=abcdefghijk', 'https://www.youtube.com/shorts/abcdefghijk', 'https://www.youtube.com/embed/abcdefghijk']) {
+    const valid = url.includes('abcdefghijk') && !url.includes('example.com');
+    settings.profil.videoProfil = { url, judul: 'Potensi <Walian>', deskripsi: '' };
+    const rows = Object.entries(settings).map(([slug, data]) => ({ slug, data_json: JSON.stringify(data) }));
+    const response = await onRequest({ request: new Request('https://cms.example/profil'), env: environment(undefined, rows) });
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html.includes('id="video-profil"')).toBe(valid);
+    expect(html).not.toContain('Video menyusul');
+    expect(html).not.toContain('href="#video-profil"');
+    if (valid) {
+      expect(html).toContain('data-has-video="true"');
+      expect(html).toContain('https://www.youtube.com/embed/abcdefghijk');
+      expect(html).toContain('Potensi &lt;Walian&gt;');
+      expect(html).not.toContain('<p class="mt-2 text-sm text-ink-muted"></p>');
+      expect(html.indexOf('id="video-profil"')).toBeLessThan(html.indexOf('id="ringkasan-kelurahan"'));
+    }
   }
 });
 
@@ -112,7 +146,7 @@ test('semua statistik kosong menghilangkan ringkasan runtime tanpa memulihkan da
   const parts = renderPengaturan(settings, parsePengaturanTemplates(templateHtml));
   expect(parts.summary).toBe('');
   const rows = Object.entries(settings).map(([slug, data]) => ({ slug, data_json: JSON.stringify(data) }));
-  const response = await onRequest({ request: new Request('https://cms.example/'), env: environment(undefined, rows) });
+  const response = await onRequest({ request: new Request('https://cms.example/profil'), env: environment(undefined, rows) });
   expect(response.status).toBe(200);
   expect(await response.text()).not.toContain('id="ringkasan-kelurahan"');
 });
