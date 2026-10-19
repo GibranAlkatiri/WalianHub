@@ -291,7 +291,24 @@ const dataAgama = tampilanAgama.map((item, index) => {
     border-left: 1px solid var(--color-line);
     padding-left: 1rem;
   }
-
+  @media (min-width: 1024px) {
+    .village-summary-content {
+      padding: 1.5rem 2rem;
+    }
+    .village-summary-stats :global([data-stat-card]) {
+      column-gap: 0.875rem;
+    }
+    .village-summary-stats :global([data-stat-card] > span) {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+    .village-summary-stats :global([data-stat-card] + [data-stat-card]) {
+      padding-left: 1.5rem;
+    }
+    .village-summary-stats :global([data-stat-label]) {
+      font-size: 0.8125rem;
+    }
+  }
 </style>
 
 <!-- CSS kartu demografi global: cocok dengan HTML injeksi runtime CMS
@@ -490,22 +507,6 @@ const dataAgama = tampilanAgama.map((item, index) => {
     }
   }
   @media (min-width: 1024px) {
-    .village-summary-content {
-      padding: 1.5rem 2rem;
-    }
-    .village-summary-stats :global([data-stat-card]) {
-      column-gap: 0.875rem;
-    }
-    .village-summary-stats :global([data-stat-card] > span) {
-      width: 2.5rem;
-      height: 2.5rem;
-    }
-    .village-summary-stats :global([data-stat-card] + [data-stat-card]) {
-      padding-left: 1.5rem;
-    }
-    .village-summary-stats :global([data-stat-label]) {
-      font-size: 0.8125rem;
-    }
     .demografi-head {
       width: 13rem;
       height: 13rem;

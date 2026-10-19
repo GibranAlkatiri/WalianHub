@@ -7,6 +7,7 @@ import { createImageHandler } from '../functions/media/[file].js';
 import { onRequestPost } from '../functions/api/auth.js';
 import { sha256 } from '../server/cms-session.js';
 import { mediaPaths } from '../server/cms-media.js';
+import { uniqueSlug } from '../public/admin/content-slug.js';
 import { sqliteD1 } from './helpers/d1-sqlite.js';
 import { fakeGithub } from './helpers/cms-github.js';
 import { fakeCloudinary,png,jpeg } from './helpers/cms-cloudinary.js';
@@ -37,6 +38,23 @@ async function setup(wrapProvider = (fetch) => fetch) {
   return {db,provider,github,env,cookie,call,put,get,guard,entry};
 }
 describe('Foto Cloudinary mengikuti status konten CMS',()=>{
+  test('destinasi baru dapat mengganti nama setelah unggah foto lalu menyimpan dan menerbitkan foto yang sama',async()=>{
+    const s=await setup();try {
+      s.env.CMS_DESTINASI_D1='1';s.env.GITHUB_TOKEN='';
+      const slug=uniqueSlug('Taman Walian');
+      const uploaded=await s.put({collection:'destinasi',slug});expect(uploaded.status).toBe(200);
+      const photo=await uploaded.json();
+      const renamedSlug=uniqueSlug('Taman Baru',slug);
+      const current=await(await s.call('entry',{collection:'destinasi',slug:renamedSlug})).json();
+      const saved=await s.call('save',{collection:'destinasi',slug:renamedSlug,...s.guard(current),data:{...destinasi,nama:'Taman Baru',gambar:photo.path}},'POST');
+      expect(saved.status).toBe(200);
+      const draft=await saved.json();expect(draft.slug).toBe(slug);expect(draft.data.nama).toBe('Taman Baru');
+      expect((await s.get(photo.path)).status).toBe(404);
+      expect((await s.call('publish',{collection:'destinasi',slug,...s.guard(draft)},'POST')).status).toBe(200);
+      expect((await s.get(photo.path)).status).toBe(200);expect(s.github.requests).toHaveLength(0);
+      expect(s.provider.objects.size).toBe(1);
+    }finally{s.db.close();}
+  });
   test('JPEG destinasi berhasil diunggah, tersimpan privat, diterbitkan dan dapat diunduh',async()=>{
     for (const format of ['jpg','jpeg']) {
       const s=await setup((fetch)=>async(...args)=>{

@@ -1,3 +1,5 @@
+import { peerRequestHeaders } from '../server/cms-cleanup-peer.js';
+
 function endpoint(value,env) {
   const url = new URL(value);
   if (url.protocol!=='https:' || url.pathname!=='/api/media-cleanup' || url.search || url.username || url.password
@@ -6,7 +8,7 @@ function endpoint(value,env) {
 }
 export async function readPeerMetadata(env,fetchEndpoint=fetch) {
   const url=endpoint(env.CMS_MEDIA_CLEANUP_PEER_URL,env);
-  const response=await fetchEndpoint(url.href,{headers:{authorization:'Bearer '+env.CMS_MEDIA_CLEANUP_TOKEN},redirect:'error',signal:AbortSignal.timeout(20000)});
+  const response=await fetchEndpoint(url.href,{headers:peerRequestHeaders(env),redirect:'error',signal:AbortSignal.timeout(20000)});
   if(!response.ok){await response.body?.cancel();throw new Error('Preview metadata unavailable: HTTP '+response.status);}
   const data=await response.json();
   if(data.ok!==true || data.schema!==1 || data.collectionsD1!==true || !/^[a-f0-9]{64}$/.test(data.cloudIdentity))throw new Error('Preview metadata is invalid.');

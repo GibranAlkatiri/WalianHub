@@ -1,4 +1,5 @@
 import { mediaPaths, UUID, downloadMedia, MEDIA_LIMIT } from './cms-media.js';
+import { peerRequestHeaders } from './cms-cleanup-peer.js';
 
 export const MEDIA_GRACE_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_ROWS = 5000, DELETE_LIMIT = 10, SOURCE_CHECK_LIMIT = 3;
@@ -82,7 +83,8 @@ export async function cleanupMedia(env, { dryRun = true, now = Date.now(), fetch
       || Object.keys(peer).some(key=>!['ok','schema','collectionsD1','cloudIdentity','source','observedAt'].includes(key)))throw new Error('CLEANUP_PEER');
   }else{
     let peerResponse;
-    try {peerResponse=await fetchPeer(peerURL.href,{headers:{authorization:'Bearer '+env.CMS_MEDIA_CLEANUP_TOKEN},redirect:'error',signal:AbortSignal.timeout(10000)});}
+    const peerHeaders=peerRequestHeaders(env);
+    try {peerResponse=await fetchPeer(peerURL.href,{headers:peerHeaders,redirect:'error',signal:AbortSignal.timeout(10000)});}
     catch {throw new Error('CLEANUP_PEER');}
     if(!peerResponse.ok){await peerResponse.body?.cancel();throw new Error('CLEANUP_PEER');}
     try{peer=await peerResponse.json();}catch{throw new Error('CLEANUP_PEER');}
