@@ -3,6 +3,7 @@
 import { getEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/home/Hero.astro';
+import RingkasanKelurahan from '../components/home/RingkasanKelurahan.astro';
 import KktTeam from '../components/home/KktTeam.astro';
 import ProfileIntro from '../components/home/ProfileIntro.astro';
 import Services from '../components/home/Services.astro';
@@ -20,7 +21,8 @@ const gambarPreview = fotoPertama && /\.(jpe?g|png|webp)$/i.test(fotoPertama) ? 
 ---
 
 <BaseLayout overlayHeader image={gambarPreview}>
-  <Hero hero={beranda.hero} ringkasanKelurahan={{ ...profil, jumlahPenduduk: beranda.jumlahPenduduk, demografiAgama: beranda.demografiAgama }} />
+  <Hero hero={beranda.hero} />
+  <RingkasanKelurahan lingkungan={profil.lingkungan} jumlahPenduduk={beranda.jumlahPenduduk} />
   <KktTeam />
   <ProfileIntro ringkasan={profil.ringkasan} lurah={profil.lurah} />
   <Services />

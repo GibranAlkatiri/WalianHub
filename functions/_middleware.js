@@ -87,7 +87,7 @@ export async function onRequest(context) {
         .on('meta[property="og:image:width"],meta[property="og:image:height"]',{element(element){if(image)element.remove();}});
     }
     rewriter.on('[data-status-layanan]',{element(element){element.setAttribute('data-status-layanan',JSON.stringify(site.jamLayanan));}});
-    for(const [selector,key] of [['footer','footer'],...(home?[['[data-hero-foto]','hero'],['section#profil','intro'],['section#kontak','contact']]:[]),...(profile?[['[data-cms-profile-heading]','heading'],['section#video-profil','video'],['section#struktur-organisasi','structure'],['section#wilayah','region'],['section#visi-misi','vision']]:[]),...(services?[['section#pengaduan','complaint']]:[])]) rewriter.on(selector,{element(element){element.replace(parts[key],{html:true});}});
+    for(const [selector,key] of [['footer','footer'],...(home?[['[data-hero-foto]','hero'],['[data-cms-summary]','summary'],['section#profil','intro'],['section#kontak','contact']]:[]),...(profile?[['[data-cms-profile-heading]','heading'],['section#video-profil','video'],['section#struktur-organisasi','structure'],['section#wilayah','region'],['[data-cms-demography]','demography'],['section#visi-misi','vision']]:[]),...(services?[['section#pengaduan','complaint']]:[])]) rewriter.on(selector,{element(element){element.replace(parts[key],{html:true});}});
   }
   if (serviceD1) rewriter
     .on('[data-cms-service-cards]', { element(element) { element.setInnerContent(content.cards, {html:true});visible(element, content.featured > 0); } })

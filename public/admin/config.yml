@@ -495,13 +495,13 @@ collections:
             value_type: int
             min: 0
             required: false
-            hint: "Total jumlah penduduk di kartu ringkasan Beranda. Kosongkan jika ingin dihitung otomatis dari jumlah pemeluk agama."
+            hint: "Total penduduk pada ringkasan di bawah hero Beranda. Jika kosong, total hanya dihitung ketika data penduduk seluruh lingkungan sudah lengkap; jika belum, statistik disembunyikan."
 
           - label: Demografi Agama
             name: demografiAgama
             widget: object
             collapsed: false
-            hint: "Tinggal isi jumlah tiap agama. Kolom sudah tetap 6 agama. Isi 0 jika belum ada datanya."
+            hint: "Ditampilkan di halaman Profil, setelah Wilayah. Gunakan jumlah resmi dan lengkapi sumber serta tahun data pada Profil. Jika semua jumlah masih 0 atau kosong, diagram disembunyikan."
             fields:
               - { label: Kristen, name: kristen, widget: number, value_type: int, min: 0, required: false, default: 0 }
               - { label: Katolik, name: katolik, widget: number, value_type: int, min: 0, required: false, default: 0 }
