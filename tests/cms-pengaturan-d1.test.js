@@ -13,6 +13,7 @@ import {publishedPengaturan} from '../server/published-pengaturan.js';
 import {onRequest as publicSettings} from '../functions/api/pengaturan.js';
 import {pengaturanImportSql} from '../scripts/lib/cms-pengaturan-import.js';
 import {typedText} from '../server/pengaturan-template.js';
+import {statistikKelurahan,cakupanStatistikKelurahan} from '../src/lib/demografi.ts';
 const configText=readFileSync(new URL('../public/admin/config.yml',import.meta.url),'utf8'),config=load(configText),collection=config.collections.find((item)=>item.name==='pengaturan');
 const content=Object.fromEntries(['situs','beranda','profil'].map((slug)=>[slug,JSON.parse(readFileSync(new URL('../src/content/pengaturan/'+slug+'.json',import.meta.url),'utf8'))]));
 const schema=['0001_content.sql','0002_sessions.sql','0003_media.sql','0004_media_cleanup.sql'].map((name)=>readFileSync(new URL('../migrations/'+name,import.meta.url),'utf8')).join('\n');
@@ -107,6 +108,43 @@ test('demografiAgama legacy pada profil dibersihkan saat simpan lalu bisa terbit
     expect((await s.write('publish',draft)).status).toBe(200);
     expect((await publishedPengaturan(s.env)).profil.demografiAgama).toEqual([]);
   }finally{s.db.close();}
+});
+
+test('Beranda hanya mengedit hero; kolom lama tidak menghalangi simpan dan kolom asing tetap ditolak',async()=>{
+  const fields=collection.files.find(file=>file.name==='beranda').fields;
+  expect(fields.map(field=>field.name)).toEqual(['hero']);
+  const s=await setup();try{
+    let entry=await s.get('beranda');
+    const data={...entry.data,jumlahPenduduk:9999,demografiAgama:{kristen:9999}};
+    const saved=await s.write('save',entry,{data});expect(saved.status).toBe(200);
+    const draft=await saved.json();
+    expect(draft.data.jumlahPenduduk).toBeUndefined();expect(draft.data.demografiAgama).toBeUndefined();
+    expect((await s.write('publish',draft)).status).toBe(200);
+    entry=await s.get('beranda');
+    expect((await s.write('save',entry,{data:{...entry.data,kolomAsing:'tetap ditolak'}})).status).toBe(422);
+  }finally{s.db.close();}
+});
+
+test('87 KK dari satu lingkungan bertambah otomatis setelah lingkungan berikutnya diterbitkan',async()=>{
+  const s=await setup();try{
+    const data=structuredClone(content.profil);
+    data.lingkungan=data.lingkungan.map((item,index)=>({...item,kepalaKeluarga:index?null:87,jumlahPenduduk:null,luasKm2:null}));
+    let draft=await(await s.write('save',await s.get('profil'),{data})).json();
+    expect((await s.write('publish',draft)).status).toBe(200);
+    expect(statistikKelurahan((await publishedPengaturan(s.env)).profil.lingkungan)).toMatchObject({family:87,population:null,area:null});
+    data.lingkungan[1].kepalaKeluarga=13;
+    draft=await(await s.write('save',await s.get('profil'),{data})).json();
+    expect(statistikKelurahan((await publishedPengaturan(s.env)).profil.lingkungan).family).toBe(87);
+    expect((await s.write('publish',draft)).status).toBe(200);
+    expect(statistikKelurahan((await publishedPengaturan(s.env)).profil.lingkungan).family).toBe(100);
+  }finally{s.db.close();}
+});
+
+test('angka nol berbeda dari kosong dan cakupan setiap kolom dihitung sendiri',()=>{
+  const lingkungan=[{kepalaKeluarga:0,jumlahPenduduk:null,luasKm2:1.5},{kepalaKeluarga:null,jumlahPenduduk:120,luasKm2:0}];
+  expect(statistikKelurahan(lingkungan)).toEqual({family:0,population:120,environment:2,area:1.5});
+  expect(cakupanStatistikKelurahan(lingkungan)).toBe('KK: 1 dari 2 lingkungan; Penduduk: 1 dari 2 lingkungan; Luas: 2 dari 2 lingkungan');
+  expect(statistikKelurahan([{kepalaKeluarga:null,jumlahPenduduk:null,luasKm2:null}])).toEqual({family:null,population:null,environment:1,area:null});
 });
 test('impor Pengaturan mempertahankan draf GitHub dan koleksi lain; perubahan serentak ditolak dan impor ulang tidak menimpa editor',async()=>{
   const s=await setup();try{

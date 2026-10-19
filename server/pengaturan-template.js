@@ -3,7 +3,7 @@ import { ringkasJadwal } from '../src/lib/jam-layanan.ts';
 import { formatAngka,formatNomorWhatsapp,tautanWhatsapp } from '../src/lib/format.ts';
 import { JEDA_HURUF_JUDUL,JEDA_HURUF_SUBJUDUL,jedaSubjudulKetik } from '../src/lib/teks-ketik.ts';
 import { dateLabel } from './collections-template.js';
-import { dataDemografi, statistikKelurahan } from '../src/lib/demografi.ts';
+import { statistikKelurahan, cakupanStatistikKelurahan } from '../src/lib/demografi.ts';
 import { videoProfilEmbed } from '../src/lib/video-profil.ts';
 export const escapeHtml = (value)=>String(value??'').replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const fill = (html,values)=>html.replace(/__CMS_[A-Z]+(?:_[A-Z]+)*__/g,(key)=>{if(!Object.hasOwn(values,key))throw new Error('Template Pengaturan tidak lengkap: '+key);return values[key];});
@@ -21,7 +21,7 @@ function row(html,marker,tag='li') {
 }
 export function parsePengaturanTemplates(html) {
   const t = Object.fromEntries([...html.matchAll(/<template id="([a-z-]+)">([\s\S]*?)<\/template>/g)].map(([,id,body])=>[id,body.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replaceAll('/__CMS_IMAGE__','__CMS_IMAGE__').replaceAll('https://cms.invalid/','').replaceAll('Kelurahan Walian','__CMS_SITE_NAME__').replaceAll('Lurah Walian','__CMS_LURAH_LABEL__').replaceAll('Kota Tomohon','Kota __CMS_CITY_NAME__')]));
-  for(const name of ['hero','hero-slide','hero-empty','hero-point','summary','demography','religion-row','intro-photo','intro-empty','contact','footer','complaint','profile-heading','video','structure','node-root','node-child','node-side','node-empty-root','node-empty-child','node-empty-side','region','region-empty','region-row','vision',...['population','environment','area'].map((kind)=>'stat-'+kind)])if(!t['cms-'+name])throw new Error('Template Pengaturan belum tersedia.');
+  for(const name of ['hero','hero-slide','hero-empty','hero-point','summary','intro-photo','intro-empty','contact','footer','complaint','profile-heading','video','structure','node-root','node-child','node-side','node-empty-root','node-empty-child','node-empty-side','region','region-empty','region-row','vision',...['family','population','environment','area'].map((kind)=>'stat-'+kind)])if(!t['cms-'+name])throw new Error('Template Pengaturan belum tersedia.');
   t.slide=element(t['cms-hero-slide'],/<div\b[^>]*id="hero-foto-0"[^>]*>/).replaceAll('hero-foto-0','hero-foto-__CMS_INDEX__').replaceAll('object-center','object-__CMS_POSITION__');
   t.point=element(t['cms-hero-point'],/<button\b[^>]*data-hero-pilih="0"[^>]*>/).replaceAll('data-hero-pilih="0"','data-hero-pilih="__CMS_INDEX__"').replaceAll('hero-foto-0','hero-foto-__CMS_INDEX__').replace(/aria-label="[^"]*"/,'aria-label="__CMS_POINT_LABEL__"');
   t.fallback=element(t['cms-hero-empty'],/<div\b[^>]*class="absolute inset-0 overflow-hidden bg-sage-100"[^>]*>/);
@@ -86,14 +86,13 @@ export function renderPengaturan(data,t,wisataHref) {
   const sum=(key)=>{const numbers=p.lingkungan.map((item)=>item[key]).filter((number)=>number!==null);return numbers.length?numbers.reduce((a,b)=>a+b,0):null;};
   const totals={__CMS_FAMILY__:sum('kepalaKeluarga'),__CMS_POPULATION__:sum('jumlahPenduduk'),__CMS_AREA__:sum('luasKm2')};
   Object.assign(values,Object.fromEntries(Object.entries(totals).map(([key,number])=>[key,escapeHtml(formatAngka(number)??'–')])));
-  const stats=statistikKelurahan(p.lingkungan,b.jumlahPenduduk);
+  const stats=statistikKelurahan(p.lingkungan);
   values.__CMS_STATS__=Object.entries(stats).filter(([,number])=>number!==null).map(([kind,number])=>fill(t['cms-stat-'+kind],{__CMS_NUMBER__:escapeHtml(formatAngka(number))})).join('');
-  const summary=values.__CMS_STATS__?fill(t['cms-summary'],values):'';
+  const coverage=cakupanStatistikKelurahan(p.lingkungan);
+  values.__CMS_STATS_COVERAGE__=coverage?escapeHtml(`Jumlah dari data yang sudah diisi. ${coverage}.`):'';
+  let summary=values.__CMS_STATS__?fill(t['cms-summary'],values):'';
+  if(summary&&!coverage)summary=summary.replace(element(summary,/<p\b[^>]*data-stats-coverage[^>]*>/),'');
   values.__CMS_REGION_STATS__=summary;
-  const agama=dataDemografi(b.demografiAgama);
-  values.__CMS_RELIGION_TOTAL__=escapeHtml(formatAngka(agama.total));
-  values.__CMS_RELIGION_ROWS__=agama.rows.map((item)=>fill(t['cms-religion-row'],{__CMS_RELIGION_LABEL__:escapeHtml(item.label),__CMS_RELIGION_COUNT__:escapeHtml(formatAngka(item.jumlah)),__CMS_RELIGION_PERCENT__:item.persen.toFixed(1).replace(/\.0$/,''),__CMS_RELIGION_WIDTH__:String(item.persen)})).join('');
-  const demography=agama.total>0?fill(t['cms-demography'],values):'';
   // Video menyatu dengan pengantar Profil dan hilang seluruhnya ketika belum tersedia.
   const embedVideo=videoProfilEmbed(p.videoProfil?.url);
   const judulVideo=(p.videoProfil?.judul||'').trim()||'Video pengenalan Kelurahan Walian';
@@ -116,5 +115,5 @@ export function renderPengaturan(data,t,wisataHref) {
   const contact=fill(t['cms-contact'],values).replace(/href="https:\/\/wa.me\/[^"]*"/,()=>`href="${escapeHtml(tautanWhatsapp(s.whatsapp||'',`Halo Kantor ${s.namaKelurahan}, saya ingin bertanya tentang `))}"`);
   const complaint=fill(t['cms-complaint'],values).replace(/href="https:\/\/wa.me\/[^"]*"/,()=>`href="${escapeHtml(tautanWhatsapp(s.whatsapp||'',`Halo Kantor ${s.namaKelurahan}, saya ingin menyampaikan keluhan atau masukan: `))}"`);
   let footer=t['cms-footer'];if(!s.mediaSosial.length)footer=footer.replace(element(footer,/<ul\b[^>]*class="mt-6 flex gap-2"[^>]*>/),'');footer=fill(footer,values);if(wisataHref)footer=footer.replace(/href="\/(?:wisata|#wisata)"/g,()=>`href="${escapeHtml(wisataHref)}"`);
-  return {hero:fill(hero,values),summary,demography,intro:fill(t[p.lurah.foto?'cms-intro-photo':'cms-intro-empty'],values),contact,footer,complaint,heading:fill(t['cms-profile-heading'],values),video,structure:fill(t['cms-structure'],values),region:fill(t[p.lingkungan.length?'cms-region':'cms-region-empty'],values),vision:fill(t['cms-vision'],values),updated:dateLabel(p.diperbarui)};
+  return {hero:fill(hero,values),summary,intro:fill(t[p.lurah.foto?'cms-intro-photo':'cms-intro-empty'],values),contact,footer,complaint,heading:fill(t['cms-profile-heading'],values),video,structure:fill(t['cms-structure'],values),region:fill(t[p.lingkungan.length?'cms-region':'cms-region-empty'],values),vision:fill(t['cms-vision'],values),updated:dateLabel(p.diperbarui)};
 }

@@ -1,21 +1,30 @@
-// Penyajian saja: field CMS dan data tersimpan tidak diubah.
-const agama = [
-  ['kristen', 'Kristen'], ['katolik', 'Katolik'], ['islam', 'Islam'],
-  ['hindu', 'Hindu'], ['buddha', 'Buddha'], ['konghucu', 'Konghucu'],
-] as const;
-type JumlahAgama = Partial<Record<(typeof agama)[number][0], number | null>>;
-const positif = (value: number | null | undefined): value is number => typeof value === 'number' && Number.isFinite(value) && value > 0;
-export function dataDemografi(jumlah: JumlahAgama = {}) {
-  const rows = agama.map(([key, label]) => ({ label, jumlah: positif(jumlah[key]) ? jumlah[key]! : 0 }));
-  const total = rows.reduce((sum, item) => sum + item.jumlah, 0);
-  return { total, rows: rows.map((item) => ({ ...item, persen: total ? item.jumlah / total * 100 : 0 })) };
+// Ringkasan publik hanya berasal dari angka per lingkungan.
+export interface AngkaLingkungan {
+  kepalaKeluarga?: number | null;
+  jumlahPenduduk?: number | null;
+  luasKm2?: number | null;
 }
-export function statistikKelurahan(lingkungan: { jumlahPenduduk?: number | null; luasKm2?: number | null }[], jumlahPenduduk?: number | null) {
-  // Jumlah sebagian lingkungan tidak disajikan sebagai total kelurahan.
-  const totalLengkap = (key: 'jumlahPenduduk' | 'luasKm2') => {
-    if (!lingkungan.length || lingkungan.some((item) => typeof item[key] !== 'number' || !Number.isFinite(item[key]) || item[key]! < 0)) return null;
-    const total = lingkungan.reduce((sum, item) => sum + item[key]!, 0);
-    return positif(total) ? total : null;
+const angkaValid = (nilai: unknown): nilai is number => typeof nilai === 'number' && Number.isFinite(nilai) && nilai >= 0;
+const metrik = [
+  ['kepalaKeluarga', 'KK'], ['jumlahPenduduk', 'Penduduk'], ['luasKm2', 'Luas'],
+] as const;
+
+export function statistikKelurahan(lingkungan: AngkaLingkungan[]) {
+  const jumlahTerisi = (key: keyof AngkaLingkungan) => {
+    const angka = lingkungan.map(item => item[key]).filter(angkaValid);
+    return angka.length ? angka.reduce((sum, nilai) => sum + nilai, 0) : null;
   };
-  return { population: positif(jumlahPenduduk) ? jumlahPenduduk : totalLengkap('jumlahPenduduk'), environment: lingkungan.length || null, area: totalLengkap('luasKm2') };
+  return {
+    family: jumlahTerisi('kepalaKeluarga'),
+    population: jumlahTerisi('jumlahPenduduk'),
+    environment: lingkungan.length || null,
+    area: jumlahTerisi('luasKm2'),
+  };
+}
+
+export function cakupanStatistikKelurahan(lingkungan: AngkaLingkungan[]) {
+  return metrik.map(([key, label]) => ({ label, terisi: lingkungan.filter(item => angkaValid(item[key])).length }))
+    .filter(item => item.terisi > 0)
+    .map(item => `${item.label}: ${item.terisi} dari ${lingkungan.length} lingkungan`)
+    .join('; ');
 }

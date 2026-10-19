@@ -17,7 +17,7 @@ Website masih memiliki data yang perlu dilengkapi dan `SIAP_DIINDEKS` masih `fal
 - **Navigasi Wisata otomatis:** sampai 4 destinasi menuju section Beranda; mulai 5 menuju `/wisata`, dengan 4 pilihan di Beranda dan tombol "Semua Wisata".
 - `/wisata` selalu dapat dibuka, termasuk ketika jumlah destinasi turun atau kosong, agar tautan lama tetap berlaku.
 - **CMS dan animasi:** panel konten tersedia di `/admin/` untuk pengelolaan layanan, destinasi, pengumuman, dan profil kelurahan.
-- **Ringkasan dan demografi:** hero menyediakan akses Layanan dan Kontak. Statistik berada dalam bagian Wilayah dan penduduk di halaman Profil dan angka yang belum tersedia disembunyikan; total lingkungan yang belum lengkap tidak dianggap sebagai total kelurahan. Demografi agama tampil di Profil hanya setelah jumlahnya diisi, memakai sumber/tahun dari Pengaturan Profil. Field penyimpanannya tetap di Pengaturan Beranda agar konten lama tidak perlu dimigrasikan.
+- **Ringkasan wilayah:** hero menyediakan akses Layanan dan Kontak. Ringkasan KK, penduduk, jumlah lingkungan, dan luas berada dalam bagian Wilayah dan penduduk pada Profil. KK, penduduk, dan luas dijumlahkan otomatis dari kolom per lingkungan yang sudah diisi; angka kosong disembunyikan, angka 0 yang diisi tetap dicatat. Keterangan cakupan membedakan jumlah parsial dari data seluruh lingkungan. Isian total penduduk manual serta formulir dan tampilan agama sudah dihapus; data lama tetap dapat dibaca dan kolom yang dihentikan diabaikan saat menyimpan Beranda.
 - **Video Profil:** video YouTube mendampingi pengantar Profil di kanan pada desktop dan di bawah pada ponsel. Tanpa tautan video yang didukung, blok video tidak ditampilkan.
 
 ## Isi website
@@ -27,7 +27,7 @@ Folder `src/content/` menyimpan data awal dan kontrak isian untuk build lokal. P
 | Isi | File |
 |---|---|
 | Nama, alamat, kontak, jam layanan, tautan penting | `src/content/pengaturan/situs.json` |
-| Teks dan foto hero, jumlah penduduk dan demografi agama | `src/content/pengaturan/beranda.json` |
+| Teks dan foto hero | `src/content/pengaturan/beranda.json` |
 | Profil: ringkasan, Lurah, video, struktur organisasi, wilayah dan lingkungan, visi dan misi | `src/content/pengaturan/profil.json` |
 | Layanan (satu file per layanan) | `src/content/layanan/*.md` |
 | Pengumuman untuk warga (tampil di halaman Layanan) | `src/content/pengaturan/pengumuman.json` |

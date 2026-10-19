@@ -59,9 +59,9 @@ export const berandaSchema = z.object({
         .max(5)
         .default([]),
     }),
-    /** Jumlah penduduk kelurahan. Kosongkan jika dihitung otomatis dari pemeluk agama. */
+    /** Legacy: dibaca agar data lama kompatibel; tidak diedit atau dipakai sebagai statistik. */
     jumlahPenduduk: z.number().int().nonnegative().nullable().optional(),
-    /** Demografi 6 agama di Beranda sebagai kolom tetap. Kosong dianggap 0. */
+    /** Legacy: formulir dan tampilan agama sudah dihentikan. */
     demografiAgama: z
       .object({
         kristen: z.number().int().nonnegative().nullish().transform((v) => v ?? 0),
@@ -117,7 +117,7 @@ export const profilSchema = z.object({
         }),
       )
       .default([]),
-    /** Demografi pemeluk agama di kelurahan (opsional, kini dikelola di Beranda). */
+    /** Legacy: tidak lagi ditampilkan atau diedit. */
     demografiAgama: z
       .array(
         z.object({
@@ -127,7 +127,7 @@ export const profilSchema = z.object({
       )
       .optional()
       .default([]),
-    /** Video pengenalan/potensi kelurahan (YouTube). Kosong: tampil placeholder. */
+    /** Video pengenalan/potensi kelurahan (YouTube). Kosong: blok tidak ditampilkan. */
     videoProfil: z
       .object({
         url: z.string().trim().default(''),
