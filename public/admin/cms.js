@@ -2,6 +2,7 @@ import { request, imageUrl, uploadImage, logout } from './cms-client.js?v=202610
 import { createEditorSections } from './editor-sections.js?v=20261012_03';
 import { createOrganizationEditor } from './organization-editor.js?v=20261010_ui04';
 import { createTextListControl, createWeeklySchedule, listItemSummary, revealCompactErrors } from './compact-fields.js?v=20261012_03';
+import { uniqueSlug } from './content-slug.js?v=20261019_01';
 
 const root = document.getElementById('cms-root');
 const state = { config: null, collection: 'layanan', filter: 'all', search: '', entries: [], entry: null, uploads: new Map(), dirty: false, busy: false, urls: new Set() };
@@ -331,12 +332,13 @@ function fieldControl(field, parent, key, path) {
       const file = event.target.files[0]; if (!file) return;
       if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) { event.target.value = ''; message('Pilih foto JPEG, PNG, atau WebP maksimal 5 MB.', true); return; }
       if (state.config.media_upload) {
-        const slug = uniqueSlug(state.entry.data[menu().identifier_field || 'judul'] || state.entry.data.nama || '', state.entry.slug);
+        const slug = uniqueSlug(state.entry.data[menu().identifier_field || 'judul'] || state.entry.data.nama || '', state.entry.slug, state.entries);
         if (!slug) { event.target.value = '';message('Isi nama atau judul dahulu sebelum memilih foto.',true);return; }
         // Keep this slug when the user renames the entry after uploading.
-        state.entry.slug = slug;setBusy(true);message('Mengunggah foto…');
+        setBusy(true);message('Mengunggah foto…');
         try {
           const result = await uploadImage(file,{collection:state.collection,slug,id:crypto.randomUUID()});
+          state.entry.slug = slug;
           set(result.path);drawEditor();message('Foto berhasil diunggah. Simpan draf atau terbitkan untuk menyimpan isian.');
         } catch (error) { event.target.value = '';message(error.message,true); }
         finally { setBusy(false); }
@@ -393,27 +395,13 @@ function errorsFor(list, data, prefix = '') {
   }
   return errors;
 }
-function slugify(text) { return text.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 100).replace(/-$/, ''); }
-function uniqueSlug(text, existingSlug = '') {
-  if (existingSlug && (state.entry?.published || state.entry?.revision)) return existingSlug;
-  const base = slugify(text);
-  if (!base) return '';
-  let candidate = base;
-  let counter = 2;
-  const taken = (s) => state.entries.some((item) => item.slug === s && item.slug !== existingSlug);
-  while (taken(candidate)) {
-    candidate = `${base}-${counter++}`;
-  }
-  return candidate;
-}
 async function save(publish = false) {
   if (state.busy) return;
   if (!state.dirty && state.entry.published && !state.entry.revision && !state.entry.warning) { message('Konten ini sudah terbit. Ubah isian dahulu untuk membuat revisi.'); return; }
   const data = structuredClone(state.entry.data); normalize(fields(), data);
   if (publish) { const errors = errorsFor(fields(), data); if (errors.length) { message(errors.slice(0, 4).join(' '), true); return; } }
-  const slug = uniqueSlug(data[menu().identifier_field || 'judul'] || data.nama || '', state.entry.slug);
+  const slug = uniqueSlug(data[menu().identifier_field || 'judul'] || data.nama || '', state.entry.slug, state.entries);
   if (!slug) { message('Isi nama atau judul dahulu agar draf mudah ditemukan.', true); return; }
-  state.entry.slug = slug;
   setBusy(true); message(publish ? 'Menyimpan dan memeriksa konten…' : 'Menyimpan draf…');
   try {
     if (!publish || state.dirty || !state.entry.revision || state.entry.warning || state.entry.withdrawn) {

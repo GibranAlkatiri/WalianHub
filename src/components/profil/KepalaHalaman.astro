@@ -3,19 +3,21 @@
 // Foto Lurah tampil di section Profil di Beranda, dan nama Lurah di kotak puncak bagan Struktur Organisasi.
 import Container from '../ui/Container.astro';
 import TeksKetik from '../ui/TeksKetik.astro';
+import VideoProfil from './VideoProfil.astro';
+import { videoProfilEmbed, type VideoProfilData } from '../../lib/video-profil';
 import { url } from '../../lib/url';
 import { JEDA_HURUF_SUBJUDUL, jedaSubjudulKetik } from '../../lib/teks-ketik';
 
 interface Props {
   ringkasan: string;
+  videoProfil?: VideoProfilData;
   runtimeTemplate?: boolean;
 }
 
-const { ringkasan, runtimeTemplate = false } = Astro.props;
+const { ringkasan, videoProfil, runtimeTemplate = false } = Astro.props;
 const judulHalaman = 'Profil Kelurahan Walian';
 
 const tautanSection = [
-  { label: 'Video Profil', anchor: '#video-profil' },
   { label: 'Struktur Organisasi', anchor: '#struktur-organisasi' },
   { label: 'Wilayah', anchor: '#wilayah' },
   { label: 'Visi dan Misi', anchor: '#visi-misi' },
@@ -24,30 +26,42 @@ const tautanSection = [
 
 <section data-cms-profile-heading class="pt-8 pb-12 sm:pt-10 sm:pb-16 lg:pt-12 lg:pb-20">
   <Container>
-    <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-sm text-ink-subtle">
-      <a href={url('/')} class="hover:text-forest-600 hover:underline">Beranda</a>
-      <span aria-hidden="true">/</span>
-      <span class="text-ink">Profil</span>
-    </nav>
-    <h1 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl">
-      <TeksKetik teks={runtimeTemplate ? '__CMS_PROFILE_TITLE__' : judulHalaman} runtimeMarker={runtimeTemplate ? '__CMS_TYPED_PROFILE_TITLE__' : undefined} />
-    </h1>
-    <p class="mt-4 max-w-2xl text-ink-muted">
-      <TeksKetik teks={ringkasan} jedaAwal={jedaSubjudulKetik(judulHalaman)} jedaHuruf={JEDA_HURUF_SUBJUDUL} runtimeMarker={runtimeTemplate ? '__CMS_TYPED_SUMMARY__' : undefined} />
-    </p>
-    <ul data-motion data-motion-delay="140" class="mt-6 flex flex-wrap gap-2">
-      {
-        tautanSection.map((item) => (
-          <li>
-            <a
-              href={url(item.anchor)}
-              class="inline-flex h-10 items-center rounded-full bg-sage-100 px-4 text-sm font-semibold text-forest-900 transition-colors hover:bg-sage-200"
-            >
-              {item.label}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+    <div class="profile-intro" data-has-video={runtimeTemplate ? '__CMS_HAS_VIDEO__' : videoProfilEmbed(videoProfil?.url) ? 'true' : undefined}>
+      <div class="min-w-0">
+        <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-sm text-ink-subtle">
+          <a href={url('/')} class="hover:text-forest-600 hover:underline">Beranda</a>
+          <span aria-hidden="true">/</span>
+          <span class="text-ink">Profil</span>
+        </nav>
+        <h1 class="mt-4 text-3xl leading-tight font-extrabold text-balance text-ink sm:text-4xl">
+          <TeksKetik teks={runtimeTemplate ? '__CMS_PROFILE_TITLE__' : judulHalaman} runtimeMarker={runtimeTemplate ? '__CMS_TYPED_PROFILE_TITLE__' : undefined} />
+        </h1>
+        <p class="mt-4 max-w-2xl text-ink-muted">
+          <TeksKetik teks={ringkasan} jedaAwal={jedaSubjudulKetik(judulHalaman)} jedaHuruf={JEDA_HURUF_SUBJUDUL} runtimeMarker={runtimeTemplate ? '__CMS_TYPED_SUMMARY__' : undefined} />
+        </p>
+        <ul data-motion data-motion-delay="140" class="mt-6 flex flex-wrap gap-2">
+          {
+            tautanSection.map((item) => (
+              <li>
+                <a
+                  href={url(item.anchor)}
+                  class="inline-flex h-10 items-center rounded-full bg-sage-100 px-4 text-sm font-semibold text-forest-900 transition-colors hover:bg-sage-200"
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      {runtimeTemplate ? '__CMS_PROFILE_VIDEO__' : <VideoProfil {videoProfil} />}
+    </div>
   </Container>
 </section>
+
+<style>
+  .profile-intro { display: grid; gap: 2rem; align-items: start; }
+  @media (min-width: 1024px) {
+    .profile-intro[data-has-video="true"] { grid-template-columns: 1.1fr 1fr; gap: 3rem; }
+  }
+</style>

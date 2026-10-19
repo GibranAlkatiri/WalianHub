@@ -20,7 +20,7 @@ const gambarPreview = fotoPertama && /\.(jpe?g|png|webp)$/i.test(fotoPertama) ? 
 ---
 
 <BaseLayout overlayHeader image={gambarPreview}>
-  <Hero hero={beranda.hero} ringkasanKelurahan={{ ...profil, jumlahPenduduk: beranda.jumlahPenduduk, demografiAgama: beranda.demografiAgama }} />
+  <Hero hero={beranda.hero} />
   <KktTeam />
   <ProfileIntro ringkasan={profil.ringkasan} lurah={profil.lurah} />
   <Services />

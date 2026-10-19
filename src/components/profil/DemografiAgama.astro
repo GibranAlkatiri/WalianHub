@@ -1,0 +1,27 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Container from '../ui/Container.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+import BarisAgama from './BarisAgama.astro';
+import { dataDemografi } from '../../lib/demografi';
+import { formatAngka } from '../../lib/format';
+interface Props {
+  demografiAgama?: CollectionEntry<'beranda'>['data']['demografiAgama'];
+  sumberData: CollectionEntry<'profil'>['data']['sumberData'];
+  runtimeTemplate?: boolean;
+}
+const { demografiAgama, sumberData, runtimeTemplate = false } = Astro.props;
+const { total, rows } = dataDemografi(demografiAgama);
+---
+<section id="demografi-agama" data-cms-demography class="bg-white py-12 sm:py-16" hidden={!runtimeTemplate && total === 0}>
+  <Container>
+    <SectionHeading overline="Demografi" title="Penduduk menurut agama" />
+    <div class="mt-8 max-w-3xl">
+      <p class="text-sm text-ink-muted">Jumlah pada data agama: <strong class="font-semibold text-ink">{runtimeTemplate ? '__CMS_RELIGION_TOTAL__' : formatAngka(total)} jiwa</strong>.</p>
+      <ul class="mt-6 grid gap-5" aria-label="Jumlah pemeluk agama">
+        {runtimeTemplate ? '__CMS_RELIGION_ROWS__' : rows.map((item) => <BarisAgama label={item.label} jumlah={formatAngka(item.jumlah) ?? '0'} persen={item.persen.toFixed(1).replace(/\.0$/, '')} lebar={String(item.persen)} />)}
+      </ul>
+      <p class="mt-6 text-sm leading-relaxed text-ink-subtle">Persentase dihitung dari jumlah pemeluk agama yang tercatat. Sumber: {sumberData.sumber}, {sumberData.tahun}.</p>
+    </div>
+  </Container>
+</section>

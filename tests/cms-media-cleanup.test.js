@@ -101,9 +101,47 @@ test('scheduler memeriksa Preview dahulu, mengirim token server dan hanya mencat
     return Response.json({ok:true,dryRun:false,busy:false,total:1,protected:1,pending:0,eligible:0,deleted:0,failed:0,unknownSource:0,verifiedSources:0,secret:'provider-test-secret'});
   });expect(calls).toEqual([env.CMS_MEDIA_CLEANUP_PEER_URL,env.CMS_MEDIA_CLEANUP_URL]);expect(result.protected).toBe(1);expect(JSON.stringify(result)).not.toContain('secret');await expect(scheduledCleanup({...env,CMS_MEDIA_CLEANUP_URL:'http://cms.example/api/media-cleanup'})).rejects.toThrow();
 });
+test('scheduler mengirim kredensial Access hanya ke Preview yang dilindungi',async()=>{
+  const env={CMS_MEDIA_CLEANUP_URL:'https://cms.example/api/media-cleanup',CMS_MEDIA_CLEANUP_PEER_URL:'https://preview.example/api/media-cleanup',CMS_MEDIA_CLEANUP_TOKEN:'test-token-'.repeat(5),CMS_MEDIA_CLEANUP_PEER_ACCESS_CLIENT_ID:'access-test-id',CMS_MEDIA_CLEANUP_PEER_ACCESS_CLIENT_SECRET:'access-test-secret'},calls=[];
+  await scheduledCleanup(env,async(url,init)=>{
+    calls.push(url);expect(init.redirect).toBe('error');
+    expect(init.headers.authorization).toBe('Bearer '+env.CMS_MEDIA_CLEANUP_TOKEN);
+    if(url===env.CMS_MEDIA_CLEANUP_PEER_URL){
+      expect(init.headers['CF-Access-Client-ID']).toBe('access-test-id');
+      expect(init.headers['CF-Access-Client-Secret']).toBe('access-test-secret');
+      return Response.json({ok:true,schema:1,collectionsD1:true,cloudIdentity:await cloudIdentity('test-cloud')});
+    }
+    expect(init.headers['CF-Access-Client-ID']).toBeUndefined();
+    expect(init.headers['CF-Access-Client-Secret']).toBeUndefined();
+    expect(JSON.stringify(JSON.parse(init.body))).not.toContain('access-test-');
+    return Response.json({ok:true,dryRun:false,busy:false,total:0,protected:0,pending:0,eligible:0,deleted:0,failed:0,unknownSource:0,verifiedSources:0});
+  });
+  expect(calls).toEqual([env.CMS_MEDIA_CLEANUP_PEER_URL,env.CMS_MEDIA_CLEANUP_URL]);
+  for(const missing of ['CMS_MEDIA_CLEANUP_PEER_ACCESS_CLIENT_ID','CMS_MEDIA_CLEANUP_PEER_ACCESS_CLIENT_SECRET']){
+    let contacted=false;
+    await expect(scheduledCleanup({...env,[missing]:''},async()=>{contacted=true;})).rejects.toThrow('CLEANUP_CONFIGURATION');
+    expect(contacted).toBe(false);
+  }
+});
+
+test('dry-run langsung mengautentikasi Preview melalui Access tanpa menghapus foto',async()=>{
+  const s=setup();try{
+    s.env.CMS_MEDIA_CLEANUP_PEER_ACCESS_CLIENT_ID='access-test-id';
+    s.env.CMS_MEDIA_CLEANUP_PEER_ACCESS_CLIENT_SECRET='access-test-secret';
+    photo(s.databases[0]);let calls=0;
+    const result=await cleanupMedia(s.env,{dryRun:true,now,fetchProvider:s.provider,fetchPeer:async(url,init)=>{
+      calls++;expect(url).toBe(s.env.CMS_MEDIA_CLEANUP_PEER_URL);expect(init.redirect).toBe('error');
+      expect(init.headers['CF-Access-Client-ID']).toBe('access-test-id');
+      expect(init.headers['CF-Access-Client-Secret']).toBe('access-test-secret');return s.peer();
+    }});
+    expect(calls).toBe(1);expect(result.dryRun).toBe(true);expect(result.deleted).toBe(0);expect(s.requests).toHaveLength(0);
+    expect(s.databases[0].raw.query('SELECT COUNT(*) AS count FROM cms_media_cleanup').get().count).toBe(0);
+  }finally{s.close();}
+});
+
 test('scheduler tidak mengirim perintah Production jika Preview tidak tersedia atau metadata tidak valid',async()=>{
   const env={CMS_MEDIA_CLEANUP_URL:'https://cms.example/api/media-cleanup',CMS_MEDIA_CLEANUP_PEER_URL:'https://preview.example/api/media-cleanup',CMS_MEDIA_CLEANUP_TOKEN:'test-token-'.repeat(5)};
-  for(const response of [new Response(null,{status:503}),Response.json({ok:true,schema:1,collectionsD1:false,cloudIdentity:'a'.repeat(64)})]){
+  for(const response of [new Response(null,{status:503}),new Response(null,{status:302,headers:{location:'https://access.example/login'}}),Response.json({ok:true,schema:1,collectionsD1:false,cloudIdentity:'a'.repeat(64)})]){
     let calls=0;await expect(scheduledCleanup(env,async(url)=>{calls++;expect(url).toBe(env.CMS_MEDIA_CLEANUP_PEER_URL);return response;})).rejects.toThrow();expect(calls).toBe(1);
   }
 });

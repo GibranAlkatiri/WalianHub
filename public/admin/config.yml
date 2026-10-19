@@ -495,13 +495,13 @@ collections:
             value_type: int
             min: 0
             required: false
-            hint: "Total jumlah penduduk di kartu ringkasan Beranda. Kosongkan jika ingin dihitung otomatis dari jumlah pemeluk agama."
+            hint: "Total penduduk pada bagian Wilayah dan penduduk di halaman Profil. Jika kosong, total hanya dihitung ketika data penduduk seluruh lingkungan sudah lengkap; jika belum, statistik disembunyikan."
 
           - label: Demografi Agama
             name: demografiAgama
             widget: object
             collapsed: false
-            hint: "Tinggal isi jumlah tiap agama. Kolom sudah tetap 6 agama. Isi 0 jika belum ada datanya."
+            hint: "Ditampilkan di halaman Profil, setelah Wilayah. Gunakan jumlah resmi dan lengkapi sumber serta tahun data pada Profil. Jika semua jumlah masih 0 atau kosong, diagram disembunyikan."
             fields:
               - { label: Kristen, name: kristen, widget: number, value_type: int, min: 0, required: false, default: 0 }
               - { label: Katolik, name: katolik, widget: number, value_type: int, min: 0, required: false, default: 0 }
@@ -542,13 +542,13 @@ collections:
                 name: url
                 widget: string
                 required: false
-                hint: "Tempel link YouTube (watch, youtu.be, embed, atau shorts). Kosong: tampil “Video menyusul”."
-              - { label: Judul, name: judul, widget: string, required: false, hint: "Judul di kanan video. Kosong: tampil judul bawaan." }
+                hint: "Tempel link YouTube (watch, youtu.be, embed, atau shorts). Video tampil di samping pengantar Profil; jika kosong, blok video disembunyikan."
+              - { label: Judul, name: judul, widget: string, required: false, hint: "Judul di bawah video. Kosong: tampil judul bawaan." }
               - label: Deskripsi Singkat
                 name: deskripsi
                 widget: text
                 required: false
-                hint: "Satu-dua kalimat tentang isi video. Tampil di kanan video."
+                hint: "Satu-dua kalimat di bawah video. Kosongkan jika tidak diperlukan."
 
           - label: Struktur Organisasi
             name: strukturOrganisasi

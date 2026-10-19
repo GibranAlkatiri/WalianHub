@@ -7,8 +7,9 @@ Dikembangkan oleh KKT Angkatan 149 Universitas Sam Ratulangi.
 
 ### **https://walian-hub.pages.dev/**
 
-Ini adalah **versi pratinjau**. Teks di dalam [kurung siku] dan data destinasi masih contoh. Data contoh sengaja dipertahankan untuk demo: staf nantinya dapat mengoreksi nama/jenis surat, persyaratan, profil, kontak, dan destinasi melalui CMS. Validasi data resmi dilakukan bersama kelurahan saat demo. Kode CMS sudah tersedia; login dan publikasi pada lingkungan produksi masih perlu dibuktikan.
-Cloudflare terhubung ke branch `main` pada `gleey/WalianHub`. Perubahan di repository kode bersama `GibranAlkatiri/WalianHub` perlu disinkronkan ke repo tersebut sebelum memperbarui situs.
+Project Cloudflare Pages aktif adalah `walian-hub`, terhubung ke repository `GibranAlkatiri/WalianHub`, branch produksi `main`. Konfigurasi ini diperiksa pada 19 Oktober 2026. Domain `walianhub.pages.dev` dan `walianhub-8ib.pages.dev` adalah alamat historis.
+
+Website masih memiliki data yang perlu dilengkapi dan `SIAP_DIINDEKS` masih `false`. Pengelola mengubah layanan, destinasi, pengumuman, dan pengaturan melalui `/admin/`. Konten produksi disimpan di D1, sehingga `git pull` memperbarui kode dan data awal repository, bukan salinan konten CMS yang sedang tayang.
 
 ## Status
 
@@ -16,16 +17,18 @@ Cloudflare terhubung ke branch `main` pada `gleey/WalianHub`. Perubahan di repos
 - **Navigasi Wisata otomatis:** sampai 4 destinasi menuju section Beranda; mulai 5 menuju `/wisata`, dengan 4 pilihan di Beranda dan tombol "Semua Wisata".
 - `/wisata` selalu dapat dibuka, termasuk ketika jumlah destinasi turun atau kosong, agar tautan lama tetap berlaku.
 - **CMS dan animasi:** panel konten tersedia di `/admin/` untuk pengelolaan layanan, destinasi, pengumuman, dan profil kelurahan.
+- **Ringkasan dan demografi:** hero menyediakan akses Layanan dan Kontak. Statistik berada dalam bagian Wilayah dan penduduk di halaman Profil dan angka yang belum tersedia disembunyikan; total lingkungan yang belum lengkap tidak dianggap sebagai total kelurahan. Demografi agama tampil di Profil hanya setelah jumlahnya diisi, memakai sumber/tahun dari Pengaturan Profil. Field penyimpanannya tetap di Pengaturan Beranda agar konten lama tidak perlu dimigrasikan.
+- **Video Profil:** video YouTube mendampingi pengantar Profil di kanan pada desktop dan di bawah pada ponsel. Tanpa tautan video yang didukung, blok video tidak ditampilkan.
 
 ## Isi website
 
-Semua isi website ada di folder `src/content/`. Untuk mengganti isi, tampilan tidak perlu diubah.
+Folder `src/content/` menyimpan data awal dan kontrak isian untuk build lokal. Pada produksi dengan mode D1 aktif, versi terbit dari database menggantikan data awal tersebut saat halaman diminta. Tabel berikut menunjukkan sumber data awal; pengelola mengubah konten yang tayang melalui panel CMS.
 
 | Isi | File |
 |---|---|
 | Nama, alamat, kontak, jam layanan, tautan penting | `src/content/pengaturan/situs.json` |
-| Teks dan foto hero | `src/content/pengaturan/beranda.json` |
-| Profil: ringkasan, Lurah, struktur organisasi, wilayah dan lingkungan, visi dan misi | `src/content/pengaturan/profil.json` |
+| Teks dan foto hero, jumlah penduduk dan demografi agama | `src/content/pengaturan/beranda.json` |
+| Profil: ringkasan, Lurah, video, struktur organisasi, wilayah dan lingkungan, visi dan misi | `src/content/pengaturan/profil.json` |
 | Layanan (satu file per layanan) | `src/content/layanan/*.md` |
 | Pengumuman untuk warga (tampil di halaman Layanan) | `src/content/pengaturan/pengumuman.json` |
 | Destinasi wisata (satu file per destinasi) | `src/content/destinasi/*.md` |
@@ -42,17 +45,60 @@ Semua isi website ada di folder `src/content/`. Untuk mengganti isi, tampilan ti
 - Koordinat harus berada di rentang geografis; jumlah penduduk dan KK berupa bilangan bulat nonnegatif atau `null`. Tautan terisi memakai alamat HTTP/HTTPS lengkap; email terisi harus valid.
 - Pilih ikon dari nama file di `src/icons/` tanpa `.svg`. Ikon yang tidak tersedia ditolak saat build.
 
-**Urutan dan pilihan Beranda:** layanan menampilkan maksimal 4 item yang ditandai `unggulan`, menurut `urutan`. Wisata sampai 4 menampilkan semuanya, termasuk yang tidak unggulan. Mulai 5, empat kartu mengutamakan `unggulan`, lalu dilengkapi dari destinasi lain menurut `urutan`. Halaman Wisata selalu menampilkan semua destinasi menurut `urutan` lalu nama. Koleksi kosong tetap memiliki pesan yang jelas.
+**Urutan dan pilihan Beranda:** layanan menampilkan item yang ditandai `unggulan`, menurut `urutan`. Wisata sampai 4 menampilkan semuanya, termasuk yang tidak unggulan. Mulai 5, empat kartu mengutamakan `unggulan`, lalu dilengkapi dari destinasi lain menurut `urutan`. Halaman Wisata selalu menampilkan semua destinasi menurut `urutan` lalu nama. Koleksi kosong tetap memiliki pesan yang jelas.
 
-Setiap isi diperiksa oleh `src/content.config.ts` setiap kali website dibangun. Jika ada data yang tidak sesuai, proses build gagal dengan pesan yang jelas, dan website yang sedang tayang tidak berubah.
+Data awal diperiksa oleh `src/content.config.ts` saat build. API CMS memvalidasi draf dan memeriksa kontrak lengkap sebelum publikasi D1; draf belum lengkap tetap privat. Pembacaan D1 yang gagal menghasilkan pesan gangguan, bukan memulihkan data awal yang sudah usang.
 
 ## Untuk pembuat CMS
 
 `src/content.config.ts` adalah **kontrak data** antara tampilan dan CMS. Formulir CMS mengikuti nama field, tipe, daftar pilihan, aturan wajib/kosong, dan validasi tersebut. Isian konten terpisah dari tampilan; label formulir boleh memakai Bahasa Indonesia. Teks antarmuka seperti "Cek Lokasi", tata letak, dan aturan navigasi tetap dikelola frontend.
 
-- **CMS yang digunakan:** Decap CMS berbasis Git. Panel ada di `public/admin/`, login melalui Cloudflare Pages Function `functions/api/auth.js`, dan konfigurasi formulir mengikuti kontrak konten. UI serta login/penyimpanan/publikasi produksi masih perlu diperiksa sesuai pembagian kerja.
+- **Panel:** CMS khusus WalianHub di `public/admin/`, dengan formulir dari `config.yml`. Decap bukan editor yang sedang dimuat; beberapa berkas pratinjau lama masih tersimpan untuk kompatibilitas.
+- **Login:** `/api/auth` memakai username dan hash password server, lalu cookie sesi HttpOnly selama delapan jam. Pada mode sesi, token GitHub tidak dikirim ke browser.
+- **Konten:** `/api/cms` mengelola Layanan, Destinasi, Pengumuman, serta Pengaturan di D1. Revisi dan versi terbit dipisahkan; pemeriksaan revisi mencegah editor menimpa perubahan pengguna lain.
+- **Foto:** `/api/media` mengunggah JPEG, PNG, atau WebP maksimal 5 MB ke Cloudinary dengan akses authenticated. Konten menyimpan path `/media/<id>.<format>`, dan `/media/` melayani foto sesuai status draf/terbit. ID konten tetap setelah unggah foto meskipun judul diganti.
+- **Kompatibilitas:** backend GitHub masih tersedia ketika saklar D1 dimatikan. Mode ini memakai draf branch/PR dan pemeriksaan CI; publikasi D1 tidak membuat commit GitHub.
 
-Pengubahan nama surat menggunakan field `judul`; CMS sebaiknya mempertahankan identitas file setelah dibuat. Upload foto memakai path dari akar situs, misalnya `/uploads/destinasi/foto.webp`. Frontend menambahkan base path saat merender. `SIAP_DIINDEKS` tetap `false` selama versi demo.
+Pengubahan nama surat menggunakan field `judul` tanpa mengganti ID konten, sehingga tautan tetap berlaku. ID baru maksimal 100 karakter; nama ganda diberi akhiran angka dalam batas yang sama. Path `/uploads/` tetap didukung untuk media lama. `SIAP_DIINDEKS` tetap `false` selama data belum disetujui untuk diindeks.
+
+## Konfigurasi operasional
+
+Production dan Preview memakai database berbeda. Pada project `walian-hub`, mode sesi, empat koleksi D1, pembacaan publik D1, serta Cloudinary diperiksa aktif pada 19 Oktober 2026. Pengaturan server dikelola melalui Cloudflare; rahasia tidak ditulis ke repository atau keluaran perintah.
+
+| Binding atau environment variable | Kegunaan |
+|---|---|
+| `CMS_DB` | Database konten, sesi, dan metadata media untuk lingkungan tersebut |
+| `CMS_USERNAME`, `CMS_PASSWORD_HASH` | Username dan hash SHA-256 password pengelola |
+| `CMS_SESSION_AUTH` | `1` untuk sesi server; perubahan kredensial membatalkan sesi lama |
+| `CMS_LAYANAN_D1`, `CMS_DESTINASI_D1`, `CMS_PENGUMUMAN_D1`, `CMS_PENGATURAN_D1` | `1` untuk penyimpanan koleksi di D1 |
+| `CMS_PUBLIC_LAYANAN_D1`, `CMS_PUBLIC_DESTINASI_D1`, `CMS_PUBLIC_PENGUMUMAN_D1`, `CMS_PUBLIC_PENGATURAN_D1` | `1` untuk membaca versi terbit D1 pada halaman publik |
+| `CMS_MEDIA_CLOUDINARY` | `1` untuk penyimpanan foto Cloudinary |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Identitas dan kredensial penyimpanan foto di server |
+| `GITHUB_TOKEN` | Akses server untuk backend GitHub lama; tidak diperlukan untuk operasi koleksi D1 |
+| `CMS_LOGIN_LIMIT_DISABLED` | Hanya nilai `1` yang mematikan sementara pembatasan percobaan login; kosongkan kembali setelah penanganan selesai |
+
+Jangan menyalin kredensial Production ke contoh atau pengujian lokal. `bun run preview:cms` menyediakan panel uji lokal dengan data sementara; mode tersebut tidak membuktikan konfigurasi Cloudflare produksi.
+
+### Pembersihan media
+
+Worker terpisah di `workers/` menjadwalkan pembersihan foto yatim setelah masa tunggu tujuh hari. Foto yang masih dirujuk draf maupun versi terbit di kedua database dilindungi. Worker memeriksa metadata Preview sebelum mengirim perintah Production dan membatalkan proses jika pemeriksaan gagal.
+
+Konfigurasi repository memakai endpoint berikut, berdasarkan project dan alias Preview yang diperiksa pada 19 Oktober 2026:
+
+- Production: `https://walian-hub.pages.dev/api/media-cleanup`.
+- Preview: `https://backend-pengaturan-kunci-asi.walian-hub.pages.dev/api/media-cleanup`. Ini alias yang dikembalikan Cloudflare, dengan nama branch yang dipotong; periksa kembali jika Preview diganti atau dihapus.
+
+`workers/wrangler.media-cleanup.jsonc` mengatur kedua alamat tersebut. Sebelum deployment Worker, samakan `CMS_MEDIA_CLEANUP_PEER_URL` pada Pages Production dengan alamat Preview yang sama. Production juga memerlukan `CMS_MEDIA_CLEANUP_PEER_DB` yang menunjuk database Preview, `CMS_MEDIA_CLEANUP_SHARED_CLOUD_NAME` yang cocok dengan Cloudinary kedua lingkungan, dan token khusus `CMS_MEDIA_CLEANUP_TOKEN` yang sama pada Worker serta endpoint terkait. Token ini terpisah dari sesi login panel dan tidak dicatat dalam log.
+
+Preview saat ini dilindungi Cloudflare Access; permintaan tanpa kredensial layanan mendapat pengalihan ke halaman login. Konfigurasikan pasangan secret `CMS_MEDIA_CLEANUP_PEER_ACCESS_CLIENT_ID` dan `CMS_MEDIA_CLEANUP_PEER_ACCESS_CLIENT_SECRET` pada Worker dan Pages Production untuk autentikasi service token yang diizinkan kebijakan Access Preview. Kode mengirim header Access hanya ke endpoint Preview, tetap memakai bearer token cleanup, dan menolak konfigurasi yang hanya mengisi salah satu secret. Jangan mematikan perlindungan Access untuk menjalankan scheduler. Tanpa pasangan secret ini, endpoint publik tetap didukung, tetapi Preview yang dilindungi akan menggagalkan pemeriksaan sebelum penghapusan.
+
+Pada pemeriksaan 19 Oktober 2026, `CMS_MEDIA_CLEANUP_ENABLED` masih `0` di Production dan Preview, sedangkan alamat pada Worker yang sudah terpasang serta alamat peer Production masih menunjuk domain lama. Mengubah konfigurasi repository tidak memperbarui pengaturan layanan tersebut. Pertahankan keadaan nonaktif sampai pengelola menyetujui pembaruan Cloudflare, kedua database dan endpoint diverifikasi, serta dry-run berhasil. Endpoint hanya menerima POST dengan pilihan `dryRun` eksplisit; gunakan `dryRun: true` untuk pemeriksaan tanpa penghapusan.
+
+### Cadangan dan pemulihan
+
+Cadangkan database Production dan Preview secara terpisah melalui ekspor D1 atau fitur pemulihan D1 sebelum migrasi. Simpan ekspor di lokasi privat di luar repository; metadata media D1 perlu dijaga bersama objek Cloudinary. Pemulihan memerlukan database dan foto yang saling sesuai.
+
+`scripts/cms-backup.js` adalah alat snapshot backend GitHub lama, bukan cadangan D1 atau Cloudinary produksi. Jangan menganggap hasil alat tersebut sebagai salinan lengkap website yang tayang. `wrangler.migration.jsonc` khusus pengujian lokal dan tidak menentukan binding produksi.
 
 ## Gambar dan ikon
 
@@ -77,6 +123,6 @@ tests/                 Pengujian aturan Wisata dan validasi konten
 
 ## Teknologi
 
-Dibangun dengan [Astro](https://astro.build), [Tailwind CSS](https://tailwindcss.com), dan [Bun](https://bun.sh). Hasilnya berupa website statis (file HTML, CSS, dan gambar), sehingga bisa dipasang di hosting mana saja; login CMS menggunakan Cloudflare Pages Functions. Deploy Cloudflare mengikuti push ke `main` repo `gleey/WalianHub`. CI untuk PR menuju `main` berjalan via GitHub Actions (`.github/workflows/ci.yml`).
+Dibangun dengan [Astro](https://astro.build), [Tailwind CSS](https://tailwindcss.com), dan [Bun](https://bun.sh). Astro membangun aset statis; Cloudflare Pages Functions menyajikan konten D1, login, API, dan media. Hosting statis saja tidak menjalankan fungsi CMS tersebut. Push ke `main` pada `GibranAlkatiri/WalianHub` memicu deployment Production project `walian-hub`; branch lain mendapat Preview sesuai pengaturan Cloudflare. CI untuk PR menuju `main` berjalan via GitHub Actions (`.github/workflows/ci.yml`).
 
-Jalankan `bun test` untuk pemeriksaan logika dan `bun run build` untuk validasi seluruh konten serta hasil website. Perubahan konten baru tampil setelah build dan deploy selesai.
+Jalankan `bun test` untuk pemeriksaan logika dan `bun run build` untuk validasi data awal serta hasil website. Perubahan kode membutuhkan build dan deployment. Perubahan konten yang diterbitkan melalui D1 tampil pada permintaan halaman berikutnya tanpa menunggu build GitHub.
