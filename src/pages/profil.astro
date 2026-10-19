@@ -6,19 +6,16 @@ import Container from '../components/ui/Container.astro';
 import KepalaHalaman from '../components/profil/KepalaHalaman.astro';
 import StrukturOrganisasi from '../components/profil/StrukturOrganisasi.astro';
 import Wilayah from '../components/profil/Wilayah.astro';
-import DemografiAgama from '../components/profil/DemografiAgama.astro';
 import VisiMisi from '../components/profil/VisiMisi.astro';
 import { formatTanggal } from '../lib/format';
 
 const profil = (await getEntry('profil', 'profil'))!.data;
-const beranda = (await getEntry('beranda', 'beranda'))!.data;
 ---
 
 <BaseLayout title="Profil" description="Struktur organisasi, wilayah, penduduk, serta visi dan misi Kelurahan Walian.">
   <KepalaHalaman ringkasan={profil.ringkasan} videoProfil={profil.videoProfil} />
   <StrukturOrganisasi lurah={profil.lurah} strukturOrganisasi={profil.strukturOrganisasi} />
-  <Wilayah sumberData={profil.sumberData} lingkungan={profil.lingkungan} jumlahPenduduk={beranda.jumlahPenduduk} />
-  <DemografiAgama demografiAgama={beranda.demografiAgama} sumberData={profil.sumberData} />
+  <Wilayah sumberData={profil.sumberData} lingkungan={profil.lingkungan} />
   <VisiMisi visi={profil.visi} misi={profil.misi} programUnggulan={profil.programUnggulan} sumber={profil.sumberVisiMisi} />
   <Container>
     <p data-cms-profile-updated class="py-8 text-center text-sm text-ink-subtle">Terakhir diperbarui: {formatTanggal(profil.diperbarui)}</p>

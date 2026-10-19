@@ -41,6 +41,12 @@ export function validatePengaturan(value, collection, slug, publish = false) {
   // c67b7a9). The website no longer reads it; drop it instead of bricking
   // every Profil save with an invisible key the panel never renders.
   let input = value;
+  // Retired Beranda fields may still be present in existing rows or open editors.
+  // Ignore only these known keys; unknown fields remain rejected below.
+  if (slug === 'beranda' && input && typeof input === 'object' && !Array.isArray(input)) {
+    const { jumlahPenduduk: _population, demografiAgama: _religion, ...rest } = input;
+    input = rest;
+  }
   if (slug === 'profil' && input && typeof input === 'object' && !Array.isArray(input) && 'demografiAgama' in input) {
     console.warn('WalianHub CMS pengaturan: membersihkan demografiAgama legacy dari profil.');
     const { demografiAgama: _legacy, ...rest } = input;

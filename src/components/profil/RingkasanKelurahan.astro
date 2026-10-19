@@ -3,15 +3,16 @@
 import type { CollectionEntry } from 'astro:content';
 import StatCard from '../ui/StatCard.astro';
 import { formatAngka } from '../../lib/format';
-import { statistikKelurahan } from '../../lib/demografi';
+import { statistikKelurahan, cakupanStatistikKelurahan } from '../../lib/demografi';
 interface Props {
   lingkungan: CollectionEntry<'profil'>['data']['lingkungan'];
-  jumlahPenduduk?: number | null;
   runtimeTemplate?: boolean;
 }
-const { lingkungan, jumlahPenduduk, runtimeTemplate = false } = Astro.props;
-const stats = statistikKelurahan(lingkungan, jumlahPenduduk);
+const { lingkungan, runtimeTemplate = false } = Astro.props;
+const stats = statistikKelurahan(lingkungan);
+const cakupan = cakupanStatistikKelurahan(lingkungan);
 const items = [
+  { ikon: 'users', label: 'Kepala keluarga', angka: stats.family, satuan: 'KK' },
   { ikon: 'users', label: 'Penduduk', angka: stats.population, satuan: 'jiwa' },
   { ikon: 'map', label: 'Lingkungan', angka: stats.environment },
   { ikon: 'land-plot', label: 'Luas wilayah', angka: stats.area, satuan: 'km²' },
@@ -21,6 +22,9 @@ const items = [
   <div class="village-summary-stats">
     {runtimeTemplate ? '__CMS_STATS__' : items.map((item) => <StatCard {...item} angka={formatAngka(item.angka)} />)}
   </div>
+  <p data-stats-coverage class="mt-4 text-sm text-ink-subtle" hidden={!runtimeTemplate && !cakupan}>
+    {runtimeTemplate ? '__CMS_STATS_COVERAGE__' : `Jumlah dari data yang sudah diisi. ${cakupan}.`}
+  </p>
 </div>
 <style>
   .village-summary { margin-top: 1.5rem; padding: 1.25rem; border: 1px solid var(--color-line); border-radius: 1rem; background: white; }

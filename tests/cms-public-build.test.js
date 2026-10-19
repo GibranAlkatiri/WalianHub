@@ -47,16 +47,16 @@ function environment(template = () => templateHtml, rows = publishedRows) {
   };
 }
 
-test('hero tanpa statistik; angka dan demografi yang belum tersedia tidak ditampilkan', async () => {
+test('hero tanpa statistik; jumlah yang belum diisi dan formulir agama tidak ditampilkan', async () => {
   expect(templateHtml).toContain('id="cms-stat-environment"');
   expect(templateHtml).toContain('id="cms-stat-area"');
-  expect(templateHtml).not.toContain('id="cms-stat-family"');
+  expect(templateHtml).toContain('id="cms-stat-family"');
   expect(templateHtml).toContain('id="cms-stat-population"');
   expect(templateHtml).toContain('id="cms-summary"');
-  expect(templateHtml).toContain('id="cms-demography"');
+  expect(templateHtml).not.toContain('id="cms-demography"');
   expect(templateHtml).toContain('id="cms-video"');
   const parts = renderPengaturan(await publishedPengaturan(environment()), parsePengaturanTemplates(templateHtml));
-  for (const part of ['hero', 'summary', 'demography', 'intro', 'contact', 'footer', 'complaint', 'heading', 'video', 'structure', 'region', 'vision']) {
+  for (const part of ['hero', 'summary', 'intro', 'contact', 'footer', 'complaint', 'heading', 'video', 'structure', 'region', 'vision']) {
     expect(parts[part]).toBeString();
     expect(parts[part]).not.toContain('__CMS_');
   }
@@ -69,35 +69,38 @@ test('hero tanpa statistik; angka dan demografi yang belum tersedia tidak ditamp
   expect(parts.summary).not.toContain('Luas wilayah');
   expect(parts.region).toContain(parts.summary);
   expect(parts.heading).not.toContain('id="ringkasan-kelurahan"');
-  expect(parts.demography).toBe('');
+  expect(parts.summary).not.toContain('Kepala keluarga');
+  expect(parts.summary).not.toContain('data-stats-coverage');
   expect(parts.video).toBe('');
   expect(parts.heading).not.toContain('id="video-profil"');
   expect(parts.heading).not.toContain('href="#video-profil"');
   expect(parts.heading).not.toContain('Video menyusul');
 });
 
-test('statistik dan demografi terisi hanya tampil di Profil; total parsial tidak menjadi total kelurahan', async () => {
+test('statistik hanya memakai data lingkungan; nilai Beranda lama dan agama tidak tampil', async () => {
   const settings = await publishedPengaturan(environment());
   settings.beranda.jumlahPenduduk = 2500;
   settings.beranda.demografiAgama = { kristen: 1500, katolik: 1000, islam: 0, hindu: 0, buddha: 0, konghucu: 0 };
   settings.profil.sumberData = { sumber: 'Kelurahan <resmi>', tahun: '2026' };
-  settings.profil.lingkungan = settings.profil.lingkungan.map((item, index) => ({ ...item, jumlahPenduduk: index ? null : 100, luasKm2: index ? null : 1 }));
+  settings.profil.lingkungan = settings.profil.lingkungan.map((item, index) => ({ ...item, kepalaKeluarga: index ? null : 87, jumlahPenduduk: index ? null : 100, luasKm2: index ? null : 1 }));
   const parts = renderPengaturan(settings, parsePengaturanTemplates(templateHtml));
-  expect(parts.summary).toContain('2.500');
-  expect(parts.summary).not.toContain('Luas wilayah');
-  expect(parts.demography).toContain('60%');
-  expect(parts.demography).toContain('40%');
-  expect(parts.demography).toContain('Kelurahan &lt;resmi&gt;');
+  expect(parts.summary).not.toContain('2.500');
+  expect(parts.summary).toContain('87');
+  expect(parts.summary).toContain('100');
+  expect(parts.summary).toContain('Luas wilayah');
+  expect(parts.summary).toContain('KK: 1 dari 10 lingkungan');
+  expect(parts.summary).toContain('Penduduk: 1 dari 10 lingkungan');
+  expect(parts.region).toContain('Kelurahan &lt;resmi&gt;');
   const rows = Object.entries(settings).map(([slug, data]) => ({ slug, data_json: JSON.stringify(data) }));
   for (const path of ['/', '/profil']) {
     const response = await onRequest({ request: new Request('https://cms.example' + path), env: environment(undefined, rows) });
     expect(response.status).toBe(200);
     const html = await response.text();
-    expect(html.includes('id="demografi-agama"')).toBe(path === '/profil');
+    expect(html).not.toContain('id="demografi-agama"');
     expect(html.includes('id="ringkasan-kelurahan"')).toBe(path === '/profil');
     if (path === '/') { expect(html).not.toContain('2.500'); expect(html).not.toContain('demografi-card'); }
     else {
-      expect(html).toContain('2.500'); expect(html).toContain('Lingkungan');
+      expect(html).not.toContain('2.500'); expect(html).toContain('87'); expect(html).toContain('Lingkungan');
       expect(html.match(/id="ringkasan-kelurahan"/g)).toHaveLength(1);
       expect(html.indexOf('id="ringkasan-kelurahan"')).toBeGreaterThan(html.indexOf('id="wilayah"'));
       expect(html.indexOf('id="ringkasan-kelurahan"')).toBeLessThan(html.indexOf('Data lingkungan'));
