@@ -2,6 +2,7 @@ export const mediaEnabled = (env) => env.CMS_MEDIA_CLOUDINARY === '1';
 export const MEDIA_LIMIT = 5 * 1024 * 1024;
 export const UUID = '[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}';
 const mediaPattern = new RegExp('/media/' + UUID + '\\.(?:jpg|png|webp)(?![\\w./%])', 'g');
+const videoPattern = new RegExp('/videos/' + UUID + '\\.mp4(?![\\w./%])', 'g');
 export class MediaError extends Error { constructor(message, status = 503) { super(message); this.status = status; } }
 const unavailable = () => new MediaError('Foto belum dapat diproses. Coba kembali; isian Anda tetap ada.');
 function uploadFailure(status) {
@@ -14,7 +15,9 @@ function uploadFailure(status) {
 export function mediaPaths(data) {
   const result = new Set();
   const visit = (value) => {
-    if (typeof value === 'string') for (const match of value.matchAll(mediaPattern)) result.add(match[0]);
+    if (typeof value === 'string') {
+      for (const pattern of [mediaPattern,videoPattern]) for (const match of value.matchAll(pattern)) result.add(match[0]);
+    }
     else if (Array.isArray(value)) value.forEach(visit);
     else if (value && typeof value === 'object') Object.values(value).forEach(visit);
   };
@@ -25,6 +28,18 @@ export async function assertMediaReferences(env, data, collection, slug) {
   if (!paths.length) return;
   if (!mediaEnabled(env) || !env.CMS_DB) throw unavailable();
   for (const path of paths) {
+    if (path.startsWith('/videos/')) {
+      if (env.CMS_VIDEO_CLOUDINARY !== '1' || env.CMS_PENGATURAN_D1 !== '1'
+        || collection !== 'pengaturan' || slug !== 'profil' || data?.videoProfil?.url !== path) {
+        throw new MediaError('Video tidak tersedia untuk konten ini.',422);
+      }
+      let video;
+      try {video = await env.CMS_DB.prepare('SELECT ready,collection,slug,provider_cloud FROM cms_videos WHERE public_path = ?').bind(path).first();}
+      catch {throw new MediaError('Pencatatan video belum tersedia. Hubungi pengelola panel.');}
+      if (!video?.ready || video.collection !== collection || video.slug !== slug
+        || video.provider_cloud !== String(env.CLOUDINARY_CLOUD_NAME || '').trim()) throw new MediaError('Video tidak tersedia untuk konten ini. Unggah ulang videonya.',422);
+      continue;
+    }
     let row;
     try { row = await env.CMS_DB.prepare("SELECT collection,slug,ready FROM cms_media WHERE public_path = ? AND NOT EXISTS (SELECT 1 FROM cms_media_cleanup g WHERE g.provider_key=cms_media.provider_key AND g.state <> 'pending')").bind(path).first(); }
     catch { throw unavailable(); }
@@ -34,7 +49,7 @@ export async function assertMediaReferences(env, data, collection, slug) {
 async function digest(bytes) {
   return [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map((byte)=>byte.toString(16).padStart(2,'0')).join('');
 }
-function credentials(env) {
+export function cloudinaryCredentials(env) {
   const cloud = String(env.CLOUDINARY_CLOUD_NAME || '').trim(), key = String(env.CLOUDINARY_API_KEY || '').trim(), secret = String(env.CLOUDINARY_API_SECRET || '').trim();
   if (!/^[a-zA-Z0-9_-]+$/.test(cloud) || !/^\d+$/.test(key) || !secret) throw new MediaError('Penyimpanan foto belum tersedia. Hubungi pengelola panel.');
   return {cloud,key,secret};
@@ -68,7 +83,7 @@ function imageFormat(bytes, type) {
 export async function uploadMedia(request, env, owner, fetchProvider = fetch) {
   const id = new URL(request.url).searchParams.get('id');
   if (!new RegExp('^' + UUID + '$').test(id || '')) throw new MediaError('Identitas unggahan tidak valid.',422);
-  const auth = credentials(env), type = request.headers.get('content-type')?.split(';')[0];
+  const auth = cloudinaryCredentials(env), type = request.headers.get('content-type')?.split(';')[0];
   if (!['image/jpeg','image/png','image/webp'].includes(type)) throw new MediaError('Pilih foto JPEG, PNG, atau WebP.',415);
   const bytes = await limitedBytes(request), format = imageFormat(bytes,type), sha = await digest(bytes);
   // Include the content hash: separate environments cannot claim a different
@@ -106,7 +121,7 @@ export async function uploadMedia(request, env, owner, fetchProvider = fetch) {
   }
 }
 export async function downloadMedia(row,env,fetchProvider = fetch) {
-  const auth = credentials(env);
+  const auth = cloudinaryCredentials(env);
   if (row.provider_cloud && row.provider_cloud !== auth.cloud) throw unavailable();
   try {
     const source = row.provider_key + '.' + row.format;

@@ -8,6 +8,25 @@ export function fakeCloudinary() {
   const fetch = async (input,init = {}) => {
     const url = new URL(input); requests.push({url:url.origin + url.pathname,method:init.method || 'GET'});
     if (options.outage) return new Response('provider-test-secret',{status:500});
+    if (url.hostname === 'api.cloudinary.com' && url.pathname.endsWith('/video/upload')) {
+      if (init.headers.authorization !== 'Basic '+btoa('123456:provider-test-secret')) return new Response(null,{status:401});
+      const form=await new Response(init.body,{headers:{'content-type':init.headers['content-type']}}).formData();
+      if (form.get('type') !== 'authenticated' || form.get('overwrite') !== 'false') return new Response(null,{status:400});
+      const key=form.get('public_id'),file=form.get('file');
+      if(!objects.has(key))objects.set(key,{bytes:new Uint8Array(await file.arrayBuffer()),type:'video/mp4',format:'mp4'});
+      const asset=objects.get(key);
+      if(options.loseResponse){options.loseResponse=false;throw new Error('provider-test-secret');}
+      return Response.json({public_id:key,type:'authenticated',resource_type:'video',format:'mp4',bytes:asset.bytes.length,
+        duration:1,width:320,height:180,video:{codec:'h264'},audio:{codec:'aac'},...options.videoMetadata});
+    }
+    const videoMatch=url.pathname.match(/^\/test-cloud\/video\/authenticated\/s--([a-zA-Z0-9_-]{8})--\/v1\/(walianhub-video\/[a-f0-9-]+)\.mp4$/);
+    if(videoMatch){
+      const [,signature,key]=videoMatch,asset=objects.get(key);
+      if(signature!==createHash('sha1').update(key+'.mp4'+'provider-test-secret').digest('base64url').slice(0,8)||!asset)return new Response(null,{status:401});
+      const range=init.headers?.range?.match(/^bytes=(\d+)-(\d+)$/);
+      if(range){const start=Number(range[1]),end=Number(range[2]);return new Response(asset.bytes.slice(start,end+1),{status:206,headers:{'content-type':'video/mp4','content-range':`bytes ${start}-${end}/${asset.bytes.length}`}});}
+      return new Response(asset.bytes,{headers:{'content-type':'video/mp4'}});
+    }
     if (url.hostname === 'api.cloudinary.com' && url.pathname.endsWith('/image/upload')) {
       if (init.headers.authorization !== 'Basic ' + btoa('123456:provider-test-secret')) return new Response(null,{status:401});
       const form = init.body;

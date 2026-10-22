@@ -4,7 +4,7 @@
 import Container from '../ui/Container.astro';
 import TeksKetik from '../ui/TeksKetik.astro';
 import VideoProfil from './VideoProfil.astro';
-import { videoProfilEmbed, type VideoProfilData } from '../../lib/video-profil';
+import { sumberVideoProfil, type VideoProfilData } from '../../lib/video-profil';
 import { url } from '../../lib/url';
 import { JEDA_HURUF_SUBJUDUL, jedaSubjudulKetik } from '../../lib/teks-ketik';
 
@@ -26,7 +26,7 @@ const tautanSection = [
 
 <section data-cms-profile-heading class="pt-8 pb-12 sm:pt-10 sm:pb-16 lg:pt-12 lg:pb-20">
   <Container>
-    <div class="profile-intro" data-has-video={runtimeTemplate ? '__CMS_HAS_VIDEO__' : videoProfilEmbed(videoProfil?.url) ? 'true' : undefined}>
+    <div class="profile-intro" data-has-video={runtimeTemplate ? '__CMS_HAS_VIDEO__' : sumberVideoProfil(videoProfil?.url) ? 'true' : undefined}>
       <div class="min-w-0">
         <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-sm text-ink-subtle">
           <a href={url('/')} class="hover:text-forest-600 hover:underline">Beranda</a>

@@ -13,6 +13,8 @@ test('variasi URL CMS diarahkan ke jalur kanonis sebelum aset atau API diproses'
     ['/api%2fauth', '/api/auth'],
     ['/api%2fcms', '/api/cms'],
     ['/api%2fmedia', '/api/media'],
+    ['/api%2fvideo', '/api/video'],
+    ['/api/video%2f', '/api/video/'],
     ['/api/auth%2f', '/api/auth/'],
   ];
   for (const [path, canonical] of cases) {
@@ -36,7 +38,7 @@ test('POST alternatif CMS tidak memproses kredensial sebelum pengalihan', async 
 });
 
 test('jalur kanonis, halaman publik, API publik, media dan layanan cleanup tetap diteruskan', async () => {
-  for (const path of ['/admin', '/admin/', '/admin/config.yml', '/api/auth', '/api/cms', '/api/media', '/', '/profil', '/layanan', '/wisata', '/api/pengaturan', '/api/media-cleanup', '/media/foto.jpg', '/images/nama%20foto.jpg']) {
+  for (const path of ['/admin', '/admin/', '/admin/config.yml', '/api/auth', '/api/cms', '/api/media', '/api/video', '/videos/video.mp4', '/', '/profil', '/layanan', '/wisata', '/api/pengaturan', '/api/media-cleanup', '/media/foto.jpg', '/images/nama%20foto.jpg']) {
     const response = await onRequest({
       request: new Request('https://cms.example' + path), env: {},
       next() { return new Response('diteruskan'); },

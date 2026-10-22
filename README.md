@@ -61,6 +61,24 @@ Data awal diperiksa oleh `src/content.config.ts` saat build. API CMS memvalidasi
 
 Pengubahan nama surat menggunakan field `judul` tanpa mengganti ID konten, sehingga tautan tetap berlaku. ID baru maksimal 100 karakter; nama ganda diberi akhiran angka dalam batas yang sama. Path `/uploads/` tetap didukung untuk media lama. `SIAP_DIINDEKS` tetap `false` selama data belum disetujui untuk diindeks.
 
+### Video Profil
+
+Buka Pengaturan → Profil → Video, pilih Berkas Video, lalu Simpan draf dan Terbitkan ketika sudah benar. CMS menerima unggahan MP4 H.264/AAC maksimal 40 MB, 1080p, dan 5 menit. Berkas sebaiknya dikompresi menjadi 720p terlebih dahulu; CMS tidak menjalankan kompresi video di browser. Unggahan masuk ke Cloudinary melalui server dan tetap `authenticated`. Nama field `videoProfil.url` dipertahankan untuk kompatibilitas, tetapi staf tidak perlu menempelkan tautan. Link lama tetap dibaca sampai diganti melalui unggahan.
+
+Halaman menampilkan sampul lokal dan tombol putar; berkas video baru dimuat setelah tombol ditekan, tanpa SDK tambahan atau autoplay saat halaman dibuka. Video unggahan memakai kontrol browser tanpa merek YouTube. Server melayani `/videos/<uuid>.mp4` dengan pemeriksaan sesi/status terbit, dukungan byte range untuk seek, dan `Cache-Control: no-store`; URL bertanda tangan Cloudinary dan rahasia tetap di server. Sebelum diterbitkan hanya pengelola yang sudah login dapat memutar video. Penggantian draf mempertahankan video yang sudah tayang; menghapus isian dan menerbitkannya menutup akses publik ke video lama. Link Google Drive digunakan sebagai arsip sumber, bukan pemutar.
+
+Aktivasi memerlukan migrasi `migrations/0005_video.sql` pada database Production dan Preview yang sudah memiliki migrasi 0001–0004, serta `CMS_VIDEO_CLOUDINARY=1`. Sesi server, `CMS_MEDIA_CLOUDINARY=1`, `CMS_PENGATURAN_D1=1`, binding `CMS_DB` dan kredensial Cloudinary yang ada tetap diperlukan. Cadangkan kedua database sebelum menerapkan migrasi. Tabel `cms_videos` ditambahkan tanpa mengubah tabel foto. Pastikan izin serta kuota video akun Cloudinary sesuai melalui pengujian Preview sebelum aktivasi Production. Jangan mematikan flag video setelah video diterbitkan tanpa mengganti sumbernya karena akses video akan ikut tertutup.
+
+Endpoint `/api/video` memeriksa sesi dan origin, memvalidasi MP4/ukuran/checksum sambil mengalirkan unggahan, lalu memeriksa codec, durasi dan dimensi hasil decode Cloudinary sebelum menandainya siap. Native `crypto.DigestStream` Cloudflare digunakan agar Worker tidak menampung seluruh MP4 di memori. Respons yang hilang dapat dicoba lagi dengan ID dan checksum sama tanpa menimpa objek lain. Prefix penyimpanan `walianhub-video/` terpisah dari foto. Video lama/yatim dipertahankan privat dan belum dihapus otomatis; scheduler pembersihan foto tidak mengelola video. Catatan ini perlu diperhatikan saat memantau kuota Cloudinary.
+
+Cloudflare Stream dapat menjadi pilihan untuk video dengan beberapa tingkat kualitas, tetapi memerlukan aktivasi serta biaya penyimpanan/pemutaran. URL Stream belum didukung oleh pemutar ini. Jangan menempelkan tautan privat atau bertoken ke field publik CMS. Perubahan kode ini tidak memindahkan file atau mengubah video produksi secara otomatis.
+
+Cloudflare R2 juga dapat menyimpan MP4 yang sudah dikompresi, tetapi memerlukan bucket, domain media produksi, dan izin CSP khusus untuk domain tersebut; alamat pengembangan `r2.dev` tidak dipilih untuk produksi. Dukungan URL R2 belum diaktifkan. Database konten tetap D1. Rujukan: [unggah Cloudinary](https://cloudinary.com/documentation/upload_parameters), [Web Crypto Cloudflare](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/#digeststream), [R2 public buckets](https://developers.cloudflare.com/r2/buckets/public-buckets/), dan [biaya Stream](https://developers.cloudflare.com/stream/pricing/).
+
+Uji sumber pada 23 Oktober 2026: berkas 1080p H.264/AAC, 30 fps, 181,186 detik (240.106.595 byte) dikompresi lokal menjadi MP4 720p H.264/AAC, tetap 30 fps, 181,185 detik (31.766.534 byte; sekitar 87% lebih kecil), dengan metadata MP4 di depan (`faststart`). Salinan sumber dan hasil uji berada di luar repository. Hasil belum diunggah ke Cloudinary atau R2. Unggahan 31,8 MB diuji di CMS lokal dengan provider tiruan; streaming/checksum juga diperiksa pada runtime lokal Cloudflare dengan DigestStream native. Pengujian lokal tidak menjamin kuota akun atau kecepatan jaringan setiap pengunjung.
+
+Pratinjau unggah lengkap memakai penyimpanan sementara/provider tiruan, tanpa kredensial Cloudinary asli: pada PowerShell, set `$env:CMS_PREVIEW_VIDEO='1'`, lalu jalankan `bun run preview:cms`. Jalankan `bun run build` terlebih dahulu agar halaman Profil tersedia. Akun demo tetap `walian` / `demo`. Data dan video uji hilang setelah server pratinjau dihentikan; jangan memakai mode ini di produksi.
+
 ## Konfigurasi operasional
 
 Production dan Preview memakai database berbeda. Pada project `walian-hub`, mode sesi, empat koleksi D1, pembacaan publik D1, serta Cloudinary diperiksa aktif pada 19 Oktober 2026. Pengaturan server dikelola melalui Cloudflare; rahasia tidak ditulis ke repository atau keluaran perintah.
@@ -73,6 +91,7 @@ Production dan Preview memakai database berbeda. Pada project `walian-hub`, mode
 | `CMS_LAYANAN_D1`, `CMS_DESTINASI_D1`, `CMS_PENGUMUMAN_D1`, `CMS_PENGATURAN_D1` | `1` untuk penyimpanan koleksi di D1 |
 | `CMS_PUBLIC_LAYANAN_D1`, `CMS_PUBLIC_DESTINASI_D1`, `CMS_PUBLIC_PENGUMUMAN_D1`, `CMS_PUBLIC_PENGATURAN_D1` | `1` untuk membaca versi terbit D1 pada halaman publik |
 | `CMS_MEDIA_CLOUDINARY` | `1` untuk penyimpanan foto Cloudinary |
+| `CMS_VIDEO_CLOUDINARY` | `1` untuk unggah/pemutaran video Profil; memerlukan migrasi 0005 dan mode D1/sesi |
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Identitas dan kredensial penyimpanan foto di server |
 | `GITHUB_TOKEN` | Akses server untuk backend GitHub lama; tidak diperlukan untuk operasi koleksi D1 |
 | `CMS_LOGIN_LIMIT_DISABLED` | Hanya nilai `1` yang mematikan sementara pembatasan percobaan login; kosongkan kembali setelah penanganan selesai |

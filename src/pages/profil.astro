@@ -21,3 +21,7 @@ const profil = (await getEntry('profil', 'profil'))!.data;
     <p data-cms-profile-updated class="py-8 text-center text-sm text-ink-subtle">Terakhir diperbarui: {formatTanggal(profil.diperbarui)}</p>
   </Container>
 </BaseLayout>
+
+<script>
+  import '../lib/pemutar-video-profil';
+</script>

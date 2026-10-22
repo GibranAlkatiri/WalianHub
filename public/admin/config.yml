@@ -515,13 +515,13 @@ collections:
             name: videoProfil
             widget: object
             collapsed: false
-            hint: "Video pengenalan/potensi kelurahan dari YouTube. Kosongkan tautan jika videonya belum ada."
+            hint: "Pilih berkas MP4 untuk diunggah. Unggahan tetap privat sampai perubahan Profil diterbitkan. Pemutar baru dimuat setelah pengunjung menekan Putar."
             fields:
-              - label: Tautan YouTube
+              - label: Berkas Video
                 name: url
-                widget: string
+                widget: video
                 required: false
-                hint: "Tempel link YouTube (watch, youtu.be, embed, atau shorts). Video tampil di samping pengantar Profil; jika kosong, blok video disembunyikan."
+                hint: "MP4 H.264/AAC, maksimal 40 MB, 1080p, dan 5 menit. Sebaiknya gunakan versi 720p yang sudah dikompresi. Setelah unggah, Simpan draf lalu Terbitkan jika sudah benar."
               - { label: Judul, name: judul, widget: string, required: false, hint: "Judul di bawah video. Kosong: tampil judul bawaan." }
               - label: Deskripsi Singkat
                 name: deskripsi

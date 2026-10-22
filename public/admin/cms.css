@@ -114,6 +114,7 @@
 .cms-checkbox { display:flex !important; align-items:center; gap:.75rem; font-weight:400 !important; }
 .cms-checkbox input { width:22px; height:22px; accent-color:var(--cms-green); flex-shrink:0; }
 .cms-image { display:block; width:auto; max-width:100%; max-height:230px; border-radius:8px; margin-bottom:.75rem; }
+.cms-video { display:block; width:100%; max-width:640px; aspect-ratio:16/9; max-height:360px; border-radius:8px; background:#172713; margin-bottom:.75rem; }
 .cms-editor-bottom { max-width:760px; margin:1.25rem auto; }
 .cms-section-tabs { display:flex; flex-wrap:wrap; gap:.4rem; padding-bottom:1rem; border-bottom:1px solid var(--cms-line); margin-bottom:1.25rem; }
 #cms-root .cms-section-tabs button { padding:.55rem .8rem; border-color:transparent; background:#f2f5ed; font-size:.85rem; }

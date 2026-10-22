@@ -127,7 +127,7 @@ export const profilSchema = z.object({
       )
       .optional()
       .default([]),
-    /** Video pengenalan/potensi kelurahan (YouTube). Kosong: blok tidak ditampilkan. */
+    /** Video unggahan CMS. Tautan lama tetap dibaca sampai diganti; kosong menyembunyikan blok. */
     videoProfil: z
       .object({
         url: z.string().trim().default(''),

@@ -123,11 +123,35 @@ test('video Profil mengikuti isi CMS: kosong atau invalid hilang, tautan YouTube
     if (valid) {
       expect(html).toContain('data-has-video="true"');
       expect(html).toContain('https://www.youtube.com/embed/abcdefghijk');
+      expect(html).toContain('data-video-play');
+      expect(html).toContain('data-video-kind="youtube"');
+      expect(html).not.toContain('<iframe');
       expect(html).toContain('Potensi &lt;Walian&gt;');
       expect(html).not.toContain('<p class="mt-2 text-sm text-ink-muted"></p>');
       expect(html.indexOf('id="video-profil"')).toBeLessThan(html.indexOf('id="ringkasan-kelurahan"'));
     }
   }
+});
+
+test('MP4 Cloudinary pada CMS tidak mengunduh video sebelum tombol putar ditekan', async () => {
+  const settings = await publishedPengaturan(environment());
+  const url = 'https://res.cloudinary.com/demo/video/upload/c_limit,w_1280,q_auto,vc_h264/dog.mp4';
+  settings.profil.videoProfil = { url, judul: 'Potensi "Walian" <resmi>', deskripsi: '<script>alert(1)</script>' };
+  const rows = Object.entries(settings).map(([slug, data]) => ({ slug, data_json: JSON.stringify(data) }));
+  const response = await onRequest({ request: new Request('https://cms.example/profil'), env: environment(undefined, rows) });
+  const html = await response.text();
+  expect(response.status).toBe(200);
+  expect(html).toContain('data-video-kind="mp4"');
+  expect(html).toContain(`data-video-src="${url}"`);
+  expect(html).toContain('Putar Potensi &quot;Walian&quot; &lt;resmi&gt;');
+  expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+  expect(html).not.toContain('<video');
+  expect(html).not.toContain('<iframe');
+  expect(html).not.toContain('<script>alert(1)</script>');
+  // Skrip tetap dimuat pada Profil walaupun video data awal build kosong.
+  const scripts = [...html.matchAll(/<script\b[^>]*src="([^"]+)"/g)]
+    .map((match) => readFileSync(new URL('dist/' + match[1].replace(/^\//, ''), root), 'utf8')).join('\n');
+  expect(html + scripts).toMatch(/createElement\(["'`]video["'`]\)/);
 });
 
 test('data seluruh lingkungan yang lengkap menghasilkan total penduduk dan luas di ringkasan', async () => {

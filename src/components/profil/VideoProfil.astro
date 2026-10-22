@@ -1,26 +1,36 @@
 ---
 // Video mendampingi pengantar Profil; tanpa tautan yang dapat diputar, blok tidak dirender.
-import { videoProfilEmbed, type VideoProfilData } from '../../lib/video-profil';
+import { sumberVideoProfil, type VideoProfilData } from '../../lib/video-profil';
+import { url } from '../../lib/url';
 
 interface Props {
   videoProfil?: VideoProfilData;
   runtimeTemplate?: boolean;
 }
 const { videoProfil, runtimeTemplate = false } = Astro.props;
-const embed = videoProfilEmbed(videoProfil?.url);
+const sumber = sumberVideoProfil(videoProfil?.url);
 const judul = videoProfil?.judul.trim() || 'Video pengenalan Kelurahan Walian';
 const deskripsi = videoProfil?.deskripsi.trim();
 ---
 
-{(runtimeTemplate || embed) && (
+{(runtimeTemplate || sumber) && (
   <aside id="video-profil" aria-labelledby="judul-video-profil" class="min-w-0">
-    <div class="aspect-video overflow-hidden rounded-2xl bg-ink shadow-card">
-      {runtimeTemplate ? '__CMS_VIDEO_FRAME__' : (
-        <iframe src={embed!} title={judul} loading="lazy"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen class="h-full w-full" />
-      )}
+    <div data-profile-video data-video-kind={runtimeTemplate ? '__CMS_VIDEO_KIND__' : sumber?.jenis}
+      data-video-src={runtimeTemplate ? '__CMS_VIDEO_SOURCE__' : sumber?.url}
+      data-video-title={runtimeTemplate ? '__CMS_VIDEO_TITLE__' : judul}
+      class="relative aspect-video overflow-hidden rounded-2xl bg-ink shadow-card">
+      <button type="button" data-video-play aria-label={runtimeTemplate ? '__CMS_VIDEO_PLAY_LABEL__' : `Putar ${judul}`}
+        class="group absolute inset-0 flex h-full w-full cursor-pointer flex-col items-center justify-center gap-3 text-white focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white">
+        <img src={url('/images/beranda/kantor-kelurahan-walian.webp')} alt="" width="1280" height="720" loading="lazy" decoding="async"
+          class="absolute inset-0 h-full w-full object-cover" />
+        <span aria-hidden="true" class="absolute inset-0 bg-black/40 transition-colors group-hover:bg-black/30"></span>
+        <span aria-hidden="true" class="relative flex size-16 items-center justify-center rounded-full border border-white/50 bg-white/15 backdrop-blur-sm transition-transform motion-safe:group-hover:scale-105">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+        </span>
+        <span aria-hidden="true" class="relative text-sm font-semibold">Putar video profil</span>
+      </button>
     </div>
+    <p data-video-status role="status" class="mt-2 text-sm text-ink-muted" hidden></p>
     <h2 id="judul-video-profil" class="mt-4 text-lg font-bold text-ink">{runtimeTemplate ? '__CMS_VIDEO_TITLE__' : judul}</h2>
     {runtimeTemplate ? '__CMS_VIDEO_DESCRIPTION_BLOCK__' : deskripsi && <p class="mt-2 text-sm text-ink-muted">{deskripsi}</p>}
   </aside>
