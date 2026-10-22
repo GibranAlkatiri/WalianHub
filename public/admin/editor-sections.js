@@ -2,6 +2,7 @@
 const sections = {
   profil: [
     ['umum', 'Umum', 'Ringkasan profil dan tanggal pemeriksaan data.', ['ringkasan', 'diperbarui']],
+    ['video', 'Video', 'Video pengenalan kelurahan yang tampil di halaman Profil.', ['videoProfil']],
     ['pemerintahan', 'Pemerintahan', 'Lurah dan susunan organisasi kelurahan.', ['lurah', 'strukturOrganisasi']],
     ['wilayah', 'Wilayah', 'Sumber data dan informasi setiap lingkungan.', ['sumberData', 'lingkungan']],
     ['visi-misi', 'Visi & Misi', 'Arah dan tujuan pembangunan kelurahan.', ['visi', 'misi', 'sumberVisiMisi']],

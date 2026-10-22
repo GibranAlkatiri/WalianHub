@@ -1,5 +1,6 @@
 import { situsSchema, berandaSchema, profilSchema } from '../src/lib/schema-pengaturan.ts';
 import { LayananError } from './cms-layanan.js';
+import { sumberVideoProfil } from '../src/lib/video-profil.ts';
 export const pengaturanSchemas = {situs:situsSchema,beranda:berandaSchema,profil:profilSchema};
 const fail = (message) => { throw new LayananError(message); };
 // A draft may omit required values, but cannot change field types or names.
@@ -27,6 +28,7 @@ function draftValue(value, field, label = 'Pengaturan') {
   if (field.widget === 'boolean') { if (typeof value !== 'boolean') fail(`Pilihan ${field.label} tidak valid.`);return value; }
   if (typeof value !== 'string') fail(`Isian ${field.label} harus berupa teks.`);
   const text = value.trim();
+  if (field.widget === 'video' && text && !sumberVideoProfil(text)) fail('Video tidak dikenali. Pilih berkas MP4 melalui tombol unggah.');
   if (field.widget === 'select' && text && !field.options.some((option)=>(typeof option==='string'?option:option.value)===text)) fail(`Pilihan ${field.label} tidak tersedia.`);
   if (field.widget === 'image' && text && !/^\/(?!\/)[^\s\\?#]+\.(?:jpe?g|png|webp|gif|svg|avif)$/i.test(text)) {
     let url;try {url=new URL(text);} catch {}if (!url || !['http:','https:'].includes(url.protocol)) fail('Alamat foto tidak valid.');

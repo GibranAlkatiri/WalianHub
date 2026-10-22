@@ -1,5 +1,5 @@
-import { request, imageUrl, uploadImage, logout } from './cms-client.js?v=20261010_05';
-import { createEditorSections } from './editor-sections.js?v=20261012_03';
+import { request, imageUrl, uploadImage, uploadVideo, logout } from './cms-client.js?v=20261023_video';
+import { createEditorSections } from './editor-sections.js?v=20261023_video';
 import { createOrganizationEditor } from './organization-editor.js?v=20261010_ui04';
 import { createTextListControl, createWeeklySchedule, listItemSummary, revealCompactErrors } from './compact-fields.js?v=20261012_03';
 import { uniqueSlug } from './content-slug.js?v=20261019_01';
@@ -317,6 +317,27 @@ function fieldControl(field, parent, key, path) {
     input.append(el('option', { value: '' }, 'Pilih ' + field.label.toLowerCase()));
     for (const item of field.options || []) input.append(el('option', { value: typeof item === 'object' ? item.value : item }, typeof item === 'object' ? item.label : item));
     input.value = parent[key] || ''; box.append(input);
+  } else if (field.widget === 'video') {
+    const existing=parent[key], enabled=!!state.config.video_upload;
+    if (existing) {
+      if (/^\/videos\//.test(existing)) box.append(el('video',{class:'cms-video',src:existing,poster:'/images/beranda/kantor-kelurahan-walian.webp',controls:true,playsinline:true,preload:'none','aria-label':'Pratinjau video Profil'}));
+      else box.append(el('small',{class:'cms-hint'},'Video lama masih menggunakan tautan. Unggah MP4 untuk menggantinya.'));
+      box.append(button('Hapus video dari isian',()=>{set('');drawEditor();message('Video dihapus dari isian. Simpan draf lalu terbitkan untuk memperbarui website.');},'cms-button-secondary'));
+    }
+    const input=el('input',{id,type:'file',accept:'video/mp4,.mp4',disabled:!enabled,onChange:async event=>{
+      const file=event.target.files[0];if(!file)return;
+      if ((file.type && file.type!=='video/mp4') || !/\.mp4$/i.test(file.name) || file.size<=0 || file.size>state.config.video_max_bytes) {
+        event.target.value='';message('Pilih video MP4 maksimal 40 MB yang sudah dikompresi.',true);return;
+      }
+      setBusy(true);message('Menyiapkan unggahan video…');
+      try {
+        const result=await uploadVideo(file,{collection:state.collection,slug:state.entry.slug,id:crypto.randomUUID()},text=>message(text));
+        set(result.path);drawEditor();message('Video berhasil diunggah dan masih privat. Simpan draf lalu Terbitkan untuk menampilkannya di website.');
+      }catch(error){event.target.value='';message(error.message,true);}
+      finally{setBusy(false);}
+    }});
+    box.append(input);
+    if(!enabled)box.append(el('small',{class:'cms-hint'},'Unggah video belum diaktifkan oleh pengelola teknis. Video yang sudah tayang tetap dipertahankan.'));
   } else if (field.widget === 'image') {
     const preview = el('img', { class: 'cms-image', alt: 'Foto yang dipilih', hidden: true });
     const existing = parent[key];

@@ -4,7 +4,7 @@ import { formatAngka,formatNomorWhatsapp,tautanWhatsapp } from '../src/lib/forma
 import { JEDA_HURUF_JUDUL,JEDA_HURUF_SUBJUDUL,jedaSubjudulKetik } from '../src/lib/teks-ketik.ts';
 import { dateLabel } from './collections-template.js';
 import { statistikKelurahan, cakupanStatistikKelurahan } from '../src/lib/demografi.ts';
-import { videoProfilEmbed } from '../src/lib/video-profil.ts';
+import { sumberVideoProfil } from '../src/lib/video-profil.ts';
 export const escapeHtml = (value)=>String(value??'').replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const fill = (html,values)=>html.replace(/__CMS_[A-Z]+(?:_[A-Z]+)*__/g,(key)=>{if(!Object.hasOwn(values,key))throw new Error('Template Pengaturan tidak lengkap: '+key);return values[key];});
 // Extract a balanced element from our own build artifact, including nested divs.
@@ -94,14 +94,16 @@ export function renderPengaturan(data,t,wisataHref) {
   if(summary&&!coverage)summary=summary.replace(element(summary,/<p\b[^>]*data-stats-coverage[^>]*>/),'');
   values.__CMS_REGION_STATS__=summary;
   // Video menyatu dengan pengantar Profil dan hilang seluruhnya ketika belum tersedia.
-  const embedVideo=videoProfilEmbed(p.videoProfil?.url);
+  const sumberVideo=sumberVideoProfil(p.videoProfil?.url);
   const judulVideo=(p.videoProfil?.judul||'').trim()||'Video pengenalan Kelurahan Walian';
   const deskripsiVideo=(p.videoProfil?.deskripsi||'').trim();
   values.__CMS_VIDEO_TITLE__=escapeHtml(judulVideo);
   values.__CMS_VIDEO_DESCRIPTION_BLOCK__=deskripsiVideo?`<p class="mt-2 text-sm text-ink-muted">${escapeHtml(deskripsiVideo)}</p>`:'';
-  values.__CMS_VIDEO_FRAME__=embedVideo?`<iframe src="${escapeHtml(embedVideo)}" title="${escapeHtml(judulVideo)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen class="h-full w-full"></iframe>`:'';
-  const video=embedVideo?fill(t['cms-video'],values):'';
-  values.__CMS_HAS_VIDEO__=embedVideo?'true':'false';
+  values.__CMS_VIDEO_KIND__=sumberVideo?.jenis||'';
+  values.__CMS_VIDEO_SOURCE__=escapeHtml(sumberVideo?.url||'');
+  values.__CMS_VIDEO_PLAY_LABEL__=escapeHtml('Putar '+judulVideo);
+  const video=sumberVideo?fill(t['cms-video'],values):'';
+  values.__CMS_HAS_VIDEO__=sumberVideo?'true':'false';
   values.__CMS_PROFILE_VIDEO__=video;
   const environment=(item,template)=>{
     for(const [name,marker] of [['kepala','__CMS_HEAD__'],['wakil','__CMS_DEPUTY__']])if(!item[name])template=template.replace(new RegExp('(<(?:td|dd) class="[^"]*)\\btext-ink(?=")[^"]*">'+marker,'g'),'$1text-ink-subtle">'+marker);

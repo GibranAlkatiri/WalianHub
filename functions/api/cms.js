@@ -4,6 +4,7 @@ import { layananOperation, LayananError } from '../../server/cms-layanan.js';
 import { publicLayananEnabled } from '../../server/published-layanan.js';
 import { mediaEnabled, mediaPaths, assertMediaReferences, MediaError } from '../../server/cms-media.js';
 import { collectionD1Enabled, publicCollectionEnabled, collectionOperation } from '../../server/cms-collections.js';
+import { videoEnabled, VIDEO_LIMIT } from '../../server/cms-video.js';
 
 const HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' };
 const response = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: HEADERS });
@@ -38,8 +39,8 @@ export function target(config, collectionName, slug) {
   return { collection, fields: file?.fields || collection.fields, path, branch: `cms/${collectionName}/${slug}`, slug, collectionName, label: file?.label };
 }
 
-function publicConfig(config, siteUrl = config.site_url, media = false) {
-  return { collections: config.collections, site_url: siteUrl, media_folder: config.media_folder, public_folder: config.public_folder, ...(media ? {media_upload:'/api/media'} : {}) };
+function publicConfig(config, siteUrl = config.site_url, media = false, video = false) {
+  return { collections: config.collections, site_url: siteUrl, media_folder: config.media_folder, public_folder: config.public_folder, ...(media ? {media_upload:'/api/media'} : {}), ...(video ? {video_upload:'/api/video',video_max_bytes:VIDEO_LIMIT} : {}) };
 }
 
 // Browser cookies authorize CMS requests in session mode; GitHub credentials
@@ -75,7 +76,7 @@ export function createCmsHandler(fetchGitHub = fetch) {
       }
       const action = request.method === 'GET' ? (url.searchParams.get('action') || 'list') : postBody.action;
       const collectionName = request.method === 'GET' ? url.searchParams.get('collection') : postBody.collection;
-      if (d1 && action === 'config' && request.method === 'GET') return response(publicConfig(config, publicLayananEnabled(env) || ['destinasi','pengumuman','pengaturan'].some((name) => publicCollectionEnabled(env,name)) ? new URL('/', request.url).href : config.site_url, mediaEnabled(env)));
+      if (d1 && action === 'config' && request.method === 'GET') return response(publicConfig(config, publicLayananEnabled(env) || ['destinasi','pengumuman','pengaturan'].some((name) => publicCollectionEnabled(env,name)) ? new URL('/', request.url).href : config.site_url, mediaEnabled(env), videoEnabled(env)));
       if (collectionD1Enabled(env,collectionName) && action !== 'asset') {
         if (request.method === 'POST' && new TextEncoder().encode(postText).length > 256 * 1024) fail('Isian konten terlalu panjang.', 413);
         if (request.method === 'GET' && !['list', 'entry'].includes(action)) fail('Tindakan konten tidak dikenali.', 404);
