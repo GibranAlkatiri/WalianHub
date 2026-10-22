@@ -16,6 +16,14 @@ export const mp4=Uint8Array.from([0,0,0,24,102,116,121,112,105,115,111,109,0,0,2
 const config=readFileSync(new URL('../public/admin/config.yml',import.meta.url),'utf8');
 const schema=['0001_content.sql','0002_sessions.sql','0003_media.sql','0004_media_cleanup.sql','0005_video.sql'].map(n=>readFileSync(new URL('../migrations/'+n,import.meta.url),'utf8')).join('\n');
 const content=JSON.parse(readFileSync(new URL('../src/content/pengaturan/profil.json',import.meta.url),'utf8'));
+test('rute upload dan berkas video melewati Functions Cloudflare, termasuk pemeriksaan akses privat',()=>{
+  const routes=JSON.parse(readFileSync(new URL('../public/_routes.json',import.meta.url),'utf8'));
+  const matches=(pattern,path)=>new RegExp('^'+pattern.replace(/[.+?^${}()|[\]\\]/g,'\\$&').replaceAll('*','.*')+'$').test(path);
+  for(const path of ['/api/video','/videos/6b0a88db-af2e-499f-aa10-34dd34bc02cf.mp4']){
+    expect(routes.include.some(pattern=>matches(pattern,path))).toBe(true);
+    expect(routes.exclude.some(pattern=>matches(pattern,path))).toBe(false);
+  }
+});
 async function setup(){
   const db=sqliteD1(schema),provider=fakeCloudinary();
   const env={CMS_DB:db,CMS_SESSION_AUTH:'1',CMS_PENGATURAN_D1:'1',CMS_MEDIA_CLOUDINARY:'1',CMS_VIDEO_CLOUDINARY:'1',
