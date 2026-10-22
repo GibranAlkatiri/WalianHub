@@ -21,6 +21,7 @@ const config = await readFile(resolve(repo, 'public/admin/config.yml'), 'utf8');
 const github = fakeGithub(files, load(config).backend.repo);
 const handler = createCmsHandler(github.fetch);
 const videoPreview = process.env.CMS_PREVIEW_VIDEO === '1';
+const previewCsp = videoPreview ? (await readFile(resolve(repo,'public/_headers'),'utf8')).split('\n').find(line=>line.trim().startsWith('Content-Security-Policy:')).split('Content-Security-Policy:')[1].trim() : null;
 const migrations = ['0001_content.sql','0002_sessions.sql',...(videoPreview?['0003_media.sql','0004_media_cleanup.sql','0005_video.sql']:[])];
 const sessions = sqliteD1((await Promise.all(migrations.map(name=>readFile(resolve(repo,'migrations',name),'utf8')))).join('\n'));
 sessions.raw.query('INSERT INTO cms_imports(snapshot_id,repository,main_sha,captured_at) VALUES (?,?,?,?)').run('local-demo', 'local/demo', '0'.repeat(40), new Date().toISOString());
@@ -60,8 +61,7 @@ const server = Bun.serve({
     if (videoPreview && !url.pathname.startsWith('/admin') && !url.pathname.startsWith('/api/')) {
       const response=await publicPage({request,env:{...env,ASSETS:{fetch:publicAsset}},next:()=>publicAsset(request)});
       const headers=new Headers(response.headers);
-      const csp=(await readFile(resolve(repo,'public/_headers'),'utf8')).split('\n').find(line=>line.trim().startsWith('Content-Security-Policy:')).split('Content-Security-Policy:')[1].trim();
-      headers.set('content-security-policy',csp);
+      headers.set('content-security-policy',previewCsp);
       return new Response(response.body,{status:response.status,headers});
     }
     if (url.pathname === '/api/auth') {
@@ -76,7 +76,7 @@ const server = Bun.serve({
         const preview = '<script>window.WALIAN_DEMO=true;</script>';
         data = Buffer.from(data.toString().replace('<body>', '<body>' + preview).replace('Khusus pengelola konten kelurahan.', 'Pratinjau lokal: username walian, password demo.'));
       }
-      return new Response(data, { headers: { 'content-type': types[extname(path)] || 'application/octet-stream', 'cache-control': 'no-store' } });
+      return new Response(data, { headers: { 'content-type': types[extname(path)] || 'application/octet-stream', 'cache-control': 'no-store', ...(previewCsp ? {'content-security-policy':previewCsp} : {}) } });
     } catch { return new Response('Not found', { status: 404 }); }
   },
 });
